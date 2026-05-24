@@ -31,6 +31,7 @@ target_link_libraries(ds2_seamless_coop PRIVATE
     ws2_32
     d3d11
     dxgi
+    bcrypt  # H-18: SHA-256 via Windows CNG (BCryptOpenAlgorithmProvider)
 )
 
 # Set output name and compiler flags
