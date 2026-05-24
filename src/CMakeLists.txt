@@ -32,6 +32,7 @@ target_link_libraries(ds2_seamless_coop PRIVATE
     d3d11
     dxgi
     bcrypt  # H-18: SHA-256 via Windows CNG (BCryptOpenAlgorithmProvider)
+    ds2coop_core_mt  # H-17: hotkey parser + packet validator
 )
 
 # Set output name and compiler flags

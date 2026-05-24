@@ -1,0 +1,65 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "architecture": { "value": "x64", "strategy": "set" },
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "Release",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "RelWithDebInfo",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "RelWithAsan",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_TESTS": "ON",
+        "DS2COOP_ENABLE_ASAN": "ON",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "Release",        "configurePreset": "Release",        "configuration": "Release" },
+    { "name": "RelWithDebInfo", "configurePreset": "RelWithDebInfo", "configuration": "RelWithDebInfo" },
+    { "name": "RelWithAsan",    "configurePreset": "RelWithAsan",    "configuration": "RelWithDebInfo" }
+  ],
+  "testPresets": [
+    {
+      "name": "RelWithDebInfo",
+      "configurePreset": "RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "RelWithAsan",
+      "configurePreset": "RelWithAsan",
+      "configuration": "RelWithDebInfo",
+      "output": { "outputOnFailure": true },
+      "environment": {
+        "ASAN_OPTIONS": "abort_on_error=1:halt_on_error=1:print_stacktrace=1"
+      }
+    }
+  ]
+}
