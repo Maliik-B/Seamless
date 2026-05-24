@@ -38,6 +38,7 @@
 #include "../../include/hooks.h"
 #include "../../include/session.h"
 #include "../../include/utils.h"
+#include "../../include/mod.h"
 
 using namespace DS2Coop::Utils;
 using namespace DS2Coop::Hooks;
@@ -256,6 +257,61 @@ static HRESULT STDMETHODCALLTYPE HookedPresent(IDXGISwapChain* swapChain, UINT s
     bool insertDown = (GetAsyncKeyState(VK_INSERT) & 0x8000) != 0;
     if (insertDown && !insertWasDown) overlay.Toggle();
     insertWasDown = insertDown;
+
+    // H-20: emergency-disable hotkey (default Ctrl+Shift+End).
+    // Parsed once on first frame from the loaded config; if parsing fails we
+    // log and fall back to the spec default. Edge-triggered. We can't call
+    // EmergencyDisable inline — it tears down sibling MinHook targets and
+    // calls Sleep, and we're inside the Present detour — so a one-shot
+    // thread does the work.
+    {
+        static DS2Coop::HotkeyChord s_chord{};
+        static bool s_chordReady = false;
+        static bool s_chordWasDown = false;
+        static bool s_chordFired   = false;
+
+        if (!s_chordReady) {
+            const auto& spec =
+                DS2Coop::SeamlessCoopMod::GetInstance().GetConfig().emergency_disable_hotkey;
+            s_chord = DS2Coop::ParseHotkey(spec);
+            if (s_chord.vkey == 0) {
+                LOG_WARNING("H-20: failed to parse emergency_disable_hotkey '%s' — "
+                            "falling back to Ctrl+Shift+End",
+                            spec.c_str());
+                s_chord = DS2Coop::ParseHotkey("Ctrl+Shift+End");
+            }
+            LOG_INFO("H-20: emergency-disable hotkey armed "
+                     "(ctrl=%d shift=%d alt=%d vk=0x%X)",
+                     (int)s_chord.need_ctrl, (int)s_chord.need_shift,
+                     (int)s_chord.need_alt, s_chord.vkey);
+            s_chordReady = true;
+        }
+
+        if (!s_chordFired && s_chord.vkey != 0) {
+            bool ctrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+            bool shift = (GetAsyncKeyState(VK_SHIFT)   & 0x8000) != 0;
+            bool alt   = (GetAsyncKeyState(VK_MENU)    & 0x8000) != 0;
+            bool key   = (GetAsyncKeyState(s_chord.vkey) & 0x8000) != 0;
+
+            bool chordDown =
+                key &&
+                (!s_chord.need_ctrl  || ctrl) &&
+                (!s_chord.need_shift || shift) &&
+                (!s_chord.need_alt   || alt);
+
+            if (chordDown && !s_chordWasDown) {
+                s_chordFired = true;  // single-shot; can't fire again until restart
+                LOG_INFO("H-20: emergency-disable hotkey pressed — spawning disable thread");
+                HANDLE h = CreateThread(nullptr, 0, [](LPVOID) -> DWORD {
+                    DS2Coop::SeamlessCoopMod::GetInstance().EmergencyDisable();
+                    return 0;
+                }, nullptr, 0, nullptr);
+                if (h) CloseHandle(h);
+                else   LOG_ERROR("H-20: CreateThread failed — emergency disable did not run");
+            }
+            s_chordWasDown = chordDown;
+        }
+    }
 
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();

@@ -31,7 +31,25 @@ struct ModConfig {
     std::string server_ip = "127.0.0.1";    // IP of the ds3os custom server
     uint16_t server_port = 50031;            // Login port of custom server
     bool use_custom_server = true;           // Enable server redirect
+
+    // H-20: emergency-disable hotkey. Format "Mod+Mod+Key" — e.g.
+    // "Ctrl+Shift+End", "Alt+F12". Supported modifiers: Ctrl, Shift, Alt.
+    // Key names: A-Z, 0-9, F1-F24, End, Home, Insert, Delete, PageUp,
+    // PageDown, Escape (and aliases Esc, Del, Ins, PgUp, PgDn).
+    std::string emergency_disable_hotkey = "Ctrl+Shift+End";
 };
+
+// H-20: parsed representation of an emergency-disable hotkey chord.
+struct HotkeyChord {
+    bool need_ctrl  = false;
+    bool need_shift = false;
+    bool need_alt   = false;
+    int  vkey       = 0;   // 0 = invalid
+};
+
+// Parse a "Mod+Mod+Key" string into a HotkeyChord. Returns a chord with
+// vkey==0 on parse failure (caller can log + fall back to default).
+HotkeyChord ParseHotkey(const std::string& spec);
 
 // Main mod class
 class SeamlessCoopMod {
@@ -40,11 +58,20 @@ public:
     
     bool Initialize();
     void Shutdown();
-    
+
+    // H-20: revert sticky writes, disable disconnect-blocking, close the UDP
+    // listener. The DLL stays loaded (the dinput8 proxy is still alive), so
+    // the game keeps running but in vanilla mode. Idempotent.
+    // MUST NOT be called from inside a MinHook detour or the Present hook —
+    // spawn a thread for it. Surface "vanilla mode active — restart to revert"
+    // in the overlay before returning.
+    void EmergencyDisable();
+    bool IsEmergencyDisabled() const { return m_emergencyDisabled; }
+
     bool IsInitialized() const { return m_initialized; }
     GameVersion GetGameVersion() const { return m_gameVersion; }
     const ModConfig& GetConfig() const { return m_config; }
-    
+
     void LoadConfig();
     void SaveConfig();
 
@@ -59,6 +86,7 @@ private:
     void UninstallHooks();
     
     bool m_initialized = false;
+    bool m_emergencyDisabled = false;   // H-20 latch
     GameVersion m_gameVersion = GameVersion::Unknown;
     ModConfig m_config;
     HANDLE m_updateThread = nullptr;

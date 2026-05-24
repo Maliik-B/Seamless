@@ -82,6 +82,13 @@ public:
     void EnableSummoning();
     std::string GetLocalCharacterName();
 
+    // H-20: revert every sticky memory write captured by SnapshotWrite
+    // (see player_sync.cpp). After this returns, future EnableSummoning /
+    // MaxPhantomTimer calls become no-ops (latched). Idempotent.
+    void RevertStickyWrites();
+    size_t StickyWriteCount() const;
+    bool IsEmergencyLatched() const;
+
 private:
     PlayerSync() = default;
     ~PlayerSync() = default;
