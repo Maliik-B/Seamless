@@ -19,4 +19,7 @@ DS2 Seamless Co-op — Joiner Setup
 
 8. Use the White Sign Soapstone to summon each other
 
-To remove the mod: delete dinput8.dll from the Game folder.
+To remove the mod: run uninstall.cmd from this folder. It will close-check
+the game, then remove dinput8.dll, ds2_seamless_coop.ini, and
+ds2_server_public.key from your DS2 Game folder. Your DS2 saves are not
+touched.
