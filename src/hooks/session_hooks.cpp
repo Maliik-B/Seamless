@@ -18,6 +18,7 @@
 #include "../../include/network.h"
 #include "../../include/utils.h"
 #include "../../include/pattern_scanner.h"
+#include "../../include/address_resolver.h"
 #include "MinHook.h"
 #include <typeinfo>
 #include <string>
@@ -187,27 +188,48 @@ static const char* GetRttiClassName(void* obj) {
 // Messages to block when SENDING (outgoing — serialize hook)
 // Don't block ANY outgoing messages — let them serialize and send normally.
 // Blocking outgoing messages corrupts the server's session state.
-// All disconnect prevention happens on the RECEIVING side (parse hook).
+// Outgoing disconnect blocking is OFF. See crash_history.md for why.
+// Instead, we capture the return address when LeaveGuestPlayer is serialized
+// to identify the caller function for future NOP patching.
 static bool IsOutgoingDisconnect(const char* className) {
     (void)className;
     return false;
 }
 
 // Messages to block when RECEIVING (incoming — parse hook)
-// Block server-initiated disconnects that would kick remaining players
-// when one player leaves via crystal.
+//
+// HISTORY: This list used to also block LeaveSession, LeaveGuestPlayer,
+// RemovePlayer, and BreakInTarget. Those entries were the *original* fix for
+// boss-kill phantom dismissal — the server would push LeaveGuestPlayer after
+// a boss kill and we'd intercept it. That fix was later REPLACED by the
+// runtime NOP patch at exe+0x44ef7b (commit 8c0f792, PatchPhantomReturnOnBossKill)
+// which prevents the boss-kill code from ever generating the dismiss event in
+// the first place. The block-list entries were left in place as vestigial
+// belt-and-suspenders, but it turned out they were catching DS2's normal
+// death/respawn flow as collateral damage: the death state machine sends a
+// LeaveSession-style round-trip and waits for the ack to advance to respawn.
+// Blocking it leaves the player permanently dead-but-not-respawning, with
+// the camera free to rotate around the corpse and the pause menu unable to
+// open (DS2's input arbiter is also waiting on the same round-trip).
+//
+// CURRENT POLICY: only block the messages tied to documented host-crash
+// bugs that have NO other fix:
+//   - DisconnectSession  : server-initiated forced disconnect
+//   - BanishPlayer       : server kicking us
+//   - RemoveSign / RejectSign : crystal/homeward bone host crash
+//     (commit dd10dea — phantom departs mid-session, server pushes sign
+//     teardown, host processes it as "phantom gone" and crashes)
+//
+// Phantom join/leave detection now happens AFTER the original parser runs
+// via OnPhantomJoined() / OnPhantomLeft() in ParseHook — those still fire
+// correctly because we let the message through.
 static bool IsIncomingDisconnect(const char* className) {
     if (!className) return false;
     if (strstr(className, "DisconnectSession")) return true;
-    if (strstr(className, "LeaveGuestPlayer")) return true;
-    if (strstr(className, "LeaveSession")) return true;
     if (strstr(className, "BanishPlayer")) return true;
-    if (strstr(className, "BreakInTarget")) return true;
-    if (strstr(className, "RemovePlayer")) return true;
     // When a phantom uses the Black Separation Crystal, the server sends
     // PushRequestRemoveSign to the host. The host's game processes this as
     // "phantom is gone" and tries to tear down the active session — crash.
-    // Block it so the host doesn't process the departure at all.
     if (strstr(className, "RemoveSign")) return true;
     // RejectSign can also carry a "phantom returned home" state that crashes
     // the host when processed mid-session.
@@ -224,6 +246,10 @@ static bool IsDeathMessage(const char* className) {
     if (strstr(className, "NotifyKillPlayer")) return true;
     return false;
 }
+
+// Forward declarations for helpers defined below ParseHook
+static void OnPhantomJoined();
+static void OnPhantomLeft();
 
 // ============================================================================
 // HOOKED: SerializeWithCachedSizesToArray
@@ -242,17 +268,12 @@ static uint8_t* __fastcall SerializeHook(void* thisPtr, uint8_t* target) {
             g_blockedCount++;
             LOG_INFO("[SEAMLESS] BLOCKED outgoing: %s (total: %u)", className, g_blockedCount.load());
 
-            // Let the serialize happen so the buffer advances correctly
-            // (returning target unchanged crashes the game's state machine).
-            // The message will serialize but we'll mark it for the network
-            // layer to drop. For now, let it serialize — the incoming block
-            // on the receiving side prevents the actual disconnect.
-            uint8_t* result = g_originalSerialize(thisPtr, target);
-            // Zero the serialized bytes so the message is corrupt/empty
-            if (result > target) {
-                memset(target, 0, result - target);
-            }
-            return result;
+            // Let the serialize run so the game's internal state stays consistent,
+            // but return the original target pointer so zero bytes are added to
+            // the output buffer. The network layer sees an empty message and skips it.
+            // Previous approach of memset-zeroing corrupted the protobuf stream.
+            g_originalSerialize(thisPtr, target);
+            return target;
         }
 
         if (IsDeathMessage(className)) {
@@ -276,8 +297,71 @@ static uint8_t* __fastcall SerializeHook(void* thisPtr, uint8_t* target) {
                  g_seamlessActive.load() ? "ON" : "OFF");
     }
 
+    // Capture call stack when the game tries to send LeaveGuestPlayer or LeaveSession
+    // This tells us which function initiates phantom removal after boss kills.
+    if (strstr(className, "LeaveGuestPlayer") || strstr(className, "LeaveSession")) {
+        // Walk the return addresses on the stack to find the caller chain
+        void* callers[16] = {};
+        USHORT frames = CaptureStackBackTrace(0, 16, callers, nullptr);
+        uintptr_t exeBase = (uintptr_t)GetModuleHandle(nullptr);
+        LOG_INFO("[CALLTRACE] %s initiated from (exe base: 0x%llX):", className, exeBase);
+        for (int i = 0; i < frames && i < 16; i++) {
+            uintptr_t addr = (uintptr_t)callers[i];
+            LOG_INFO("[CALLTRACE]   [%d] 0x%llX (exe+0x%llX)", i, addr, addr - exeBase);
+        }
+    }
+
     // Call original for all non-blocked messages
     return g_originalSerialize(thisPtr, target);
+}
+
+// Plain C helper — no C++ objects, safe for SEH.
+// Reads phantom name from NetSessionManager into buf (UTF-8, null-terminated).
+static void TryReadPhantomName(char* buf, int bufLen) {
+    uintptr_t nsm = DS2Coop::AddressResolver::GetInstance().GetNetSessionManager();
+    if (!nsm) return;
+    __try {
+        uintptr_t pp = 0;
+        if (!DS2Coop::Utils::Memory::Read<uintptr_t>(nsm + 0x20, &pp) || !pp) return;
+        wchar_t wname[24] = {};
+        for (int i = 0; i < 23; i++) {
+            wchar_t ch = 0;
+            if (!DS2Coop::Utils::Memory::Read<wchar_t>(pp + 0x234 + i*2, &ch) || ch == 0) break;
+            if (ch < 0x20 || ch > 0x9FFF) return;
+            wname[i] = ch;
+        }
+        if (wname[0])
+            WideCharToMultiByte(CP_UTF8, 0, wname, -1, buf, bufLen-1, nullptr, nullptr);
+    } __except(EXCEPTION_EXECUTE_HANDLER) {}
+}
+
+static std::atomic<int> g_phantomCounter{0};
+
+static void OnPhantomJoined() {
+    // Don't read name from NSM+0x20+0x234 — that's always the LOCAL player's name.
+    // Use a numbered placeholder. P2P handshake will update the name if it connects.
+    int num = ++g_phantomCounter;
+    char nameBuf[32];
+    snprintf(nameBuf, sizeof(nameBuf), "Phantom %d", num);
+
+    // Use a deterministic-ish ID that won't collide with the local player ID
+    uint64_t phantomId = static_cast<uint64_t>(GetTickCount64()) ^ (0xDE1F0000ULL + num);
+    LOG_INFO("[SEAMLESS] Phantom entered world: %s (id=%llu)", nameBuf, phantomId);
+    DS2Coop::Session::SessionManager::GetInstance().AddPlayer(phantomId, nameBuf);
+}
+
+static void OnPhantomLeft() {
+    LOG_INFO("[SEAMLESS] Phantom left world — removing from session");
+    auto& sm = DS2Coop::Session::SessionManager::GetInstance();
+    auto players = sm.GetPlayers();
+    auto* local = sm.GetLocalPlayer();
+    uint64_t localId = local ? local->playerId : 0;
+    for (const auto& p : players) {
+        if (p.playerId != localId) {
+            sm.RemovePlayer(p.playerId);
+            break;
+        }
+    }
 }
 
 // ============================================================================
@@ -293,10 +377,13 @@ static bool __fastcall ParseHook(void* thisPtr, void* data, int size) {
     if (result) {
         const char* className = GetRttiClassName(thisPtr);
 
-        // Log session-related incoming messages
+        // Log ALL session-related incoming messages (INFO level for debugging)
         if (strstr(className, "Session") || strstr(className, "Guest") ||
-            strstr(className, "Sign") || strstr(className, "BreakIn")) {
-            LOG_DEBUG("[PROTOBUF <<] %s (size: %d)", className, size);
+            strstr(className, "Sign") || strstr(className, "BreakIn") ||
+            strstr(className, "Summon") || strstr(className, "Push") ||
+            strstr(className, "Join") || strstr(className, "Leave") ||
+            strstr(className, "Phantom") || strstr(className, "Remove")) {
+            LOG_INFO("[PROTOBUF <<] %s (size: %d)", className, size);
         }
 
         // If we receive a disconnect push from the server while seamless is active,
@@ -310,6 +397,13 @@ static bool __fastcall ParseHook(void* thisPtr, void* data, int size) {
         // Sign filtering disabled — we're on a private server, no randoms.
         // The old filter rejected entire SignList responses if ANY sign
         // contained a Steam ID not in the whitelist, breaking sign visibility.
+
+        // Detect phantom joining/leaving world via DS2 soapstone summon.
+        // Handled in helper functions to avoid C2712 (__try + C++ objects).
+        if (strstr(className, "NotifyJoinGuestPlayer"))
+            OnPhantomJoined();
+        if (strstr(className, "NotifyLeaveGuestPlayer") || strstr(className, "LeaveGuestPlayer"))
+            OnPhantomLeft();
     }
 
     return result;
@@ -429,6 +523,8 @@ void ProtobufHooks::AddSessionSteamId(const std::string& steamId) {
 void ProtobufHooks::ClearSessionSteamIds() {
     std::lock_guard<std::mutex> lock(g_steamIdMutex);
     g_sessionSteamIds.clear();
+    g_phantomCounter.store(0);
+    g_blockedCount.store(0);
     LOG_INFO("[SEAMLESS] Cleared session Steam ID whitelist");
 }
 
