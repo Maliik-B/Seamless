@@ -46,6 +46,30 @@ extern "C" __declspec(dllexport) HRESULT WINAPI DirectInput8Create(
 }
 
 // ============================================================================
+// H-23: elevation check
+// ----------------------------------------------------------------------------
+// Returns true if the current process is running with an elevated token
+// (i.e. launched "as Administrator"). Fails CLOSED — if we can't query the
+// token for some reason, treat as elevated so the refusal path runs. This
+// is defense-in-depth, not a security boundary; the cost of a false
+// positive is just that the user reads the log to see why mod didn't load.
+// ============================================================================
+static bool IsProcessElevated() {
+    HANDLE hToken = nullptr;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+        return true;
+    }
+    TOKEN_ELEVATION elevation = {};
+    DWORD cbSize = sizeof(elevation);
+    bool elevated = true;
+    if (GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &cbSize)) {
+        elevated = (elevation.TokenIsElevated != 0);
+    }
+    CloseHandle(hToken);
+    return elevated;
+}
+
+// ============================================================================
 // DllMain
 // ============================================================================
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
@@ -61,6 +85,21 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         LOG_INFO("DLL Module Handle: 0x%p", hModule);
         LOG_INFO("Process ID: %lu", GetCurrentProcessId());
         LOG_INFO("========================================");
+
+        // H-23: refuse to install hooks if the host process is elevated.
+        // DS2 doesn't need Administrator, and loading our hooks into an
+        // elevated game enlarges attack surface without any benefit. The
+        // dinput8 proxy export above keeps working so the game proceeds
+        // vanilla — no error dialog, just no seamless co-op.
+        if (IsProcessElevated()) {
+            LOG_ERROR("========================================");
+            LOG_ERROR("REFUSING TO ATTACH: host process is ELEVATED.");
+            LOG_ERROR("DS2 does not need to be run as Administrator.");
+            LOG_ERROR("Close DS2, launch Steam as a normal user, and try again.");
+            LOG_ERROR("Game will continue without seamless co-op.");
+            LOG_ERROR("========================================");
+            break;
+        }
 
         HANDLE hThread = CreateThread(nullptr, 0, [](LPVOID) -> DWORD {
             LOG_INFO("Mod initialization thread started...");
