@@ -46,10 +46,13 @@ if not exist "%GAME_DIR%\DarkSoulsII.exe" (
     exit /b 1
 )
 
-:: Always update mod files (DLL + key) even if already installed
-copy /y "%~dp0dinput8.dll" "%GAME_DIR%\" >nul 2>&1
-copy /y "%~dp0ds2_server_public.key" "%GAME_DIR%\" >nul 2>&1
-echo   Mod files updated.
+:: H-32: hash-check before overwriting. Idempotent if already up to date;
+:: prompt the user if the installed file differs (could be another
+:: dinput8 mod, a different seamless build, or leftover from elsewhere).
+call :sync_file "%~dp0dinput8.dll"            "%GAME_DIR%\dinput8.dll"            "Seamless co-op DLL (dinput8.dll)"
+if errorlevel 1 exit /b 1
+call :sync_file "%~dp0ds2_server_public.key"  "%GAME_DIR%\ds2_server_public.key"  "Host public key (ds2_server_public.key)"
+if errorlevel 1 exit /b 1
 
 :: Check if already configured with a host IP
 if exist "%GAME_DIR%\ds2_seamless_coop.ini" (
@@ -96,3 +99,60 @@ start steam://rungameid/335300
 echo.
 echo   Press INSERT in-game for the co-op menu.
 timeout /t 5 >nul
+exit /b 0
+
+:: ---------------------------------------------------------------------------
+:: sync_file  %1=source path  %2=destination path  %3=human-readable label
+::
+:: If destination is missing: copy silently (first install).
+:: If destination matches source by SHA-256: no-op (idempotent).
+:: If destination differs: show both hashes and prompt for overwrite.
+::                         y -> overwrite, exit /b 0
+::                         anything else -> abort, exit /b 1
+:: Implements ticket H-32 (closes phase-0 forensic finding F-7).
+:: ---------------------------------------------------------------------------
+:sync_file
+    set "SYNC_SRC=%~1"
+    set "SYNC_DST=%~2"
+    set "SYNC_LABEL=%~3"
+    set "SYNC_SRC_HASH="
+    set "SYNC_DST_HASH="
+
+    if not exist "%SYNC_DST%" (
+        copy /y "%SYNC_SRC%" "%SYNC_DST%" >nul
+        echo   %SYNC_LABEL%: installed.
+        exit /b 0
+    )
+
+    :: certutil prints a header line, the hash, then a footer. The hash is
+    :: the only line of pure hex chars; findstr /r anchors to that shape.
+    for /f "tokens=*" %%H in ('certutil -hashfile "%SYNC_SRC%" SHA256 ^| findstr /r "^[0-9a-fA-F][0-9a-fA-F]*$"') do (
+        if not defined SYNC_SRC_HASH set "SYNC_SRC_HASH=%%H"
+    )
+    for /f "tokens=*" %%H in ('certutil -hashfile "%SYNC_DST%" SHA256 ^| findstr /r "^[0-9a-fA-F][0-9a-fA-F]*$"') do (
+        if not defined SYNC_DST_HASH set "SYNC_DST_HASH=%%H"
+    )
+
+    if /i "%SYNC_SRC_HASH%"=="%SYNC_DST_HASH%" (
+        echo   %SYNC_LABEL%: already up to date.
+        exit /b 0
+    )
+
+    echo.
+    echo   %SYNC_LABEL%
+    echo     differs from the file already in your DS2 folder.
+    echo     Installed: %SYNC_DST_HASH%
+    echo     Bundled:   %SYNC_SRC_HASH%
+    echo.
+    echo   This may be another dinput8 mod, a different seamless build,
+    echo   or a leftover from a previous install. Overwriting will
+    echo   replace it with the version bundled in this joiner zip.
+    echo.
+    set /p SYNC_OVERWRITE="   Overwrite? [y/N]: "
+    if /i not "%SYNC_OVERWRITE%"=="y" (
+        echo   Aborted. No files modified.
+        exit /b 1
+    )
+    copy /y "%SYNC_SRC%" "%SYNC_DST%" >nul
+    echo   %SYNC_LABEL%: updated.
+    exit /b 0

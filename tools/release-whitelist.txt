@@ -1,0 +1,43 @@
+# DS2 Seamless Co-op — release-bundle whitelist (H-08)
+# ---------------------------------------------------------------------------
+# Every file that ships in a release zip must appear below. The checker
+# tools/check-release-whitelist.ps1 fails CI if a bundle contains anything
+# not on this list. New files require a code-review-visible change here.
+#
+# Format:
+#   [joiner] / [host]      Section header. Paths below are bundle-relative
+#                          (i.e. relative to dist/joiner or dist/host).
+#   #                      Comment.
+#   <blank line>           Ignored.
+#   path/to/file           Whitelisted entry. Forward slashes; case-
+#                          insensitive on Windows.
+#   path/to/file  (built)  Whitelisted entry that is produced by the build
+#                          and may be absent from the source dist/ tree
+#                          until packaging copies it in. The checker still
+#                          rejects extras even with these absent.
+#
+# When you add a file to a release bundle, add it here in the same PR.
+# ---------------------------------------------------------------------------
+
+[joiner]
+dinput8.dll  (built)
+JoinGame.bat
+README.txt
+ds2_seamless_coop.ini
+ds2_server_public.key
+uninstall.cmd
+
+[host]
+StartServer.bat
+ds2_seamless_coop.ini
+ds2_server_public.key
+Server/Server.exe  (built)
+Server/steam_api64.dll  (built)
+Server/steam_appid.txt
+Server/Saved/default/config.json
+Server/Saved/default/public.key
+Server/WebUI/Static/index.html
+Server/WebUI/Static/css/dialog-polyfill.css
+Server/WebUI/Static/css/main.css
+Server/WebUI/Static/js/dialog-polyfill.js
+Server/WebUI/Static/js/main.js

@@ -19,6 +19,7 @@
 #include <fstream>
 #include <chrono>
 #include <utility>
+#include <vector>
 
 using namespace DS2Coop;
 using namespace DS2Coop::Utils;
@@ -265,6 +266,82 @@ void SeamlessCoopMod::Shutdown() {
     LOG_INFO("Mod shutdown complete");
 }
 
+// ============================================================================
+// H-20 — Emergency disable
+// ----------------------------------------------------------------------------
+// Triggered by the user's panic hotkey (Ctrl+Shift+End by default). The user
+// hit issue #1/#5/#6 territory (bonfire crash, soapstone stuck, can't respawn)
+// and wants to revert to vanilla *now*, without alt-F4. We keep the DLL
+// loaded (the dinput8 proxy stays up) so the game keeps running — we just
+// undo our modifications.
+//
+// Order matters:
+//   1. Latch m_emergencyDisabled (idempotency + signals consumers).
+//   2. SetSeamlessActive(false) — protobuf hooks become pass-through, no
+//      more disconnect blocking.
+//   3. Sleep 60ms (one update-thread tick at 20Hz) — lets any in-flight
+//      EnableSummoning / sync write complete.
+//   4. PlayerSync::RevertStickyWrites — restore TeamType, PhantomType,
+//      ChrNetworkPhantomId, bonfire bits, AllottedTime to their snapshotted
+//      originals; latches PlayerSync so further calls are no-ops.
+//   5. Tear down disconnect-blocking + connection hooks (but NOT
+//      HookManager::Shutdown — that would also kill the Present hook in the
+//      renderer, and we need it alive to show the overlay banner below).
+//   6. Close the UDP listener (PeerManager::Shutdown).
+//   7. Banner.
+//
+// MUST NOT be called from the Present hook itself — we tear down sibling
+// MinHook targets and shut down subsystems that touch the render thread.
+// The caller in renderer.cpp spawns a one-shot thread for this.
+// ============================================================================
+void SeamlessCoopMod::EmergencyDisable() {
+    if (m_emergencyDisabled) {
+        LOG_INFO("EmergencyDisable: already latched, ignoring");
+        return;
+    }
+    m_emergencyDisabled = true;
+
+    LOG_INFO("==========================================");
+    LOG_INFO("H-20 EMERGENCY DISABLE TRIGGERED");
+    LOG_INFO("==========================================");
+
+    // Step 2: stop blocking disconnect messages.
+    LOG_INFO("EmergencyDisable: clearing seamless-active flag");
+    Hooks::ProtobufHooks::SetSeamlessActive(false);
+
+    // Step 3: drain in-flight writes from the update loop.
+    Sleep(60);
+
+    // Step 4: revert sticky memory writes.
+    {
+        size_t n = Sync::PlayerSync::GetInstance().StickyWriteCount();
+        LOG_INFO("EmergencyDisable: reverting %zu sticky writes", n);
+        Sync::PlayerSync::GetInstance().RevertStickyWrites();
+    }
+
+    // Step 5: uninstall disconnect / connection / game-state hooks.
+    // (Keep MinHook alive so the Present hook keeps rendering the overlay.)
+    LOG_INFO("EmergencyDisable: uninstalling protobuf/Winsock/GameState hooks");
+    Hooks::ProtobufHooks::UninstallHooks();
+    Hooks::WinsockHooks::UninstallHooks();
+    Hooks::GameState::UninstallHooks();
+
+    // Step 6: shut down session + UDP listener.
+    LOG_INFO("EmergencyDisable: shutting down session + peer manager");
+    Session::SessionManager::GetInstance().Shutdown();
+    Network::PeerManager::GetInstance().Shutdown();
+
+    // Step 7: overlay banner. Long duration so it sticks until the user
+    // closes the game. (Notification list is bounded; a long-lived item is
+    // fine — see renderer's notification render path.)
+    UI::Overlay::GetInstance().ShowNotification(
+        "Seamless co-op DISABLED — restart the game to re-enable", 600.0f);
+
+    LOG_INFO("==========================================");
+    LOG_INFO("EMERGENCY DISABLE COMPLETE — vanilla mode");
+    LOG_INFO("==========================================");
+}
+
 bool SeamlessCoopMod::DetectGameVersion() {
     LOG_INFO("Detecting game version...");
 
@@ -334,6 +411,8 @@ void SeamlessCoopMod::LoadConfig() {
                     m_config.server_port = static_cast<uint16_t>(std::stoi(value));
                 } else if (key == "use_custom_server") {
                     m_config.use_custom_server = (value == "true" || value == "1");
+                } else if (key == "emergency_disable_hotkey") {
+                    if (!value.empty()) m_config.emergency_disable_hotkey = value;
                 }
             }
         }
@@ -366,6 +445,15 @@ void SeamlessCoopMod::SaveConfig() {
         configFile << "use_custom_server=" << (m_config.use_custom_server ? "true" : "false") << "\n";
         configFile << "server_ip=" << m_config.server_ip << "\n";
         configFile << "server_port=" << m_config.server_port << "\n";
+        configFile << "\n# H-20: panic hotkey — reverts sticky writes, uninstalls hooks,\n";
+        configFile << "# closes UDP listener, keeps DLL loaded (game runs vanilla).\n";
+        configFile << "# Format: \"Mod+Mod+Key\" — Ctrl/Shift/Alt + A-Z, 0-9, F1-F24,\n";
+        configFile << "# End, Home, Insert, Delete, PageUp, PageDown, Escape.\n";
+        configFile << "emergency_disable_hotkey=" << m_config.emergency_disable_hotkey << "\n";
         configFile.close();
     }
 }
+
+// H-17: DS2Coop::ParseHotkey body lives in src/core_lib/hotkey_parser.cpp
+// so it can be exercised from the host-side test exe under ASan. Declaration
+// remains in include/mod.h.

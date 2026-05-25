@@ -16,10 +16,67 @@
 #include "../../include/utils.h"
 #include <chrono>
 #include <cfloat>
+#include <cstring>
+#include <mutex>
+#include <unordered_map>
 
 using namespace DS2Coop::Sync;
 using namespace DS2Coop::Utils;
 using namespace DS2Coop::Addresses;
+
+// ============================================================================
+// H-20: sticky-write snapshot registry
+// ----------------------------------------------------------------------------
+// EnableSummoning() and MaxPhantomTimer() repeatedly poke game memory to keep
+// the local player visible as a host (TeamType=0), keep bonfire bits set,
+// keep the phantom timer maxed, etc. The H-20 emergency-disable hotkey needs
+// to undo all of that. We can't snapshot "at hook install" because most of
+// these addresses are discovered dynamically (heap scan, deref chain). The
+// model is snapshot-on-first-touch: every sticky write goes through
+// SnapshotWrite<T>(addr, newVal), which records the original value the FIRST
+// time it sees an address and then writes the new value. RevertStickyWrites
+// walks the map and restores originals.
+//
+// After RevertStickyWrites runs, g_emergencyLatched stays true so subsequent
+// EnableSummoning / MaxPhantomTimer calls become no-ops — important because
+// PlayerSync::Update is still ticking from the session-manager loop.
+// ============================================================================
+namespace {
+
+struct StickyEntry {
+    uint8_t size;     // 1, 2, 4, or 8 — number of bytes in `bytes`
+    uint8_t bytes[8]; // original value (little-endian raw)
+};
+
+std::mutex                                  g_stickyMu;
+std::unordered_map<uintptr_t, StickyEntry>  g_stickyOriginals;
+bool                                        g_emergencyLatched = false;
+
+template<typename T>
+bool SnapshotWrite(uintptr_t addr, const T& newVal) {
+    static_assert(sizeof(T) <= 8, "SnapshotWrite only supports up to 8 bytes");
+
+    {
+        std::lock_guard<std::mutex> lk(g_stickyMu);
+        if (g_emergencyLatched) return false;  // post-revert: ignore further writes
+
+        if (g_stickyOriginals.find(addr) == g_stickyOriginals.end()) {
+            T original{};
+            if (!Memory::Read<T>(addr, &original)) {
+                // Can't snapshot — refuse to write, so we never have an
+                // untracked sticky modification we couldn't revert.
+                return false;
+            }
+            StickyEntry e{};
+            e.size = static_cast<uint8_t>(sizeof(T));
+            std::memcpy(e.bytes, &original, sizeof(T));
+            g_stickyOriginals[addr] = e;
+        }
+    }
+    return Memory::Write<T>(addr, newVal);
+}
+
+} // namespace
 
 PlayerSync& PlayerSync::GetInstance() {
     static PlayerSync instance;
@@ -733,6 +790,8 @@ bool PlayerSync::GrantSoapstones() {
 // Max out phantom AllottedTime so the summon never expires
 // ============================================================================
 bool PlayerSync::MaxPhantomTimer() {
+    if (IsEmergencyLatched()) return false;  // H-20: post-revert no-op
+
     auto& resolver = DS2Coop::AddressResolver::GetInstance();
     uintptr_t netSession = resolver.GetNetSessionManager();
     if (!netSession) {
@@ -747,9 +806,10 @@ bool PlayerSync::MaxPhantomTimer() {
         return false;
     }
 
-    // Set AllottedTime to a huge value (float, in seconds)
+    // Set AllottedTime to a huge value (float, in seconds). H-20: routed
+    // through SnapshotWrite so the original is restored on emergency disable.
     float maxTime = 99999.0f;
-    if (Memory::Write<float>(sessionPtr + Offsets::NetSession::AllottedTime, maxTime)) {
+    if (SnapshotWrite<float>(sessionPtr + Offsets::NetSession::AllottedTime, maxTime)) {
         LOG_DEBUG("MaxPhantomTimer: AllottedTime set to %.0f", maxTime);
         return true;
     }
@@ -765,6 +825,7 @@ bool PlayerSync::MaxPhantomTimer() {
 // ============================================================================
 void PlayerSync::EnableSummoning() {
     if (!DS2Coop::Hooks::ProtobufHooks::IsSeamlessActive()) return;
+    if (IsEmergencyLatched()) return;  // H-20: post-revert no-op
 
     auto& resolver = DS2Coop::AddressResolver::GetInstance();
     uintptr_t gmImp = resolver.GetGameManagerImp();
@@ -786,7 +847,7 @@ void PlayerSync::EnableSummoning() {
             uint16_t val = 0;
             if (Memory::Read<uint16_t>(s_teamTypeAddr, &val)) {
                 if (val == 513 || val == 514 || val == 515 || val == 516) {
-                    Memory::Write<uint16_t>(s_teamTypeAddr, (uint16_t)0);
+                    SnapshotWrite<uint16_t>(s_teamTypeAddr, (uint16_t)0);
                     if (!s_teamTypeLogged) {
                         LOG_INFO("TeamType PATCHED to Host (was %u) at 0x%llX", val, s_teamTypeAddr);
                         s_teamTypeLogged = true;
@@ -823,7 +884,7 @@ void PlayerSync::EnableSummoning() {
                 for (uintptr_t offset = 0; offset < 0x10000; offset += 2) {
                     uint16_t val = 0;
                     if (Memory::Read<uint16_t>(base + offset, &val) && val == 513) {
-                        Memory::Write<uint16_t>(base + offset, (uint16_t)0);
+                        SnapshotWrite<uint16_t>(base + offset, (uint16_t)0);
                         uint16_t check = 0;
                         Memory::Read<uint16_t>(base + offset, &check);
                         if (check == 0) {
@@ -857,7 +918,7 @@ void PlayerSync::EnableSummoning() {
             if (Memory::Read<uintptr_t>(netSession + Offsets::NetSession::PlayerPointer, &playerPtr) && playerPtr) {
                 uint32_t phantomField = 0;
                 if (Memory::Read<uint32_t>(playerPtr + 0x1F4, &phantomField) && phantomField != 0) {
-                    Memory::Write<uint32_t>(playerPtr + 0x1F4, (uint32_t)0);
+                    SnapshotWrite<uint32_t>(playerPtr + 0x1F4, (uint32_t)0);
                     LOG_INFO("EnableSummoning: Phantom field zeroed (was %u) via [NSM+0x20]+0x1F4", phantomField);
                 }
             }
@@ -887,7 +948,7 @@ void PlayerSync::EnableSummoning() {
                 if (Memory::Read<uint32_t>(ptr_b8 + 0x4C8, &flags)) {
                     uint32_t newFlags = flags | (1u << 4) | (1u << 5);
                     if (newFlags != flags) {
-                        Memory::Write<uint32_t>(ptr_b8 + 0x4C8, newFlags);
+                        SnapshotWrite<uint32_t>(ptr_b8 + 0x4C8, newFlags);
                         LOG_INFO("EnableSummoning: isBonfireStart/Loop bits set (0x%X -> 0x%X)", flags, newFlags);
                     }
                 }
@@ -905,7 +966,7 @@ void PlayerSync::EnableSummoning() {
             if (Memory::Read<uintptr_t>(ptr_d0 + 0xB0, &ptr_b0) && ptr_b0) {
                 uint8_t phantomId = 0;
                 if (Memory::Read<uint8_t>(ptr_b0 + 0x3C, &phantomId) && phantomId != 0) {
-                    Memory::Write<uint8_t>(ptr_b0 + 0x3C, (uint8_t)0);
+                    SnapshotWrite<uint8_t>(ptr_b0 + 0x3C, (uint8_t)0);
                     LOG_INFO("EnableSummoning: ChrNetworkPhantomId zeroed (was %u) — solid appearance", phantomId);
                 }
             }
@@ -915,4 +976,81 @@ void PlayerSync::EnableSummoning() {
 
 std::string PlayerSync::GetLocalCharacterName() {
     return ReadCharacterName();
+}
+
+// ============================================================================
+// H-20 — emergency revert
+// ----------------------------------------------------------------------------
+// Walk the snapshot map and restore each address to its original value, then
+// latch g_emergencyLatched so further EnableSummoning / MaxPhantomTimer calls
+// become no-ops (PlayerSync::Update keeps ticking from the session-manager
+// loop; we don't tear that down).
+//
+// Errors are not fatal: if an address has become invalid (player left the
+// session, memory freed), Memory::Write returns false and we log + skip.
+// Idempotent: calling it twice does no harm.
+// ============================================================================
+void PlayerSync::RevertStickyWrites() {
+    std::lock_guard<std::mutex> lk(g_stickyMu);
+
+    if (g_emergencyLatched && g_stickyOriginals.empty()) {
+        return;  // already reverted
+    }
+
+    size_t total = g_stickyOriginals.size();
+    size_t ok = 0, fail = 0;
+
+    for (const auto& kv : g_stickyOriginals) {
+        uintptr_t addr = kv.first;
+        const StickyEntry& e = kv.second;
+        bool wrote = false;
+
+        switch (e.size) {
+        case 1: {
+            uint8_t v;  std::memcpy(&v, e.bytes, 1);
+            wrote = Memory::Write<uint8_t>(addr, v);
+            break;
+        }
+        case 2: {
+            uint16_t v; std::memcpy(&v, e.bytes, 2);
+            wrote = Memory::Write<uint16_t>(addr, v);
+            break;
+        }
+        case 4: {
+            uint32_t v; std::memcpy(&v, e.bytes, 4);
+            wrote = Memory::Write<uint32_t>(addr, v);
+            break;
+        }
+        case 8: {
+            uint64_t v; std::memcpy(&v, e.bytes, 8);
+            wrote = Memory::Write<uint64_t>(addr, v);
+            break;
+        }
+        default:
+            break;
+        }
+
+        if (wrote) {
+            ok++;
+        } else {
+            fail++;
+            LOG_WARNING("RevertStickyWrites: failed to restore addr 0x%llX (size %u)",
+                        (unsigned long long)addr, (unsigned)e.size);
+        }
+    }
+
+    g_stickyOriginals.clear();
+    g_emergencyLatched = true;
+
+    LOG_INFO("RevertStickyWrites: %zu/%zu restored, %zu failed", ok, total, fail);
+}
+
+size_t PlayerSync::StickyWriteCount() const {
+    std::lock_guard<std::mutex> lk(g_stickyMu);
+    return g_stickyOriginals.size();
+}
+
+bool PlayerSync::IsEmergencyLatched() const {
+    std::lock_guard<std::mutex> lk(g_stickyMu);
+    return g_emergencyLatched;
 }

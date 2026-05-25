@@ -20,13 +20,14 @@
 #include "../../include/hooks.h"
 #include "../../include/ui.h"
 #include "../../include/utils.h"
+#include "../core_lib/packet_parse.h"  // H-17: ParseIncomingPacket
 #include <chrono>
 #include <algorithm>
 
 using namespace DS2Coop::Network;
 using namespace DS2Coop::Utils;
 
-constexpr uint32_t PACKET_MAGIC = 0x44533243; // 'DS2C'
+// PACKET_MAGIC now lives in include/packet_types.h (H-17).
 constexpr uint64_t HEARTBEAT_INTERVAL_MS = 5000;
 constexpr uint64_t TIMEOUT_DURATION_MS = 60000; // 60s — peers on Hamachi can have bursty latency
 
@@ -303,11 +304,14 @@ void PeerManager::HandleIncomingPackets() {
             break;
         }
 
-        if (pkt.size >= static_cast<int>(sizeof(PacketHeader))) {
-            PacketHeader* hdr = reinterpret_cast<PacketHeader*>(pkt.data);
-            if (hdr->magic == PACKET_MAGIC) {
-                packets.push_back(pkt);
-            }
+        // H-17: validate header (magic + size <= buflen + per-opcode floor)
+        // before forwarding. Closes a latent OOB-read where PacketHandler
+        // would reinterpret_cast based on the attacker-controlled
+        // header->size field.
+        if (pkt.size > 0 && DS2Coop::Network::ParseIncomingPacket(
+                reinterpret_cast<const uint8_t*>(pkt.data),
+                static_cast<std::size_t>(pkt.size)).has_value()) {
+            packets.push_back(pkt);
         }
     }
 
