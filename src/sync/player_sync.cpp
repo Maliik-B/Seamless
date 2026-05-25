@@ -83,6 +83,225 @@ PlayerSync& PlayerSync::GetInstance() {
     return instance;
 }
 
+// ============================================================================
+// NOP the boss-kill phantom return call in the exe.
+//
+// Ghidra analysis (2026-04-04):
+//   FUN_14044ef30 is the event dispatch. Line 12 calls FUN_140191bb0
+//   which creates EventPhantomReturn objects and sends all phantoms home.
+//   The CALL instruction is at exe+0x44ef7b (5 bytes: e8 30 2c d4 ff).
+//   NOPing it prevents the game from dismissing phantoms on boss death.
+// ============================================================================
+static void PatchPhantomReturnOnBossKill() {
+    uintptr_t exeBase = (uintptr_t)GetModuleHandle(nullptr);
+    uintptr_t callAddr = exeBase + 0x44ef7b;
+
+    // Verify the bytes match the expected CALL instruction
+    uint8_t expected[] = { 0xe8, 0x30, 0x2c, 0xd4, 0xff };
+    uint8_t actual[5] = {};
+
+    __try {
+        memcpy(actual, (void*)callAddr, 5);
+    } __except(EXCEPTION_EXECUTE_HANDLER) {
+        LOG_ERROR("PatchPhantomReturn: cannot read exe at 0x%llX", callAddr);
+        return;
+    }
+
+    if (memcmp(actual, expected, 5) != 0) {
+        // Bytes don't match — might be a different exe version or already patched
+        LOG_WARNING("PatchPhantomReturn: bytes at exe+0x44ef7b don't match expected CALL "
+                    "(got %02X %02X %02X %02X %02X, expected e8 30 2c d4 ff) — skipping",
+                    actual[0], actual[1], actual[2], actual[3], actual[4]);
+        // Check if already NOPed
+        uint8_t nops[] = { 0x90, 0x90, 0x90, 0x90, 0x90 };
+        if (memcmp(actual, nops, 5) == 0) {
+            LOG_INFO("PatchPhantomReturn: already patched (NOPs)");
+        }
+        return;
+    }
+
+    // Make the page writable, write NOPs, restore protection
+    DWORD oldProtect = 0;
+    if (!VirtualProtect((void*)callAddr, 5, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+        LOG_ERROR("PatchPhantomReturn: VirtualProtect failed (error %u)", GetLastError());
+        return;
+    }
+
+    memset((void*)callAddr, 0x90, 5);  // 5x NOP
+    VirtualProtect((void*)callAddr, 5, oldProtect, &oldProtect);
+
+    LOG_INFO("PatchPhantomReturn: PATCHED exe+0x44ef7b — boss kill will no longer dismiss phantoms");
+}
+
+// ============================================================================
+// NOP the per-phantom dismissal CALLs inside FUN_140191bb0.
+//
+// Ghidra analysis (2026-04-06):
+//   The previous PatchPhantomReturnOnBossKill NOPed the entire CALL to
+//   FUN_140191bb0 at exe+0x44ef7b. That broke death/respawn because
+//   FUN_140191bb0 sets a completion flag at [RSI+0x24]=1 in its epilogue
+//   that the death state machine waits for. Skipping the whole call left
+//   the player permanently dead-but-not-respawning, with the pause menu
+//   unable to open.
+//
+//   The fix is more surgical: NOP only the per-phantom dismissal CALLs
+//   INSIDE FUN_140191bb0's two iteration loops. The function still runs,
+//   the loops still iterate (they just do nothing per phantom), and the
+//   epilogue still sets the completion flag. Death proceeds normally,
+//   boss kills no longer dismiss phantoms.
+//
+//   FUN_140191bb0 structure (Ghidra disassembly):
+//     +0x191bb0  prologue, allocates EventPhantomReturn objects
+//     +0x191c80  loop 1: for each phantom in [RSI+0x28..+0x30]:
+//     +0x191c87    CALL FUN_140190410       <-- DISMISSAL CALL #1
+//     +0x191c8c    advance pointer
+//     +0x191c93    loop back
+//     +0x191d10  loop 2: for each phantom in [RSI+0x48..+0x50]:
+//     +0x191d17    CALL FUN_14018dea0       <-- DISMISSAL CALL #2
+//     +0x191d1c    advance pointer
+//     +0x191d23    loop back
+//     +0x191d8d  MOV byte ptr [RSI+0x24],0x1  <-- COMPLETION FLAG (must run)
+//     +0x191d98  RET
+//
+//   Both CALLs are 5-byte near calls (E8 + 4-byte rel32). NOPing them
+//   leaves the loops intact but turns each iteration into a no-op.
+//
+// Confirmed by ghidra_phantom_return_results.txt (Apr 6 run).
+// ============================================================================
+static void PatchPhantomDismissalLoops() {
+    uintptr_t exeBase = (uintptr_t)GetModuleHandle(nullptr);
+
+    struct PatchSite {
+        const char* label;
+        uintptr_t offset;
+    };
+
+    PatchSite sites[] = {
+        { "loop1 dismissal", 0x191c87 },  // CALL FUN_140190410
+        { "loop2 dismissal", 0x191d17 },  // CALL FUN_14018dea0
+    };
+
+    for (auto& site : sites) {
+        uintptr_t addr = exeBase + site.offset;
+        uint8_t actual[5] = {};
+
+        __try {
+            memcpy(actual, (void*)addr, 5);
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
+            LOG_ERROR("PatchDismissal: cannot read exe at 0x%llX (%s)", addr, site.label);
+            continue;
+        }
+
+        // Already-patched check (5x NOP)
+        uint8_t nops[] = { 0x90, 0x90, 0x90, 0x90, 0x90 };
+        if (memcmp(actual, nops, 5) == 0) {
+            LOG_INFO("PatchDismissal: %s at exe+0x%llX already NOPed", site.label, site.offset);
+            continue;
+        }
+
+        // Verify first byte is a near CALL (E8). We don't verify the
+        // full 4-byte offset because Ghidra base relocation may differ
+        // from runtime — but the opcode E8 is the discriminator.
+        if (actual[0] != 0xe8) {
+            LOG_WARNING("PatchDismissal: %s at exe+0x%llX expected CALL (E8), got %02X — skipping",
+                        site.label, site.offset, actual[0]);
+            continue;
+        }
+
+        DWORD oldProtect = 0;
+        if (!VirtualProtect((void*)addr, 5, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+            LOG_ERROR("PatchDismissal: VirtualProtect failed at 0x%llX (error %u)",
+                      addr, GetLastError());
+            continue;
+        }
+
+        memset((void*)addr, 0x90, 5);
+        VirtualProtect((void*)addr, 5, oldProtect, &oldProtect);
+
+        LOG_INFO("PatchDismissal: PATCHED %s at exe+0x%llX (NOPed dismissal call)",
+                 site.label, site.offset);
+    }
+}
+
+// ============================================================================
+// Increase the player cap from 3 to 6.
+//
+// Ghidra analysis (2026-04-04):
+//   FUN_1406ab050 is the JoinGuestPlayer message handler.
+//   At exe+0x6ab0b6: MOV dword ptr [RBP+local_6c], 0x3 (c7 45 c3 03 00 00 00)
+//   The 0x03 byte at exe+0x6ab0b9 is the player cap.
+//   Changing it to 0x06 allows up to 6 players.
+// ============================================================================
+static void PatchPlayerCap() {
+    uintptr_t exeBase = (uintptr_t)GetModuleHandle(nullptr);
+    // The full instruction is: c7 45 c3 03 00 00 00
+    // We verify the full 7 bytes but only change the 03 to 06
+    uintptr_t instrAddr = exeBase + 0x6ab0b6;
+
+    uint8_t expected[] = { 0xc7, 0x45, 0xc3, 0x03, 0x00, 0x00, 0x00 };
+    uint8_t actual[7] = {};
+
+    __try {
+        memcpy(actual, (void*)instrAddr, 7);
+    } __except(EXCEPTION_EXECUTE_HANDLER) {
+        LOG_ERROR("PatchPlayerCap: cannot read exe at 0x%llX", instrAddr);
+        return;
+    }
+
+    if (memcmp(actual, expected, 7) != 0) {
+        // Check if already patched (03 -> 06)
+        uint8_t patched[] = { 0xc7, 0x45, 0xc3, 0x06, 0x00, 0x00, 0x00 };
+        if (memcmp(actual, patched, 7) == 0) {
+            LOG_INFO("PatchPlayerCap: already patched (cap=6)");
+            return;
+        }
+        LOG_WARNING("PatchPlayerCap: bytes at exe+0x6ab0b6 don't match expected "
+                    "(got %02X %02X %02X %02X %02X %02X %02X) - skipping",
+                    actual[0], actual[1], actual[2], actual[3],
+                    actual[4], actual[5], actual[6]);
+        return;
+    }
+
+    DWORD oldProtect = 0;
+    if (!VirtualProtect((void*)instrAddr, 7, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+        LOG_ERROR("PatchPlayerCap: VirtualProtect failed (error %u)", GetLastError());
+        return;
+    }
+
+    // Change 0x03 to 0x06 at the immediate value position
+    *((uint8_t*)(instrAddr + 3)) = 0x06;
+    VirtualProtect((void*)instrAddr, 7, oldProtect, &oldProtect);
+
+    LOG_INFO("PatchPlayerCap: PATCHED exe+0x6ab0b9 (local_6c 3->6)");
+
+    // Second patch: the 0x3 written into the protobuf message struct at [RBX+0x1c]
+    // 1406ab15b: c7 43 1c 03 00 00 00  MOV dword ptr [RBX+0x1c], 0x3
+    uintptr_t msgAddr = exeBase + 0x6ab15b;
+    uint8_t expected2[] = { 0xc7, 0x43, 0x1c, 0x03, 0x00, 0x00, 0x00 };
+    uint8_t actual2[7] = {};
+
+    __try {
+        memcpy(actual2, (void*)msgAddr, 7);
+    } __except(EXCEPTION_EXECUTE_HANDLER) {
+        LOG_WARNING("PatchPlayerCap: cannot read second patch addr 0x%llX", msgAddr);
+        return;
+    }
+
+    if (memcmp(actual2, expected2, 7) == 0) {
+        DWORD oldProtect2 = 0;
+        VirtualProtect((void*)msgAddr, 7, PAGE_EXECUTE_READWRITE, &oldProtect2);
+        *((uint8_t*)(msgAddr + 3)) = 0x06;
+        VirtualProtect((void*)msgAddr, 7, oldProtect2, &oldProtect2);
+        LOG_INFO("PatchPlayerCap: PATCHED exe+0x6ab15e ([RBX+0x1c] 3->6) - protobuf MaxPlayers=6");
+    } else {
+        uint8_t patched2[] = { 0xc7, 0x43, 0x1c, 0x06, 0x00, 0x00, 0x00 };
+        if (memcmp(actual2, patched2, 7) == 0)
+            LOG_INFO("PatchPlayerCap: second patch already applied");
+        else
+            LOG_WARNING("PatchPlayerCap: second patch bytes mismatch at exe+0x6ab15b - skipping");
+    }
+}
+
 bool PlayerSync::Initialize() {
     if (m_initialized) return true;
 
@@ -96,6 +315,18 @@ bool PlayerSync::Initialize() {
         LOG_INFO("Player sync will read from GameManagerImp at 0x%p",
                  reinterpret_cast<void*>(resolver.GetGameManagerImp()));
     }
+
+    // Patch out boss-kill phantom dismissal — surgical version.
+    // The old PatchPhantomReturnOnBossKill() NOPed the whole call to
+    // FUN_140191bb0 and broke death/respawn because that function's
+    // epilogue sets a completion flag the death state machine waits for.
+    // PatchPhantomDismissalLoops() instead NOPs only the per-phantom
+    // dismissal CALLs inside FUN_140191bb0's two iteration loops, so
+    // the function still runs to completion and sets the flag.
+    PatchPhantomDismissalLoops();
+
+    // Increase player cap from 3 to 6
+    PatchPlayerCap();
 
     m_initialized = true;
     LOG_INFO("Player sync initialized");
@@ -169,25 +400,51 @@ static bool TryReadNameBuffer(uintptr_t addr, wchar_t* buf, int maxChars) {
     }
 }
 
-static std::string ReadCharacterName() {
-    // Try NetSessionManager → [+0x20] → +0x234 (wchar_t[32], Bob Edition CT)
-    auto& resolver = DS2Coop::AddressResolver::GetInstance();
-    uintptr_t netSession = resolver.GetNetSessionManager();
-    if (!netSession) return "";
-
-    uintptr_t playerPtr = 0;
-    if (!Memory::Read<uintptr_t>(netSession + Offsets::NetSession::PlayerPointer, &playerPtr) || !playerPtr)
-        return "";
-
+static std::string TryReadNameFrom(uintptr_t addr, const char* source) {
     wchar_t nameBuf[32] = {};
-    if (!TryReadNameBuffer(playerPtr + Offsets::NetSession::PlayerName, nameBuf, 31))
-        return "";
-
+    if (!TryReadNameBuffer(addr, nameBuf, 31)) return "";
+    if (nameBuf[0] == 0) return "";
     std::string result = WcharToUtf8(nameBuf);
-    if (!result.empty()) {
-        LOG_INFO("[NAME] Character name from NetSession: %s", result.c_str());
-    }
+    if (!result.empty())
+        LOG_INFO("[NAME] Character name from %s: %s", source, result.c_str());
     return result;
+}
+
+static std::string ReadCharacterName() {
+    auto& resolver = DS2Coop::AddressResolver::GetInstance();
+    uintptr_t gmImp = resolver.GetGameManagerImp();
+    uintptr_t netSession = resolver.GetNetSessionManager();
+
+    // PATH 1: GMImp → [+0xA8] → +0x114 (wchar_t, LOCAL player's own name)
+    // Confirmed by Bob Edition CT + DS2S-META: OFLD(ANYSOTFS, STRBASEA, 0xa8, 0x114)
+    // This is the GameDataManager path — stores YOUR character name, not the host's.
+    if (gmImp) {
+        uintptr_t gdm = 0;
+        if (Memory::Read<uintptr_t>(gmImp + 0xA8, &gdm) && gdm) {
+            std::string name = TryReadNameFrom(gdm + 0x114, "GameDataMgr+0x114");
+            if (!name.empty()) return name;
+        }
+    }
+
+    // PATH 2: NSM → [+0x20] → +0x234 (host/opponent name — fallback only)
+    if (netSession) {
+        uintptr_t pp = 0;
+        if (Memory::Read<uintptr_t>(netSession + 0x20, &pp) && pp) {
+            std::string name = TryReadNameFrom(pp + 0x234, "NetSession+0x234");
+            if (!name.empty()) return name;
+        }
+    }
+
+    // PATH 3: GMImp → [+0x38] → +0x24 (PlayerData path — legacy fallback)
+    if (gmImp) {
+        uintptr_t pd = 0;
+        if (Memory::Read<uintptr_t>(gmImp + 0x38, &pd) && pd) {
+            std::string name = TryReadNameFrom(pd + 0x24, "PlayerData+0x24");
+            if (!name.empty()) return name;
+        }
+    }
+
+    return "";
 }
 
 static bool ReadPlayerPosition(float& x, float& y, float& z, float& rotY) {
@@ -205,12 +462,18 @@ static bool ReadPlayerPosition(float& x, float& y, float& z, float& rotY) {
 }
 
 static bool ReadPlayerHealth(int32_t& health, int32_t& maxHealth) {
-    uintptr_t playerData = 0;
-    if (!ReadPlayerDataBase(playerData)) return false;
+    // HP is on PlayerCtrl (GMImp+0xD0), NOT PlayerData (GMImp+0x38).
+    // PlayerCtrl + 0x168 = current HP, +0x170 = max HP (SotFS, from DS2S-META).
+    auto& resolver = DS2Coop::AddressResolver::GetInstance();
+    uintptr_t gmImp = resolver.GetGameManagerImp();
+    if (!gmImp) return false;
+
+    uintptr_t playerCtrl = 0;
+    if (!Memory::Read<uintptr_t>(gmImp + 0xD0, &playerCtrl) || !playerCtrl) return false;
 
     bool ok = true;
-    ok &= Memory::Read<int32_t>(playerData + Offsets::GameManager::Health, &health);
-    ok &= Memory::Read<int32_t>(playerData + Offsets::GameManager::MaxHealth, &maxHealth);
+    ok &= Memory::Read<int32_t>(playerCtrl + 0x168, &health);
+    ok &= Memory::Read<int32_t>(playerCtrl + 0x170, &maxHealth);
     return ok;
 }
 
@@ -663,41 +926,10 @@ void PlayerSync::EnableSummoning() {
     }
 
     // ==========================================================================
-    // 4. Session-slot TeamType — Bob Edition CT:
-    //    NetSessionManager → [+0x20] → [+0x1E8] → [+0xB0] → +0x4D (byte)
-    //
-    // The host's bonfire check reads TeamType for each session slot.
-    // If any slot has a non-zero TeamType (i.e. a phantom is present),
-    // bonfire rest is blocked. Zeroing +0x4D in all occupied slots
-    // makes the host's game believe it's alone in the world.
+    // 4. Session-slot TeamType — DISABLED: value 127 at [NSM+0x20][+0x1E8][slot*8][+0xB0]+0x4D
+    // is not TeamType — wrong pointer chain. Zeroing it corrupted game state → crash.
+    // Needs CE re-verification before re-enabling.
     // ==========================================================================
-    if (netSession) {
-        __try {
-            uintptr_t playerPtr = 0;
-            if (Memory::Read<uintptr_t>(netSession + Offsets::NetSession::PlayerPointer, &playerPtr) && playerPtr) {
-                // Walk session participant list starting at +0x1E8
-                // Each entry is separated by an unknown stride — try 0x100 and 0x200
-                // (struct size is unknown without CE verification)
-                uintptr_t listBase = 0;
-                if (Memory::Read<uintptr_t>(playerPtr + 0x1E8, &listBase) && listBase) {
-                    for (int slot = 0; slot < 6; slot++) {
-                        uintptr_t entry = 0;
-                        if (Memory::Read<uintptr_t>(listBase + slot * 8, &entry) && entry) {
-                            // entry → [+0xB0] → +0x4D
-                            uintptr_t b0 = 0;
-                            if (Memory::Read<uintptr_t>(entry + 0xB0, &b0) && b0) {
-                                uint8_t slotTeamType = 0;
-                                if (Memory::Read<uint8_t>(b0 + 0x4D, &slotTeamType) && slotTeamType != 0) {
-                                    SnapshotWrite<uint8_t>(b0 + 0x4D, (uint8_t)0);
-                                    LOG_INFO("EnableSummoning: Session slot %d TeamType zeroed (was %u)", slot, slotTeamType);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } __except(EXCEPTION_EXECUTE_HANDLER) {}
-    }
 
     // ==========================================================================
     // 5. Bonfire access bits — Bob Edition CT:
