@@ -38,6 +38,76 @@ static bool g_redirectActive = false;
 static std::string g_redirectIP = "127.0.0.1";
 static uint16_t g_redirectPort = 50031;
 
+#ifdef H33_REPRO_LOGGING
+// H-33 throwaway: hook DNS resolution so we can identify which hostname
+// triggers the port-80 HTTP probe at boot. The H-26 repro proved a
+// connection to 104.26.12.205:80 (Cloudflare anycast — IP doesn't identify
+// the hostname). Step 1 of the H-33 plan is to capture the hostname.
+// Strip or guard-flip before PR.
+static int (WSAAPI* g_originalGetaddrinfo)(const char* node, const char* service,
+                                            const struct addrinfo* hints,
+                                            struct addrinfo** res) = nullptr;
+static int (WSAAPI* g_originalGetaddrinfoW)(const wchar_t* node, const wchar_t* service,
+                                             const ADDRINFOW* hints,
+                                             ADDRINFOW** res) = nullptr;
+
+static void H33LogResolvedAddrs(const char* hostname, const struct addrinfo* res) {
+    int count = 0;
+    for (const struct addrinfo* p = res; p && count < 8; p = p->ai_next, ++count) {
+        if (p->ai_family == AF_INET && p->ai_addr) {
+            char ipStr[INET_ADDRSTRLEN] = {};
+            auto* sin = reinterpret_cast<const sockaddr_in*>(p->ai_addr);
+            inet_ntop(AF_INET, &sin->sin_addr, ipStr, sizeof(ipStr));
+            LOG_INFO("[H33 DNS] %s -> %s", hostname, ipStr);
+        }
+    }
+    if (count == 0) {
+        LOG_INFO("[H33 DNS] %s -> (no IPv4 results)", hostname);
+    }
+}
+
+static int WSAAPI H33GetaddrinfoHook(const char* node, const char* service,
+                                      const struct addrinfo* hints,
+                                      struct addrinfo** res) {
+    int rc = g_originalGetaddrinfo(node, service, hints, res);
+    if (node) {
+        if (rc == 0 && res && *res) {
+            H33LogResolvedAddrs(node, *res);
+        } else {
+            LOG_INFO("[H33 DNS] %s -> FAIL (rc=%d)", node, rc);
+        }
+    }
+    return rc;
+}
+
+static int WSAAPI H33GetaddrinfoWHook(const wchar_t* node, const wchar_t* service,
+                                       const ADDRINFOW* hints,
+                                       ADDRINFOW** res) {
+    int rc = g_originalGetaddrinfoW(node, service, hints, res);
+    if (node) {
+        char nodeUtf8[256] = {};
+        WideCharToMultiByte(CP_UTF8, 0, node, -1, nodeUtf8, sizeof(nodeUtf8) - 1, nullptr, nullptr);
+        if (rc == 0 && res && *res) {
+            int count = 0;
+            for (const ADDRINFOW* p = *res; p && count < 8; p = p->ai_next, ++count) {
+                if (p->ai_family == AF_INET && p->ai_addr) {
+                    char ipStr[INET_ADDRSTRLEN] = {};
+                    auto* sin = reinterpret_cast<const sockaddr_in*>(p->ai_addr);
+                    inet_ntop(AF_INET, &sin->sin_addr, ipStr, sizeof(ipStr));
+                    LOG_INFO("[H33 DNS] %s -> %s (W)", nodeUtf8, ipStr);
+                }
+            }
+            if (count == 0) {
+                LOG_INFO("[H33 DNS] %s -> (no IPv4 results) (W)", nodeUtf8);
+            }
+        } else {
+            LOG_INFO("[H33 DNS] %s -> FAIL (rc=%d) (W)", nodeUtf8, rc);
+        }
+    }
+    return rc;
+}
+#endif
+
 // ============================================================================
 // Hooked Winsock connect() — redirects FromSoft server to custom server
 // ============================================================================
@@ -114,10 +184,35 @@ bool WinsockHooks::InstallHooks() {
         reinterpret_cast<void**>(&g_originalConnect)
     )) {
         LOG_INFO("  HOOKED Winsock connect()");
-        return true;
+    } else {
+        LOG_WARNING("  Failed to hook connect() (non-critical)");
     }
 
-    LOG_WARNING("  Failed to hook connect() (non-critical)");
+#ifdef H33_REPRO_LOGGING
+    // getaddrinfo lives in ws2_32.dll on modern Windows; GetAddrInfoW too.
+    void* gaiAddr = GetProcAddress(ws2, "getaddrinfo");
+    if (gaiAddr && HookManager::GetInstance().InstallHook(
+        gaiAddr,
+        reinterpret_cast<void*>(&H33GetaddrinfoHook),
+        reinterpret_cast<void**>(&g_originalGetaddrinfo)
+    )) {
+        LOG_INFO("  HOOKED ws2_32!getaddrinfo (H33 repro)");
+    } else {
+        LOG_WARNING("  H33: failed to hook getaddrinfo");
+    }
+
+    void* gaiwAddr = GetProcAddress(ws2, "GetAddrInfoW");
+    if (gaiwAddr && HookManager::GetInstance().InstallHook(
+        gaiwAddr,
+        reinterpret_cast<void*>(&H33GetaddrinfoWHook),
+        reinterpret_cast<void**>(&g_originalGetaddrinfoW)
+    )) {
+        LOG_INFO("  HOOKED ws2_32!GetAddrInfoW (H33 repro)");
+    } else {
+        LOG_WARNING("  H33: failed to hook GetAddrInfoW");
+    }
+#endif
+
     return true;
 }
 
