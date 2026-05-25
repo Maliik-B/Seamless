@@ -184,3 +184,88 @@ re-run with the H-33 fix in place. Pass criteria:
   (InstallHooks).
 - Existing surgical-NOP pattern (template for Option D):
   `src/sync/player_sync.cpp:171` (PatchPhantomDismissalLoops).
+
+---
+
+## 2026-05-25 update — popup-trigger is NOT what this ticket scoped
+
+Three repro runs today on the H33Repro DLL — evidence in
+`docs/repro/runs/h33-2026-05-25*/`:
+
+| Run | ds3os | RSA key deployed | Popup result |
+|---|---|---|---|
+| `h33-2026-05-25/` | no | n/a | popup appeared, user CANCELed, quit too fast to capture port-80 |
+| `h33-2026-05-25-ds3os/` | yes | **no** — `WARN: No public key file found` | popup appeared, server console: `Failed to decrypt RSA message — OAEP decoding error` |
+| `h33-2026-05-25-ds3os-keyed/` | yes | yes (`public.key` copied to game folder as `ds2_server_public.key`) | **popup STILL appeared** — server console clean, login + auth handshake succeeded, then directed client to `25.35.223.224` (stale Hamachi IP — see sidebar below) |
+
+### The load-bearing finding
+
+In the keyed run, the mod log shows **zero network activity** —
+no `[NET] Game connecting to ...`, no `[H33 DNS]` — for the full
+**60 seconds between mod init (16:23:20) and the first redirect
+(16:24:20)**. The popup appeared somewhere in that window. So:
+
+- The `ConnectHook` on `ws2_32!connect` did not see it.
+- The `H33GetaddrinfoHook` on `ws2_32!getaddrinfo` and
+  `GetAddrInfoW` did not see it.
+- The matchmaking handshake (50031 / 50000) is irrelevant — those
+  succeeded cleanly in the keyed run and the popup still fired.
+
+**The popup is triggered by something invisible to the current
+instrumentation.** The original "hook port-80 HTTP probe" framing
+is wrong — that probe (visible in `docs/repro/runs/h26-2026-05-25/
+host.log:146` at 15:25:41) fires much later during gameplay and is
+unrelated to the boot popup.
+
+### Revised hypothesis space
+
+| # | Hypothesis | Test |
+|---|---|---|
+| 1 | DS2 uses `WSAConnect` / `ConnectEx` / `WSAConnectByName` instead of plain `connect()` for the popup-triggering probe | Hook those + repro |
+| 2 | DS2 uses the Steam matchmaking API (Steamworks RPC), which doesn't traverse ws2_32 at the application layer | Capture at packet level; instrument Steam API calls in `session_hooks.cpp` |
+| 3 | Popup is fired by a local timer with no network call at all — "no successful service ping in N seconds → popup" — and the "success ping" path involves something else entirely | Hook into DS2's UI / popup-creation code via Ghidra |
+| 4 | Popup is fired by Steam's own overlay or by a Windows-level network state check (e.g. NLA — Network Location Awareness) | Capture at packet level |
+
+Hypothesis #1 is cheapest to test (~60 lines extending existing
+Winsock infrastructure). Hypothesis #2 / #4 need packet-level
+capture (Wireshark or built-in `pktmon`) to rule in/out. #3 is the
+"if everything else fails, find the popup function in Ghidra"
+fallback.
+
+### Sidebar: ds3os advertises stale Hamachi IP
+
+Server console in the keyed run:
+
+```
+Directing login client to our private ip (25.35.223.224) as
+appears to be on private subnet.
+```
+
+`25.35.223.224` is Sean's Hamachi IP from
+`docs/HANDOFF_2026_04_06.md:165`, baked into the shipped
+`Release/Server/Saved/default/config.json`. Even after the popup
+ticket lands, DS2 will be directed to an unreachable IP for the
+actual game session.
+
+This is the same class of issue as the `StartServer.bat` bug
+(task #7) and the un-staged `ds2_server_public.key` — all are
+joiner-distribution / fresh-install gotchas that compound to
+"a new user cannot get the mod working out of the box." Probably
+belongs in H-31 (single canonical release artifact) or its own
+follow-up ticket; explicitly out of H-33 scope.
+
+### Where this ticket goes next
+
+Pick one of #1, #2, #3, #4 to investigate first. Tomorrow's session
+should start with that choice. Suggested order:
+
+1. Try #1 first (cheap, eliminates one candidate).
+2. If #1 doesn't catch it, run a 2-min Wireshark/pktmon capture to
+   address #2 + #4 simultaneously.
+3. #3 is the fallback only if #1 + #2 + #4 all come up empty.
+
+The H33Repro DLL is already built and DLL-tested; tomorrow's work
+extends `network_hooks.cpp` with the additional hooks per the
+chosen path. The four design options (A/B/C/D) at the top of this
+doc are still the candidate *fix* shapes once we identify the
+trigger — they just can't be evaluated until we know what to hook.
