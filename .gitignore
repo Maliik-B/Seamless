@@ -22,6 +22,16 @@ nul
 
 # Logs
 *.log
+# But DO track per-run repro evidence under docs/repro/runs/
+!docs/repro/runs/**/*.log
+
+# Raw packet captures — too big for git (100+ MB each).
+# Keep the analysis docs (README.md, analysis.md, timeline.txt, host.log)
+# and the capture.cmd recipe; regenerate the raw files locally if needed.
+docs/repro/runs/**/capture.etl
+docs/repro/runs/**/capture.pcapng
+docs/repro/runs/**/capture.txt
+docs/repro/runs/**/capture.utf8.txt
 
 # Dist/Release binaries (source only in git)
 dist/*.exe

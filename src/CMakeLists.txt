@@ -55,3 +55,10 @@ add_custom_command(TARGET ds2_seamless_coop POST_BUILD
     ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/dinput8.dll
 )
 
+# H-33 throwaway: hostname capture via getaddrinfo / GetAddrInfoW hooks.
+# Default OFF — flip on via the `H33Repro` preset for capture sessions only.
+option(DS2COOP_H33_REPRO_LOGGING "Verbose H-33 DNS-hostname capture for popup-hook design" OFF)
+if(DS2COOP_H33_REPRO_LOGGING)
+    target_compile_definitions(ds2_seamless_coop PRIVATE H33_REPRO_LOGGING=1)
+endif()
+
