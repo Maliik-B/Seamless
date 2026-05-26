@@ -197,75 +197,201 @@ static void* H33ResolveConnectEx() {
     return (rc == 0) ? reinterpret_cast<void*>(fn) : nullptr;
 }
 
-// H-33 task #10 (2026-05-26 update #2): pktmon falsified the "Steam opens a
-// new TLS connection on DS2's behalf" form of hypothesis #2. Two survivors:
-//   #2' multiplexed Steam probe over an already-established TLS session
-//   #3  no network call at all — popup fires off a synchronous Steamworks
-//       SDK return value
-// Both are distinguishable from inside DS2's process by hooking the
-// steam_api64.dll flat C exports most likely to gate the "service available"
-// decision. If any of these fires in the silent window between MOD
-// INITIALIZED and the first matchmaking redirect, #2' wins and the return
-// value names the trigger. If all stay silent, #3 wins and the next move is
-// a vtable hook or a Ghidra hunt.
+// H-33 task #11 (2026-05-26 update #3): task #10 proved DS2's bundled
+// steam_api64.dll predates the SteamAPI_ISteam<Iface>_<Method> flat-C
+// wrappers (SDK ~v1.31/v1.32, 57 exports, zero ISteam_ wrappers). DS2 must
+// be using the C++ vtable interfaces via the global accessors that DO
+// exist (`SteamUser`, `SteamUtils`, `SteamMatchmaking`, ...).
 //
-// All five signatures match the Steamworks SDK flat-C exports. The "self"
-// pointer is opaque (we don't dereference it); return values are logged for
-// the calls whose return type plausibly carries the online-state bit.
-using PFN_SteamUser_BLoggedOn                 = bool    (*)(void* self);
-using PFN_SteamUser_GetSteamID                = uint64_t(*)(void* self);
-using PFN_SteamUtils_GetServerRealTime        = uint32_t(*)(void* self);
-using PFN_SteamUtils_IsOverlayEnabled         = bool    (*)(void* self);
-// CSteamID is an 8-byte POD union; on Windows x64 it's passed by value in RDX.
-using PFN_SteamMatchmaking_GetNumLobbyMembers = int     (*)(void* self, uint64_t lobbyID);
+// Strategy:
+//   1. Hook SteamAPI_Init / SteamAPI_InitSafe to install vtable hooks
+//      post-init (when the accessors return valid pointers).
+//   2. Also attempt immediate install at mod-init time, in case Steam was
+//      already initialized before our DllMain ran.
+//   3. Walk each interface's vtable and log the first ~20 slots
+//      (module + offset). Ground truth for any future hook additions and
+//      sanity check that we're hooking the right thing.
+//   4. Patch only slot indices that are stable across the SDK v1.31 line:
+//        - ISteamUser  slot 1 = BLoggedOn       -> bool
+//        - ISteamUser  slot 2 = GetSteamID      -> CSteamID (uint64)
+//        - ISteamUtils slot 3 = GetServerRealTime -> uint32
+//      Less-stable slots (IsOverlayEnabled, GetNumLobbyMembers) are NOT
+//      patched in this iteration — the vtable dump tells us where they
+//      live so a follow-up build can hook them with confidence.
+//
+// All vtable methods take `this` as the implicit first argument; on
+// Windows x64 MSVC __thiscall ≡ __fastcall, so a regular C function with
+// `void* self` as the first param matches binary-wise.
 
-static PFN_SteamUser_BLoggedOn                 g_origSteamUser_BLoggedOn = nullptr;
-static PFN_SteamUser_GetSteamID                g_origSteamUser_GetSteamID = nullptr;
-static PFN_SteamUtils_GetServerRealTime        g_origSteamUtils_GetServerRealTime = nullptr;
-static PFN_SteamUtils_IsOverlayEnabled         g_origSteamUtils_IsOverlayEnabled = nullptr;
-static PFN_SteamMatchmaking_GetNumLobbyMembers g_origSteamMatchmaking_GetNumLobbyMembers = nullptr;
+// MSVC x64: 8-byte trivially-copyable types (incl. CSteamID's union) are
+// returned in RAX and passed by value in an integer register. Modelling
+// CSteamID as uint64_t is ABI-correct for both directions.
+using PFN_VT_BLoggedOn         = bool    (*)(void* self);
+using PFN_VT_GetSteamID        = uint64_t(*)(void* self);
+using PFN_VT_GetServerRealTime = uint32_t(*)(void* self);
 
-static bool H33SteamUser_BLoggedOnHook(void* self) {
-    bool rc = g_origSteamUser_BLoggedOn(self);
+static PFN_VT_BLoggedOn         g_origVT_BLoggedOn         = nullptr;
+static PFN_VT_GetSteamID        g_origVT_GetSteamID        = nullptr;
+static PFN_VT_GetServerRealTime g_origVT_GetServerRealTime = nullptr;
+
+static bool H33VT_BLoggedOnHook(void* self) {
+    bool rc = g_origVT_BLoggedOn(self);
     LOG_INFO("[H33 STEAM] ISteamUser::BLoggedOn -> %s", rc ? "true" : "false");
     return rc;
 }
 
-static uint64_t H33SteamUser_GetSteamIDHook(void* self) {
-    uint64_t rc = g_origSteamUser_GetSteamID(self);
+static uint64_t H33VT_GetSteamIDHook(void* self) {
+    uint64_t rc = g_origVT_GetSteamID(self);
     LOG_INFO("[H33 STEAM] ISteamUser::GetSteamID -> %llu", (unsigned long long)rc);
     return rc;
 }
 
-static uint32_t H33SteamUtils_GetServerRealTimeHook(void* self) {
-    uint32_t rc = g_origSteamUtils_GetServerRealTime(self);
+static uint32_t H33VT_GetServerRealTimeHook(void* self) {
+    uint32_t rc = g_origVT_GetServerRealTime(self);
     LOG_INFO("[H33 STEAM] ISteamUtils::GetServerRealTime -> %u", rc);
     return rc;
 }
 
-static bool H33SteamUtils_IsOverlayEnabledHook(void* self) {
-    bool rc = g_origSteamUtils_IsOverlayEnabled(self);
-    LOG_INFO("[H33 STEAM] ISteamUtils::IsOverlayEnabled -> %s", rc ? "true" : "false");
+// Log the first `slots` entries of an interface's vtable, with the owning
+// module's name + offset where each entry lives. Owning module is usually
+// steamclient64.dll (steam_api64.dll is a thin shim that delegates via
+// IPC pipe to the runtime client) — recording it makes the dump
+// interpretable across SDK versions.
+static void H33LogVtable(const char* tag, void* iface, int slots) {
+    if (!iface) {
+        LOG_INFO("[H33 STEAM] %s: null interface, skipping vtable dump", tag);
+        return;
+    }
+    void** vtbl = *reinterpret_cast<void***>(iface);
+    LOG_INFO("[H33 STEAM] %s vtbl @ %p (this=%p)", tag, vtbl, iface);
+    for (int i = 0; i < slots; ++i) {
+        void* fn = vtbl[i];
+        HMODULE owner = nullptr;
+        char modName[MAX_PATH] = {};
+        if (GetModuleHandleExA(
+                GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                    GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                reinterpret_cast<LPCSTR>(fn), &owner) && owner) {
+            DWORD n = GetModuleBaseNameA(GetCurrentProcess(), owner,
+                                          modName, sizeof(modName));
+            modName[n < sizeof(modName) ? n : sizeof(modName) - 1] = '\0';
+            uintptr_t offset = reinterpret_cast<uintptr_t>(fn) -
+                               reinterpret_cast<uintptr_t>(owner);
+            LOG_INFO("[H33 STEAM]   %s[%2d] = %s+0x%llx (%p)",
+                     tag, i, modName, (unsigned long long)offset, fn);
+        } else {
+            LOG_INFO("[H33 STEAM]   %s[%2d] = %p (no module)", tag, i, fn);
+        }
+    }
+}
+
+static std::atomic<bool> g_h33SteamVtableHooksInstalled{false};
+
+static void H33TryInstallSteamVtableHooks(const char* trigger) {
+    if (g_h33SteamVtableHooksInstalled.load(std::memory_order_acquire)) return;
+
+    HMODULE steam = GetModuleHandleA("steam_api64.dll");
+    if (!steam) return;
+
+    using PFN_Accessor = void* (*)();
+    auto pSteamUser        = reinterpret_cast<PFN_Accessor>(
+        GetProcAddress(steam, "SteamUser"));
+    auto pSteamUtils       = reinterpret_cast<PFN_Accessor>(
+        GetProcAddress(steam, "SteamUtils"));
+    auto pSteamMatchmaking = reinterpret_cast<PFN_Accessor>(
+        GetProcAddress(steam, "SteamMatchmaking"));
+
+    if (!pSteamUser || !pSteamUtils || !pSteamMatchmaking) {
+        LOG_WARNING("[H33 STEAM] Global accessors missing (User=%p Utils=%p Match=%p)",
+                    pSteamUser, pSteamUtils, pSteamMatchmaking);
+        return;
+    }
+
+    void* iUser        = pSteamUser();
+    void* iUtils       = pSteamUtils();
+    void* iMatchmaking = pSteamMatchmaking();
+
+    if (!iUser || !iUtils || !iMatchmaking) {
+        // Steam not initialized yet (or init failed). Allow a later retry
+        // from the SteamAPI_Init hook — do NOT set the installed flag.
+        LOG_INFO("[H33 STEAM] %s: interfaces not ready yet (User=%p Utils=%p Match=%p) — will retry post-init",
+                 trigger, iUser, iUtils, iMatchmaking);
+        return;
+    }
+
+    // CAS the flag so we install exactly once if both the immediate path
+    // and the Init-hook path race.
+    bool expected = false;
+    if (!g_h33SteamVtableHooksInstalled.compare_exchange_strong(
+            expected, true, std::memory_order_acq_rel)) {
+        return;
+    }
+
+    LOG_INFO("[H33 STEAM] Installing vtable hooks (trigger=%s)", trigger);
+    LOG_INFO("[H33 STEAM] Accessors -> User=%p Utils=%p Matchmaking=%p",
+             iUser, iUtils, iMatchmaking);
+
+    H33LogVtable("ISteamUser",        iUser,        12);
+    H33LogVtable("ISteamUtils",       iUtils,       24);
+    H33LogVtable("ISteamMatchmaking", iMatchmaking, 24);
+
+    void** vtUser  = *reinterpret_cast<void***>(iUser);
+    void** vtUtils = *reinterpret_cast<void***>(iUtils);
+
+    // Slot 1: ISteamUser::BLoggedOn — present from the earliest SDK
+    // revisions; unchanged through v1.31/v1.32/...
+    if (HookManager::GetInstance().InstallHook(
+            vtUser[1],
+            reinterpret_cast<void*>(&H33VT_BLoggedOnHook),
+            reinterpret_cast<void**>(&g_origVT_BLoggedOn))) {
+        LOG_INFO("  HOOKED ISteamUser::BLoggedOn @ %p (slot 1, H33 repro)", vtUser[1]);
+    } else {
+        LOG_WARNING("  H33: failed to hook ISteamUser::BLoggedOn @ %p", vtUser[1]);
+    }
+
+    // Slot 2: ISteamUser::GetSteamID — also long-standing slot.
+    if (HookManager::GetInstance().InstallHook(
+            vtUser[2],
+            reinterpret_cast<void*>(&H33VT_GetSteamIDHook),
+            reinterpret_cast<void**>(&g_origVT_GetSteamID))) {
+        LOG_INFO("  HOOKED ISteamUser::GetSteamID @ %p (slot 2, H33 repro)", vtUser[2]);
+    } else {
+        LOG_WARNING("  H33: failed to hook ISteamUser::GetSteamID @ %p", vtUser[2]);
+    }
+
+    // Slot 3: ISteamUtils::GetServerRealTime — stable since ISteamUtils005.
+    if (HookManager::GetInstance().InstallHook(
+            vtUtils[3],
+            reinterpret_cast<void*>(&H33VT_GetServerRealTimeHook),
+            reinterpret_cast<void**>(&g_origVT_GetServerRealTime))) {
+        LOG_INFO("  HOOKED ISteamUtils::GetServerRealTime @ %p (slot 3, H33 repro)", vtUtils[3]);
+    } else {
+        LOG_WARNING("  H33: failed to hook ISteamUtils::GetServerRealTime @ %p", vtUtils[3]);
+    }
+}
+
+// SteamAPI_Init / SteamAPI_InitSafe: hook so we can install the vtable hooks
+// at the moment Steam becomes ready, regardless of timing relative to our
+// own init. Cdecl on x64 collapses to the default MS x64 calling convention.
+using PFN_SteamAPI_Init = bool (*)();
+static PFN_SteamAPI_Init g_origSteamAPI_Init     = nullptr;
+static PFN_SteamAPI_Init g_origSteamAPI_InitSafe = nullptr;
+
+static bool H33SteamAPI_InitHook() {
+    bool rc = g_origSteamAPI_Init();
+    LOG_INFO("[H33 STEAM] SteamAPI_Init -> %s", rc ? "true" : "false");
+    if (rc) H33TryInstallSteamVtableHooks("SteamAPI_Init");
     return rc;
 }
 
-static int H33SteamMatchmaking_GetNumLobbyMembersHook(void* self, uint64_t lobbyID) {
-    int rc = g_origSteamMatchmaking_GetNumLobbyMembers(self, lobbyID);
-    LOG_INFO("[H33 STEAM] ISteamMatchmaking::GetNumLobbyMembers(%llu) -> %d",
-             (unsigned long long)lobbyID, rc);
+static bool H33SteamAPI_InitSafeHook() {
+    bool rc = g_origSteamAPI_InitSafe();
+    LOG_INFO("[H33 STEAM] SteamAPI_InitSafe -> %s", rc ? "true" : "false");
+    if (rc) H33TryInstallSteamVtableHooks("SteamAPI_InitSafe");
     return rc;
 }
-
-struct H33SteamHookSpec {
-    const char* exportName;
-    void*       detour;
-    void**      original;
-};
 
 static void H33InstallSteamHooks() {
-    // DS2 ships steam_api64.dll next to DarkSoulsII.exe. By the time our mod
-    // init reaches here, DS2 has already loaded it — but fall back to
-    // LoadLibrary in case of ordering surprises (same pattern as ws2_32).
     HMODULE steam = GetModuleHandleA("steam_api64.dll");
     if (!steam) {
         steam = LoadLibraryA("steam_api64.dll");
@@ -275,37 +401,32 @@ static void H33InstallSteamHooks() {
         return;
     }
 
-    const H33SteamHookSpec specs[] = {
-        { "SteamAPI_ISteamUser_BLoggedOn",
-          reinterpret_cast<void*>(&H33SteamUser_BLoggedOnHook),
-          reinterpret_cast<void**>(&g_origSteamUser_BLoggedOn) },
-        { "SteamAPI_ISteamUser_GetSteamID",
-          reinterpret_cast<void*>(&H33SteamUser_GetSteamIDHook),
-          reinterpret_cast<void**>(&g_origSteamUser_GetSteamID) },
-        { "SteamAPI_ISteamUtils_GetServerRealTime",
-          reinterpret_cast<void*>(&H33SteamUtils_GetServerRealTimeHook),
-          reinterpret_cast<void**>(&g_origSteamUtils_GetServerRealTime) },
-        { "SteamAPI_ISteamUtils_IsOverlayEnabled",
-          reinterpret_cast<void*>(&H33SteamUtils_IsOverlayEnabledHook),
-          reinterpret_cast<void**>(&g_origSteamUtils_IsOverlayEnabled) },
-        { "SteamAPI_ISteamMatchmaking_GetNumLobbyMembers",
-          reinterpret_cast<void*>(&H33SteamMatchmaking_GetNumLobbyMembersHook),
-          reinterpret_cast<void**>(&g_origSteamMatchmaking_GetNumLobbyMembers) },
-    };
-
-    for (const auto& spec : specs) {
-        void* addr = reinterpret_cast<void*>(GetProcAddress(steam, spec.exportName));
-        if (!addr) {
-            // Older SDK builds may omit some exports — non-fatal, just log it.
-            LOG_WARNING("  H33: steam_api64!%s not found (older SDK?)", spec.exportName);
-            continue;
-        }
-        if (HookManager::GetInstance().InstallHook(addr, spec.detour, spec.original)) {
-            LOG_INFO("  HOOKED steam_api64!%s @ 0x%p (H33 repro)", spec.exportName, addr);
-        } else {
-            LOG_WARNING("  H33: failed to hook %s", spec.exportName);
-        }
+    // Install SteamAPI_Init / InitSafe hooks first — these are the
+    // post-init trampoline that walks vtables once Steam is alive.
+    void* initAddr = reinterpret_cast<void*>(GetProcAddress(steam, "SteamAPI_Init"));
+    if (initAddr && HookManager::GetInstance().InstallHook(
+            initAddr,
+            reinterpret_cast<void*>(&H33SteamAPI_InitHook),
+            reinterpret_cast<void**>(&g_origSteamAPI_Init))) {
+        LOG_INFO("  HOOKED steam_api64!SteamAPI_Init @ %p (H33 repro)", initAddr);
+    } else {
+        LOG_WARNING("  H33: failed to hook SteamAPI_Init (addr=%p)", initAddr);
     }
+
+    void* initSafeAddr = reinterpret_cast<void*>(GetProcAddress(steam, "SteamAPI_InitSafe"));
+    if (initSafeAddr && HookManager::GetInstance().InstallHook(
+            initSafeAddr,
+            reinterpret_cast<void*>(&H33SteamAPI_InitSafeHook),
+            reinterpret_cast<void**>(&g_origSteamAPI_InitSafe))) {
+        LOG_INFO("  HOOKED steam_api64!SteamAPI_InitSafe @ %p (H33 repro)", initSafeAddr);
+    } else {
+        LOG_WARNING("  H33: failed to hook SteamAPI_InitSafe (addr=%p)", initSafeAddr);
+    }
+
+    // Also try immediate vtable install — covers the case where DS2 called
+    // SteamAPI_Init before our DllMain ran. If Steam isn't ready yet, this
+    // is a no-op (logged) and the Init hook above will catch it later.
+    H33TryInstallSteamVtableHooks("immediate");
 }
 #endif
 
