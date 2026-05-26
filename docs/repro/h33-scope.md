@@ -375,3 +375,123 @@ hooking the vtable on the interface pointers returned by `SteamUser()`,
 Fallback if Steamworks also shows nothing: Ghidra hunt for the popup
 function in `DarkSoulsII.exe`. Template:
 `PatchPhantomDismissalLoops` (`src/sync/player_sync.cpp:171`).
+
+---
+
+## 2026-05-26 update #3 — task #10 result, flat-C-export route closed
+
+Task #10 build (H33Repro, dinput8.dll sha256
+`b9405bce9ae2b3f722e0049bf1732f58dfe8cef46f011922f35f61f0a82c0b5c`)
+added MinHook detours for five Steamworks flat-C exports
+(`SteamAPI_ISteamUser_BLoggedOn`, `SteamAPI_ISteamUser_GetSteamID`,
+`SteamAPI_ISteamUtils_GetServerRealTime`,
+`SteamAPI_ISteamUtils_IsOverlayEnabled`,
+`SteamAPI_ISteamMatchmaking_GetNumLobbyMembers`). Evidence:
+`docs/repro/runs/h33-2026-05-26-steamhooks/` (`host.log`, `README.md`,
+`steam_api64-exports.txt`).
+
+**All five `GetProcAddress` lookups returned null.** DS2 ships an
+~2014-era Steamworks SDK (`steam_api64.dll` sha256
+`fc20547408a7c34f0bd4946a34c21aab48a75e3b98dce9e55969f486d37b212f`,
+57 exports, zero containing the `ISteam_` substring). The
+`SteamAPI_ISteam<Iface>_<Method>` flat-C wrapper naming was not
+introduced into the Steamworks SDK until v1.41 (~2017) — DS2's
+bundled DLL predates them entirely.
+
+The DLL does export every global accessor needed for the vtable
+pivot: `SteamUser`, `SteamUtils`, `SteamMatchmaking`, `SteamApps`,
+`SteamFriends`, `SteamClient`, `SteamNetworking`,
+`SteamRemoteStorage`, etc.
+
+### What is now decided
+
+- Flat-C-export hooking is impossible on this binary — not "didn't
+  trigger," but "no targets exist."
+- DS2's call site for the popup decision (if Steamworks-based) must
+  go through one of: (a) the C++ vtable on the accessor's return
+  pointer, or (b) `SteamClient`'s `ISteamClient::GetISteam*` factory
+  pattern.
+- Hypothesis #3 is still undecided — we couldn't test it.
+
+### What is now active
+
+Hypothesis #2′ (multiplexed Steam probe) and #3 (no network call at
+all, popup fired from local state) both remain plausible. The decisive
+test is the vtable pivot: hook the relevant slots on the interface
+pointers returned by `SteamUser()`, `SteamUtils()`, `SteamMatchmaking()`
+(call the accessor ourselves at install time, walk the vtable, patch the
+N-th entry). If those see traffic in the silent window, #2′ wins. If
+they see nothing, #3 wins and the next move is Ghidra.
+
+### Where this ticket goes next (task #11)
+
+Implement the vtable hooks. Slot indices for the methods of interest
+are documented in the public Steamworks SDK v1.31 / v1.32 headers
+(`isteamuser.h`, `isteamutils.h`, `isteammatchmaking.h`) — they have
+been stable across that SDK line. Same `H33_REPRO_LOGGING` gate and
+`[H33 STEAM]` log prefix as task #10.
+
+---
+
+## 2026-05-26 update #4 — task #11 result, hypothesis #3 ascendant
+
+Task #11 build (H33Repro, dinput8.dll sha256
+`9400d4c5ae57e09d3ea3e0253bd6535ac796b76c695d4ff41310dd289b841fbd`)
+replaced the flat-C-export hooks with vtable hooks on the interface
+pointers returned by `SteamUser()`, `SteamUtils()`, `SteamMatchmaking()`.
+Three slots patched (`ISteamUser::BLoggedOn` slot 1, `ISteamUser::GetSteamID`
+slot 2, `ISteamUtils::GetServerRealTime` slot 3); install-time vtable
+dump of first 12/24/24 slots logged for ground truth. Evidence:
+`docs/repro/runs/h33-2026-05-26-vtable/`.
+
+Silent window: 30 s (`MOD INITIALIZED SUCCESSFULLY!` at 11:07:23 →
+first DNS at 11:07:53). All three hooks installed cleanly. Vtables
+resolve into `steamclient64.dll` (expected — `steam_api64.dll` is an
+IPC shim to the runtime client).
+
+**Zero `[H33 STEAM] ISteam*::<Method>` entries** in the silent window
+— or in fact anywhere after the install banner, including during the
+later matchmaking attempt and at shutdown. DS2 never calls any of the
+three hooked methods at any point in the boot → popup → CANCEL → quit
+cycle.
+
+### Caveat
+
+The vtable dump revealed three pointer-equality collisions between
+interfaces (e.g. `ISteamUser[1] == ISteamUtils[0] == ISteamMatchmaking[4]
+== steamclient64.dll+0x6f36f0`). Steam's runtime appears to share
+backing functions across interfaces for trivial/removed slots, so
+there is residual uncertainty over whether slot 1 of `ISteamUser`
+really maps to `BLoggedOn` in DS2's specific interface version. Public
+v1.31 headers put it at slot 1, but the dump is suspicious enough to
+flag.
+
+### Evidence convergence
+
+Stacking task #9 (no ws2_32 connect surface) +
+`runs/h33-2026-05-26-pktmon/` (no DS2-attributed packets in the silent
+window) + task #10 (flat-C exports don't exist on this DLL) + task #11
+(BLoggedOn/GetSteamID/GetServerRealTime never called):
+
+- Hypothesis #2′ is still technically alive — ~21 unhooked slots per
+  interface could carry the popup decision — but the *most likely*
+  candidates have all been ruled out.
+- Hypothesis #3 (popup fired from purely local DS2 state, with zero
+  network and zero Steamworks calls) is the leading candidate.
+
+### Where this ticket goes next (task #12)
+
+Pivot to Ghidra. Find the popup-creation function in `DarkSoulsII.exe`
+directly. Template: `PatchPhantomDismissalLoops`
+(`src/sync/player_sync.cpp:171`). Search starting points:
+
+- String search for popup body text and its message ID (FMG table).
+- Cross-refs to `User32!MessageBoxW` / `DialogBoxParamW` or DS2's
+  internal modal-dialog factory.
+- Predicate function gating the "service unavailable" branch from
+  boot; trace its inputs back to a flag or counter.
+
+Optional fallback: extend task #11 with the remaining ~21 vtable
+slots per interface (~250 lines of single-signature trampolines). Not
+recommended — the existing evidence converges hard on #3 and Ghidra is
+the higher-leverage move.
