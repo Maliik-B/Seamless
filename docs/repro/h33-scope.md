@@ -269,3 +269,109 @@ extends `network_hooks.cpp` with the additional hooks per the
 chosen path. The four design options (A/B/C/D) at the top of this
 doc are still the candidate *fix* shapes once we identify the
 trigger — they just can't be evaluated until we know what to hook.
+
+---
+
+## 2026-05-26 update — hypothesis #1 falsified
+
+Task #9 repro with WSAConnect / ConnectEx / WSAConnectByName{A,W}
+hooks added on top of the existing connect / getaddrinfo / GetAddrInfoW
+instrumentation. Evidence: `docs/repro/runs/h33-2026-05-26/`
+(`host.log` + `timeline.txt`).
+
+All five new hooks installed cleanly at boot (host.log:72-75 +
+mswsock!ConnectEx @ 0x7FFD05A05FE0). User confirmed popup appeared
+and CANCELed it. Yet the log shows **44 s of total silence** from the
+"MOD INITIALIZED SUCCESSFULLY" banner (08:28:56) to the first matchmaking
+DNS+connect (08:29:38) — no `[H33 NET]`, no `[H33 DNS]`, no `[NET]`.
+
+The popup-triggering call does **not** traverse:
+
+- `ws2_32!connect`
+- `ws2_32!WSAConnect`
+- `ws2_32!WSAConnectByNameA` / `WSAConnectByNameW`
+- `mswsock!ConnectEx`
+- `ws2_32!getaddrinfo` / `GetAddrInfoW`
+
+That eliminates the entire ws2_32 connect surface. Consistent with #2
+(Steamworks RPC) or #4 (Steam overlay / Windows NLA, kernel-side) —
+both bypass ws2_32 at the application layer and can't be distinguished
+from inside the mod.
+
+### Where this ticket goes next (superseded by 2026-05-26 update #2)
+
+Per the suggested order in this doc above: run a 2-min pktmon or
+Wireshark capture spanning DS2 boot → popup → CANCEL. Any packet in
+the previously-silent window identifies #2 or #4 by destination. If
+the capture is *also* silent, #3 (pure local timer, no network at
+all) becomes the active hypothesis and the work moves to Ghidra to
+find the popup-trigger function directly.
+
+---
+
+## 2026-05-26 update #2 — pktmon result, hypothesis #2 falsified in plain form
+
+Packet capture during a second repro: `docs/repro/runs/h33-2026-05-26-pktmon/`
+(`capture.etl` / `.pcapng` / `.txt`, `host.log`, `analysis.md`).
+Silent window for this run was 87 s (08:45:19 → 08:46:46).
+
+Captured 10 new outbound TCP destinations + 1 UDP destination in the
+window. Identification (via reverse DNS, Windows DNS cache mining, and
+live `Get-NetTCPConnection` attribution against currently-running
+processes):
+
+- `162.159.136.232:443/UDP` = Discord (current `discord.com` A-record)
+- `34.160.81.0:443` = `o137163.ingest.sentry.io` (Discord telemetry)
+- `23.197.169.224:443` = **steamwebhelper.exe** (verified live)
+- `23.219.155.188:443` = Riot Games CDN
+- `23.197.168.9:443`, `192.178.50.x`, `34.160.81.x` = shared Akamai/Google
+  CDN noise (browser background, FitGirl-cached entries share these IPs
+  by virtue of CDN multi-tenancy — not actual FitGirl traffic during the
+  window)
+- `40.90.8.68:443` (~1.5 s), `40.126.29.15:443` (~1 s) = `login.live.com` /
+  `login.microsoftonline.com` ranges (Steam OAuth / Windows auth)
+- `192.178.50.67:80` (~50 ms) = Google connectivity check
+- `104.18.37.174:443`, `199.46.35.128:443` = persistent sessions, both
+  with long-session shapes (tens of KB over tens of seconds) — neither
+  matches the short-probe shape a "service check" would have
+
+DS2.exe currently runs with **zero external TCP connections** — it
+holds none. Every identifiable flow in the silent window belongs to a
+non-DS2 process.
+
+**Conclusion**: hypothesis #2 in its plain form (Steam opens a new
+TLS connection on DS2's behalf during the silent window) is falsified.
+
+Two interpretations survive:
+
+- **#2′ Multiplexed Steam probe** — rides an already-established
+  long-lived Steam TLS session (`52.85.78.x` cloudfront cluster
+  carries 7,678 Tx + 48,908 Rx packets in the window). Cannot be
+  distinguished from heartbeat noise without TLS decryption or
+  process-attributed capture.
+- **#3 No network call at all** — DS2 reads a Steamworks SDK return
+  value synchronously and fires the popup based on that, with zero
+  new packets.
+
+### Where this ticket goes next (2026-05-26 update #2)
+
+Hook the Steamworks SDK surface inside DS2's process, gated behind
+`H33_REPRO_LOGGING`. DS2 ships with `steam_api64.dll` in the game
+folder; the same DLL exposes the "flat C" exports
+(`SteamAPI_ISteamUser_BLoggedOn`, `SteamAPI_ISteamUtils_GetServerRealTime`,
+`SteamAPI_ISteamMatchmaking_*`, etc.). Hooking those + logging
+invocation + return value will, in a single ~80-line patch:
+
+- Distinguish #2′ from #3 — if any Steamworks query fires in the
+  popup window, #2′ wins; if none, #3 wins.
+- Likely name the trigger directly — the call that returns "not
+  online" right before the popup is almost certainly the cause.
+
+If the C flat exports show zero hits (i.e. DS2 uses the C++ vtable
+interface directly via `SteamUser()->BLoggedOn()` style), pivot to
+hooking the vtable on the interface pointers returned by `SteamUser()`,
+`SteamUtils()`, `SteamMatchmaking()`. Same flag gate; ~20 more lines.
+
+Fallback if Steamworks also shows nothing: Ghidra hunt for the popup
+function in `DarkSoulsII.exe`. Template:
+`PatchPhantomDismissalLoops` (`src/sync/player_sync.cpp:171`).

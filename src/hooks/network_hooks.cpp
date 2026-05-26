@@ -10,6 +10,7 @@
 #endif
 #include <WinSock2.h>
 #include <WS2tcpip.h>
+#include <MSWSock.h>
 #include <Windows.h>
 
 #pragma comment(lib, "ws2_32.lib")
@@ -105,6 +106,95 @@ static int WSAAPI H33GetaddrinfoWHook(const wchar_t* node, const wchar_t* servic
         }
     }
     return rc;
+}
+
+// H-33 update 2026-05-25: the popup-triggering call is invisible to
+// connect()/getaddrinfo. Extend the capture to the remaining Winsock
+// connect entry points so we can see WHICH API DS2 is using before the
+// popup fires. Hypothesis #1 from docs/repro/h33-scope.md.
+static int (WSAAPI* g_originalWSAConnect)(SOCKET, const sockaddr*, int,
+                                          LPWSABUF, LPWSABUF, LPQOS, LPQOS) = nullptr;
+static BOOL (WSAAPI* g_originalWSAConnectByNameA)(SOCKET, LPCSTR, LPCSTR,
+                                                   LPDWORD, LPSOCKADDR, LPDWORD,
+                                                   LPSOCKADDR, const timeval*,
+                                                   LPWSAOVERLAPPED) = nullptr;
+static BOOL (WSAAPI* g_originalWSAConnectByNameW)(SOCKET, LPWSTR, LPWSTR,
+                                                   LPDWORD, LPSOCKADDR, LPDWORD,
+                                                   LPSOCKADDR, const timeval*,
+                                                   LPWSAOVERLAPPED) = nullptr;
+static LPFN_CONNECTEX g_originalConnectEx = nullptr;
+
+static void H33LogSockaddr(const char* tag, const sockaddr* name) {
+    if (!name || name->sa_family != AF_INET) {
+        LOG_INFO("[H33 NET] %s -> (non-IPv4 or null sockaddr)", tag);
+        return;
+    }
+    const auto* sin = reinterpret_cast<const sockaddr_in*>(name);
+    char ipStr[INET_ADDRSTRLEN] = {};
+    inet_ntop(AF_INET, &sin->sin_addr, ipStr, sizeof(ipStr));
+    LOG_INFO("[H33 NET] %s -> %s:%u", tag, ipStr, ntohs(sin->sin_port));
+}
+
+static int WSAAPI H33WSAConnectHook(SOCKET s, const sockaddr* name, int namelen,
+                                     LPWSABUF caller, LPWSABUF callee,
+                                     LPQOS sqos, LPQOS gqos) {
+    H33LogSockaddr("WSAConnect", name);
+    return g_originalWSAConnect(s, name, namelen, caller, callee, sqos, gqos);
+}
+
+static BOOL PASCAL H33ConnectExHook(SOCKET s, const sockaddr* name, int namelen,
+                                     PVOID sendBuffer, DWORD sendDataLength,
+                                     LPDWORD bytesSent, LPOVERLAPPED overlapped) {
+    H33LogSockaddr("ConnectEx", name);
+    return g_originalConnectEx(s, name, namelen, sendBuffer, sendDataLength,
+                                bytesSent, overlapped);
+}
+
+static BOOL WSAAPI H33WSAConnectByNameAHook(SOCKET s, LPCSTR nodename, LPCSTR servicename,
+                                             LPDWORD localLen, LPSOCKADDR localAddr,
+                                             LPDWORD remoteLen, LPSOCKADDR remoteAddr,
+                                             const timeval* timeout, LPWSAOVERLAPPED ov) {
+    LOG_INFO("[H33 NET] WSAConnectByNameA -> %s:%s",
+             nodename ? nodename : "(null)",
+             servicename ? servicename : "(null)");
+    return g_originalWSAConnectByNameA(s, nodename, servicename, localLen, localAddr,
+                                        remoteLen, remoteAddr, timeout, ov);
+}
+
+static BOOL WSAAPI H33WSAConnectByNameWHook(SOCKET s, LPWSTR nodename, LPWSTR servicename,
+                                             LPDWORD localLen, LPSOCKADDR localAddr,
+                                             LPDWORD remoteLen, LPSOCKADDR remoteAddr,
+                                             const timeval* timeout, LPWSAOVERLAPPED ov) {
+    char nodeUtf8[256] = {};
+    char svcUtf8[64] = {};
+    if (nodename) WideCharToMultiByte(CP_UTF8, 0, nodename, -1, nodeUtf8, sizeof(nodeUtf8) - 1, nullptr, nullptr);
+    if (servicename) WideCharToMultiByte(CP_UTF8, 0, servicename, -1, svcUtf8, sizeof(svcUtf8) - 1, nullptr, nullptr);
+    LOG_INFO("[H33 NET] WSAConnectByNameW -> %s:%s",
+             nodename ? nodeUtf8 : "(null)",
+             servicename ? svcUtf8 : "(null)");
+    return g_originalWSAConnectByNameW(s, nodename, servicename, localLen, localAddr,
+                                        remoteLen, remoteAddr, timeout, ov);
+}
+
+// ConnectEx is a per-driver extension obtained via WSAIoctl, not exported by
+// name from ws2_32. Resolve it once at install time using a throwaway socket.
+static void* H33ResolveConnectEx() {
+    WSADATA wsa = {};
+    bool weStarted = (WSAStartup(MAKEWORD(2, 2), &wsa) == 0);
+    SOCKET tmp = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (tmp == INVALID_SOCKET) {
+        if (weStarted) WSACleanup();
+        return nullptr;
+    }
+    GUID guid = WSAID_CONNECTEX;
+    LPFN_CONNECTEX fn = nullptr;
+    DWORD bytes = 0;
+    int rc = WSAIoctl(tmp, SIO_GET_EXTENSION_FUNCTION_POINTER,
+                      &guid, sizeof(guid), &fn, sizeof(fn), &bytes,
+                      nullptr, nullptr);
+    closesocket(tmp);
+    if (weStarted) WSACleanup();
+    return (rc == 0) ? reinterpret_cast<void*>(fn) : nullptr;
 }
 #endif
 
@@ -210,6 +300,51 @@ bool WinsockHooks::InstallHooks() {
         LOG_INFO("  HOOKED ws2_32!GetAddrInfoW (H33 repro)");
     } else {
         LOG_WARNING("  H33: failed to hook GetAddrInfoW");
+    }
+
+    // H-33 2026-05-25 extension: capture WSAConnect, ConnectEx, WSAConnectByName.
+    void* wsaConnectAddr = GetProcAddress(ws2, "WSAConnect");
+    if (wsaConnectAddr && HookManager::GetInstance().InstallHook(
+        wsaConnectAddr,
+        reinterpret_cast<void*>(&H33WSAConnectHook),
+        reinterpret_cast<void**>(&g_originalWSAConnect)
+    )) {
+        LOG_INFO("  HOOKED ws2_32!WSAConnect (H33 repro)");
+    } else {
+        LOG_WARNING("  H33: failed to hook WSAConnect");
+    }
+
+    void* wsaConnByNameA = GetProcAddress(ws2, "WSAConnectByNameA");
+    if (wsaConnByNameA && HookManager::GetInstance().InstallHook(
+        wsaConnByNameA,
+        reinterpret_cast<void*>(&H33WSAConnectByNameAHook),
+        reinterpret_cast<void**>(&g_originalWSAConnectByNameA)
+    )) {
+        LOG_INFO("  HOOKED ws2_32!WSAConnectByNameA (H33 repro)");
+    } else {
+        LOG_WARNING("  H33: failed to hook WSAConnectByNameA");
+    }
+
+    void* wsaConnByNameW = GetProcAddress(ws2, "WSAConnectByNameW");
+    if (wsaConnByNameW && HookManager::GetInstance().InstallHook(
+        wsaConnByNameW,
+        reinterpret_cast<void*>(&H33WSAConnectByNameWHook),
+        reinterpret_cast<void**>(&g_originalWSAConnectByNameW)
+    )) {
+        LOG_INFO("  HOOKED ws2_32!WSAConnectByNameW (H33 repro)");
+    } else {
+        LOG_WARNING("  H33: failed to hook WSAConnectByNameW");
+    }
+
+    void* connectExAddr = H33ResolveConnectEx();
+    if (connectExAddr && HookManager::GetInstance().InstallHook(
+        connectExAddr,
+        reinterpret_cast<void*>(&H33ConnectExHook),
+        reinterpret_cast<void**>(&g_originalConnectEx)
+    )) {
+        LOG_INFO("  HOOKED mswsock!ConnectEx @ 0x%p (H33 repro)", connectExAddr);
+    } else {
+        LOG_WARNING("  H33: failed to hook ConnectEx (resolver=%p)", connectExAddr);
     }
 #endif
 
