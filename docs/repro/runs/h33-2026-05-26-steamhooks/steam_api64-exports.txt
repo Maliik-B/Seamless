@@ -1,0 +1,85 @@
+Microsoft (R) COFF/PE Dumper Version 14.38.33145.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file D:\SteamLibrary\steamapps\common\Dark Souls II Scholar of the First Sin\Game\steam_api64.dll
+
+File Type: DLL
+
+  Section contains the following exports for steam_api64.dll
+
+    00000000 characteristics
+    512BBEFA time date stamp Mon Feb 25 14:43:54 2013
+        0.00 version
+           1 ordinal base
+          57 number of functions
+          57 number of names
+
+    ordinal hint RVA      name
+
+          1    0 00003250 GetHSteamPipe
+          2    1 00002800 GetHSteamUser
+          3    2 00003250 SteamAPI_GetHSteamPipe
+          4    3 00002800 SteamAPI_GetHSteamUser
+          5    4 00002D60 SteamAPI_GetSteamInstallPath
+          6    5 000043A0 SteamAPI_Init
+          7    6 00004390 SteamAPI_InitSafe
+          8    7 00002B90 SteamAPI_IsSteamRunning
+          9    8 00002D20 SteamAPI_RegisterCallResult
+         10    9 00002D00 SteamAPI_RegisterCallback
+         11    A 00003560 SteamAPI_RestartAppIfNecessary
+         12    B 00002C80 SteamAPI_RunCallbacks
+         13    C 000040D0 SteamAPI_SetBreakpadAppID
+         14    D 00004090 SteamAPI_SetMiniDumpComment
+         15    E 00001050 SteamAPI_SetTryCatchCallbacks
+         16    F 00003990 SteamAPI_Shutdown
+         17   10 00002D30 SteamAPI_UnregisterCallResult
+         18   11 00002D10 SteamAPI_UnregisterCallback
+         19   12 00003A80 SteamAPI_UseBreakpadCrashHandler
+         20   13 00004040 SteamAPI_WriteMiniDump
+         21   14 000027A0 SteamApps
+         22   15 00002730 SteamClient
+         23   16 000043B0 SteamContentServer
+         24   17 000043C0 SteamContentServerUtils
+         25   18 000043D0 SteamContentServer_Init
+         26   19 00004590 SteamContentServer_RunCallbacks
+         27   1A 000044D0 SteamContentServer_Shutdown
+         28   1B 00002750 SteamFriends
+         29   1C 000045B0 SteamGameServer
+         30   1D 000045D0 SteamGameServerApps
+         31   1E 00004600 SteamGameServerHTTP
+         32   1F 000045E0 SteamGameServerNetworking
+         33   20 000045F0 SteamGameServerStats
+         34   21 000045C0 SteamGameServerUtils
+         35   22 000049E0 SteamGameServer_BSecure
+         36   23 00004610 SteamGameServer_GetHSteamPipe
+         37   24 00004620 SteamGameServer_GetHSteamUser
+         38   25 00004A00 SteamGameServer_GetIPCCallCount
+         39   26 00004A20 SteamGameServer_GetSteamID
+         40   27 000048D0 SteamGameServer_Init
+         41   28 000048A0 SteamGameServer_InitSafe
+         42   29 000049C0 SteamGameServer_RunCallbacks
+         43   2A 00004900 SteamGameServer_Shutdown
+         44   2B 000027E0 SteamHTTP
+         45   2C 00002770 SteamMatchmaking
+         46   2D 00002780 SteamMatchmakingServers
+         47   2E 000027B0 SteamNetworking
+         48   2F 000027C0 SteamRemoteStorage
+         49   30 000027D0 SteamScreenshots
+         50   31 000027F0 SteamUnifiedMessages
+         51   32 00002740 SteamUser
+         52   33 00002790 SteamUserStats
+         53   34 00002760 SteamUtils
+         54   35 00002D50 Steam_GetHSteamUserCurrent
+         55   36 00002D40 Steam_RegisterInterfaceFuncs
+         56   37 00002C70 Steam_RunCallbacks
+         57   38 0001AA70 g_pSteamClientGameServer
+
+  Summary
+
+        4000 .data
+        2000 .pdata
+        6000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       12000 .text

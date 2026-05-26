@@ -375,3 +375,58 @@ hooking the vtable on the interface pointers returned by `SteamUser()`,
 Fallback if Steamworks also shows nothing: Ghidra hunt for the popup
 function in `DarkSoulsII.exe`. Template:
 `PatchPhantomDismissalLoops` (`src/sync/player_sync.cpp:171`).
+
+---
+
+## 2026-05-26 update #3 — task #10 result, flat-C-export route closed
+
+Task #10 build (H33Repro, dinput8.dll sha256
+`b9405bce9ae2b3f722e0049bf1732f58dfe8cef46f011922f35f61f0a82c0b5c`)
+added MinHook detours for five Steamworks flat-C exports
+(`SteamAPI_ISteamUser_BLoggedOn`, `SteamAPI_ISteamUser_GetSteamID`,
+`SteamAPI_ISteamUtils_GetServerRealTime`,
+`SteamAPI_ISteamUtils_IsOverlayEnabled`,
+`SteamAPI_ISteamMatchmaking_GetNumLobbyMembers`). Evidence:
+`docs/repro/runs/h33-2026-05-26-steamhooks/` (`host.log`, `README.md`,
+`steam_api64-exports.txt`).
+
+**All five `GetProcAddress` lookups returned null.** DS2 ships an
+~2014-era Steamworks SDK (`steam_api64.dll` sha256
+`fc20547408a7c34f0bd4946a34c21aab48a75e3b98dce9e55969f486d37b212f`,
+57 exports, zero containing the `ISteam_` substring). The
+`SteamAPI_ISteam<Iface>_<Method>` flat-C wrapper naming was not
+introduced into the Steamworks SDK until v1.41 (~2017) — DS2's
+bundled DLL predates them entirely.
+
+The DLL does export every global accessor needed for the vtable
+pivot: `SteamUser`, `SteamUtils`, `SteamMatchmaking`, `SteamApps`,
+`SteamFriends`, `SteamClient`, `SteamNetworking`,
+`SteamRemoteStorage`, etc.
+
+### What is now decided
+
+- Flat-C-export hooking is impossible on this binary — not "didn't
+  trigger," but "no targets exist."
+- DS2's call site for the popup decision (if Steamworks-based) must
+  go through one of: (a) the C++ vtable on the accessor's return
+  pointer, or (b) `SteamClient`'s `ISteamClient::GetISteam*` factory
+  pattern.
+- Hypothesis #3 is still undecided — we couldn't test it.
+
+### What is now active
+
+Hypothesis #2′ (multiplexed Steam probe) and #3 (no network call at
+all, popup fired from local state) both remain plausible. The decisive
+test is the vtable pivot: hook the relevant slots on the interface
+pointers returned by `SteamUser()`, `SteamUtils()`, `SteamMatchmaking()`
+(call the accessor ourselves at install time, walk the vtable, patch the
+N-th entry). If those see traffic in the silent window, #2′ wins. If
+they see nothing, #3 wins and the next move is Ghidra.
+
+### Where this ticket goes next (task #11)
+
+Implement the vtable hooks. Slot indices for the methods of interest
+are documented in the public Steamworks SDK v1.31 / v1.32 headers
+(`isteamuser.h`, `isteamutils.h`, `isteammatchmaking.h`) — they have
+been stable across that SDK line. Same `H33_REPRO_LOGGING` gate and
+`[H33 STEAM]` log prefix as task #10.

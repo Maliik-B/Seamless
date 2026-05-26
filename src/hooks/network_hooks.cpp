@@ -196,6 +196,117 @@ static void* H33ResolveConnectEx() {
     if (weStarted) WSACleanup();
     return (rc == 0) ? reinterpret_cast<void*>(fn) : nullptr;
 }
+
+// H-33 task #10 (2026-05-26 update #2): pktmon falsified the "Steam opens a
+// new TLS connection on DS2's behalf" form of hypothesis #2. Two survivors:
+//   #2' multiplexed Steam probe over an already-established TLS session
+//   #3  no network call at all — popup fires off a synchronous Steamworks
+//       SDK return value
+// Both are distinguishable from inside DS2's process by hooking the
+// steam_api64.dll flat C exports most likely to gate the "service available"
+// decision. If any of these fires in the silent window between MOD
+// INITIALIZED and the first matchmaking redirect, #2' wins and the return
+// value names the trigger. If all stay silent, #3 wins and the next move is
+// a vtable hook or a Ghidra hunt.
+//
+// All five signatures match the Steamworks SDK flat-C exports. The "self"
+// pointer is opaque (we don't dereference it); return values are logged for
+// the calls whose return type plausibly carries the online-state bit.
+using PFN_SteamUser_BLoggedOn                 = bool    (*)(void* self);
+using PFN_SteamUser_GetSteamID                = uint64_t(*)(void* self);
+using PFN_SteamUtils_GetServerRealTime        = uint32_t(*)(void* self);
+using PFN_SteamUtils_IsOverlayEnabled         = bool    (*)(void* self);
+// CSteamID is an 8-byte POD union; on Windows x64 it's passed by value in RDX.
+using PFN_SteamMatchmaking_GetNumLobbyMembers = int     (*)(void* self, uint64_t lobbyID);
+
+static PFN_SteamUser_BLoggedOn                 g_origSteamUser_BLoggedOn = nullptr;
+static PFN_SteamUser_GetSteamID                g_origSteamUser_GetSteamID = nullptr;
+static PFN_SteamUtils_GetServerRealTime        g_origSteamUtils_GetServerRealTime = nullptr;
+static PFN_SteamUtils_IsOverlayEnabled         g_origSteamUtils_IsOverlayEnabled = nullptr;
+static PFN_SteamMatchmaking_GetNumLobbyMembers g_origSteamMatchmaking_GetNumLobbyMembers = nullptr;
+
+static bool H33SteamUser_BLoggedOnHook(void* self) {
+    bool rc = g_origSteamUser_BLoggedOn(self);
+    LOG_INFO("[H33 STEAM] ISteamUser::BLoggedOn -> %s", rc ? "true" : "false");
+    return rc;
+}
+
+static uint64_t H33SteamUser_GetSteamIDHook(void* self) {
+    uint64_t rc = g_origSteamUser_GetSteamID(self);
+    LOG_INFO("[H33 STEAM] ISteamUser::GetSteamID -> %llu", (unsigned long long)rc);
+    return rc;
+}
+
+static uint32_t H33SteamUtils_GetServerRealTimeHook(void* self) {
+    uint32_t rc = g_origSteamUtils_GetServerRealTime(self);
+    LOG_INFO("[H33 STEAM] ISteamUtils::GetServerRealTime -> %u", rc);
+    return rc;
+}
+
+static bool H33SteamUtils_IsOverlayEnabledHook(void* self) {
+    bool rc = g_origSteamUtils_IsOverlayEnabled(self);
+    LOG_INFO("[H33 STEAM] ISteamUtils::IsOverlayEnabled -> %s", rc ? "true" : "false");
+    return rc;
+}
+
+static int H33SteamMatchmaking_GetNumLobbyMembersHook(void* self, uint64_t lobbyID) {
+    int rc = g_origSteamMatchmaking_GetNumLobbyMembers(self, lobbyID);
+    LOG_INFO("[H33 STEAM] ISteamMatchmaking::GetNumLobbyMembers(%llu) -> %d",
+             (unsigned long long)lobbyID, rc);
+    return rc;
+}
+
+struct H33SteamHookSpec {
+    const char* exportName;
+    void*       detour;
+    void**      original;
+};
+
+static void H33InstallSteamHooks() {
+    // DS2 ships steam_api64.dll next to DarkSoulsII.exe. By the time our mod
+    // init reaches here, DS2 has already loaded it — but fall back to
+    // LoadLibrary in case of ordering surprises (same pattern as ws2_32).
+    HMODULE steam = GetModuleHandleA("steam_api64.dll");
+    if (!steam) {
+        steam = LoadLibraryA("steam_api64.dll");
+    }
+    if (!steam) {
+        LOG_WARNING("  H33: steam_api64.dll not loaded; Steamworks hooks skipped");
+        return;
+    }
+
+    const H33SteamHookSpec specs[] = {
+        { "SteamAPI_ISteamUser_BLoggedOn",
+          reinterpret_cast<void*>(&H33SteamUser_BLoggedOnHook),
+          reinterpret_cast<void**>(&g_origSteamUser_BLoggedOn) },
+        { "SteamAPI_ISteamUser_GetSteamID",
+          reinterpret_cast<void*>(&H33SteamUser_GetSteamIDHook),
+          reinterpret_cast<void**>(&g_origSteamUser_GetSteamID) },
+        { "SteamAPI_ISteamUtils_GetServerRealTime",
+          reinterpret_cast<void*>(&H33SteamUtils_GetServerRealTimeHook),
+          reinterpret_cast<void**>(&g_origSteamUtils_GetServerRealTime) },
+        { "SteamAPI_ISteamUtils_IsOverlayEnabled",
+          reinterpret_cast<void*>(&H33SteamUtils_IsOverlayEnabledHook),
+          reinterpret_cast<void**>(&g_origSteamUtils_IsOverlayEnabled) },
+        { "SteamAPI_ISteamMatchmaking_GetNumLobbyMembers",
+          reinterpret_cast<void*>(&H33SteamMatchmaking_GetNumLobbyMembersHook),
+          reinterpret_cast<void**>(&g_origSteamMatchmaking_GetNumLobbyMembers) },
+    };
+
+    for (const auto& spec : specs) {
+        void* addr = reinterpret_cast<void*>(GetProcAddress(steam, spec.exportName));
+        if (!addr) {
+            // Older SDK builds may omit some exports — non-fatal, just log it.
+            LOG_WARNING("  H33: steam_api64!%s not found (older SDK?)", spec.exportName);
+            continue;
+        }
+        if (HookManager::GetInstance().InstallHook(addr, spec.detour, spec.original)) {
+            LOG_INFO("  HOOKED steam_api64!%s @ 0x%p (H33 repro)", spec.exportName, addr);
+        } else {
+            LOG_WARNING("  H33: failed to hook %s", spec.exportName);
+        }
+    }
+}
 #endif
 
 // ============================================================================
@@ -346,6 +457,11 @@ bool WinsockHooks::InstallHooks() {
     } else {
         LOG_WARNING("  H33: failed to hook ConnectEx (resolver=%p)", connectExAddr);
     }
+
+    // H-33 2026-05-26 extension (task #10): Steamworks SDK flat-C exports.
+    // Distinguishes hypothesis #2' (multiplexed Steam probe) from #3 (no
+    // network call at all). See docs/repro/h33-scope.md 2026-05-26 update #2.
+    H33InstallSteamHooks();
 #endif
 
     return true;
