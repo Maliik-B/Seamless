@@ -382,26 +382,61 @@ static const uint8_t kSteamNetPatched[] = {
     0xC3
 };
 
-// NOTE on the framerate popup ("Unable to play in online mode due to a
-// detected frame rate issue"): the FailWarn / InfoFailWarn / OfflineModeWindow
-// patches we previously tried each had its own failure mode --
-//   - FailWarn (+0xFD370) and InfoFailWarn (+0xFD230) are wrappers but the
-//     popup also fires via polymorphic vtable dispatch through three other
-//     FeSubState classes that share the same +0x104DB0 OnEnter, so patching
-//     the wrappers leaves those paths live.
-//   - Patching the shared +0x104DB0 OnEnter itself kills the popup but
-//     deadlocks the post-Start FSM because three legitimate substates rely
-//     on it.
-// The robust workaround is to cap FPS at the source so the framerate guard
-// never trips. DS2's physics is FPS-tied (durability / repair / certain
-// attack timings) and the engine was tuned for 60 FPS, so a 60-cap is the
-// correct setting for online play regardless of this mod.
+// GameServerLogin patch: same shape as OnlineCheck. Forces slot[8] to
+// return 0 so the shared OnEnter at +0x104ED0 sets state=3 (done) and
+// the FSM advances past GameServerLogin instead of dispatching FailWarn.
+static const uint8_t kGameServerLoginExpected[] = { 0x48, 0x89, 0x5C, 0x24, 0x08 };
+static const uint8_t kGameServerLoginPatched [] = { 0x33, 0xC0, 0xC3, 0x90, 0x90 };
+
+// UserPolicy patch: same shape as SteamNetCheck. UserPolicy is the last
+// substate in the title boot chain and does NOT use the shared OnEnter
+// (its slot[1] is +0xF9040, its own). The original function has three
+// early-exit success arms gated on byte flags at
+// [GameManager+0xA8]->[0xD8]+0x136d/e] and on [global 0x14160DE10+0xA0]
+// being null. In the patched-boot world none of those flags are set,
+// so the function falls through to the heavy-work arm which calls
+// 0x1400F5720 and writes [this+0x10]=1.
+// We force [this+0x10]=3 (matches the legitimate success arms at
+// +0xF9079 and +0xF90A9->+0xF9079) and return.
+static const uint8_t kUserPolicyExpected[] = {
+    0x48, 0x89, 0x6C, 0x24, 0x20, 0x56, 0x48, 0x83, 0xEC, 0x40
+};
+static const uint8_t kUserPolicyPatched[] = {
+    0xC7, 0x41, 0x10, 0x03, 0x00, 0x00, 0x00,
+    0x33, 0xC0,
+    0xC3
+};
+
+// OfflineModePopupCall patch (try-11): NOP just the 5-byte
+//   CALL 0x1404FE2A0
+// at exe+0x104DEA, inside FUN_140104DB0's [this+0x12]<0 arm.
+//
+// The popup-fire logger from try-10 captured this exact CALL firing the
+// framerate popup post-Press-Start (FE2A0 chain). +0x104DB0 is the
+// shared OnEnter of FOUR vtables, so patching the whole function (try-5)
+// deadlocked the legitimate JGE arm used by the other three classes.
+// This surgical NOP kills only the popup-fire CALL inside the popup-arm;
+// the JGE legitimate arm at +0x104DF4 onwards is untouched, and the
+// inner.vtable[11] side-effect call before the popup-fire still runs.
+// After the NOPs, the JMP 0x140104E80 right after the CALL still executes
+// and jumps to the function epilogue.
+//
+// Original CALL bytes:  E8 B1 94 3F 00   (CALL rel32, displacement = 0x4FE2A0 - (0x104DEA+5) = 0x3F94B1)
+// Patched bytes:        90 90 90 90 90   (5 NOPs)
+static const uint8_t kOfflinePopupCallExpected[] = { 0xE8, 0xB1, 0x94, 0x3F, 0x00 };
+static const uint8_t kOfflinePopupCallPatched [] = { 0x90, 0x90, 0x90, 0x90, 0x90 };
 
 static const BootPatchSite kSites[] = {
-    { "OnlineCheck",   0xF98C0,  sizeof(kOnlineCheckExpected),
-      kOnlineCheckExpected, kOnlineCheckPatched },
-    { "SteamNetCheck", 0xF8FB0,  sizeof(kSteamNetExpected),
-      kSteamNetExpected, kSteamNetPatched },
+    { "OnlineCheck",          0xF98C0,   sizeof(kOnlineCheckExpected),
+      kOnlineCheckExpected,          kOnlineCheckPatched },
+    { "SteamNetCheck",        0xF8FB0,   sizeof(kSteamNetExpected),
+      kSteamNetExpected,             kSteamNetPatched },
+    { "GameServerLogin",      0xF9820,   sizeof(kGameServerLoginExpected),
+      kGameServerLoginExpected,      kGameServerLoginPatched },
+    { "UserPolicy",           0xF9040,   sizeof(kUserPolicyExpected),
+      kUserPolicyExpected,           kUserPolicyPatched },
+    { "OfflinePopupCall",     0x104DEA,  sizeof(kOfflinePopupCallExpected),
+      kOfflinePopupCallExpected,     kOfflinePopupCallPatched },
 };
 
 } // namespace
