@@ -98,24 +98,50 @@ Deliverable: function address + signature for the soapstone-use
 handler. Documented in a new `tools/ghidra_h26b_use_item.py` script
 + results.
 
-### Task #2 — Find the sign-spawn primitive (or the sign-array structure)
+### Task #2 — Find the engine's receive/render-side sign-entity creation
 
-Two sub-options, take whichever turns up first:
+**Revised scope** (2026-05-27, after task #1 RE): sub-option 2A is dead.
+The engine's use-item dispatch goes through `FUN_14024F350` into
+session-manager vtable slots 0x78 / 0x98, which both reach the
+dormant protobuf send layer. No standalone "spawn sign" function is
+called by that path.
 
-  - **Sub-option A: find DS2's internal `SpawnSign(position, type, owner)`
-    function** (or equivalent). Same pattern as `ItemGive`: AOB scan
-    for a function that takes a position vector + sign type + owner
-    info, returns an entity handle. Call it directly from the mod
-    with a struct argument. Cleanest because the engine handles
-    rendering / interaction / lifecycle.
-  - **Sub-option B: characterize the sign-array data structure**
-    in memory and write entries directly. Worse because we'd have to
-    figure out and replicate the full lifecycle the engine normally
-    handles. Use only if A turns up nothing.
+What we actually need is the code that runs on the *receiving* side
+of a sign exchange: when DS2 normally parses a
+`RequestGetSignListResponse` protobuf (from FROM's matchmaking
+server), it walks the response and for each sign record creates an
+in-world entity -- position, orientation, owner name, item type, the
+interaction prompt. That entity-creation step is what makes signs
+visible and clickable. We need to call it ourselves with data we
+construct locally (for the placer) or receive via mod P2P (for
+peers).
 
-Deliverable: a `SpawnSign` C++ wrapper in
-`src/sync/sign_sync.cpp` (new file) following the `ResolveItemGive`
-pattern.
+Three parallel hunting strategies, run together:
+
+  - **Strategy 1: trace from the ParseHook.** The
+    `H26_REPRO_LOGGING` empirical hooks (already in
+    `src/hooks/session_hooks.cpp`) intercept every protobuf parse. If
+    we could get DS2 to receive a `RequestGetSignListResponse` even
+    once (synthetically, by injecting one through the parse layer),
+    the resulting LOG line points at the caller chain into the
+    rendering layer. Tricky because the session manager is dormant
+    and won't process the parse if we just call it.
+  - **Strategy 2: RTTI hunt for sign-entity classes.** Look for
+    `.?AVSummonSign...@@`, `.?AVSignEntity...@@`,
+    `.?AVOnlineSign...@@`, similar. Each candidate's vtable
+    constructor is the spawn primitive. Same approach as the PR #9
+    `tools/ghidra_h26_sign_hunt.py` script that found the protobuf
+    classes. Most promising route.
+  - **Strategy 3: sign-array / sign-list global hunt.** If the engine
+    tracks placed signs in a global list (similar to the player list
+    at NetSessionManager), find that global, dump its structure, and
+    work backward from "what writes new entries to this list?" That
+    writer is the spawn primitive.
+
+Deliverable: a `SpawnSign` C++ wrapper in `src/features/sign_sync.cpp`
+following the `ResolveItemGive` pattern -- pattern-scan to resolve
+the spawn function, typed struct argument for position / orientation
+/ type / owner, called directly from C++.
 
 ### Task #3 — Wire task #1 (intercept) to task #2 (spawn)
 
@@ -273,8 +299,20 @@ provides for us, rather than synchronising state that already exists.
 
 ## Locked decisions (2026-05-27)
 
-1. **Task #2 path: sub-option 2A first** (use DS2's internal sign-spawn
-   function if it exists), 2B as fallback if 2A turns up nothing.
+1. **Task #2 path**: original choice was 2A first, 2B fallback. **Sub-
+   option 2A is dead** (revised 2026-05-27 after task #1 RE). The
+   engine's soapstone-use path dispatches into vtable slots on the
+   *session-manager* object -- the same object whose RPC subsystem we
+   already confirmed dormant in Plan A. There is no standalone
+   "spawn sign entity in world" function that the use-item path
+   invokes; the engine's local-preview spawn happens as a side effect
+   of the (now-dormant) RPC send. **Task #2 will pursue sub-option 2B
+   from the start**: find the engine's receive/render-side
+   sign-entity creation -- the code that turns a "sign at position X,
+   owner Y" data record into a visible interactable in-world object.
+   This is the code FROM's server would normally feed via
+   `RequestGetSignListResponse`; we need to call it ourselves with
+   peer-broadcast data. See Task #2 below for the revised approach.
 2. **Code surface: `src/features/` tree**, not `src/sync/`. Plan B is
    the first explicit "mod-side feature reimplementation" and the
    directory naming should signal that pattern for follow-ons. Header
@@ -284,6 +322,26 @@ provides for us, rather than synchronising state that already exists.
    (tasks 1-6, "I place a sign, peer sees it") lands first. Summon
    gets its own diff after the MVP merges. See "Out of scope" below
    for the explicit deferral.
+
+## Task #1 outcome (2026-05-27)
+
+- **Soapstone-use dispatcher**: `FUN_1401a8f70` @ exe+0x1A8F70.
+  Signature: `bool __fastcall(void* ctx, uint32_t item_id, ...)`.
+  Branches on `item_id` against the soapstone enumeration table at
+  +0x10C3D70 (6 rows, 8 bytes each: `{u32 item_id, u32 index}`).
+  On match: calls `FUN_14024F350(vector_ptr, soapstone_index)`.
+  On miss: falls back to `FUN_1401A8E50` (generic item-use handler).
+  Single caller: `FUN_1401a8b90` @ exe+0x1A8B90.
+- **All 6 soapstone IDs** documented in
+  `tools/ghidra_h26b_sign_spawn_results.txt`. Indices 2-5 are
+  unknown variants (red, dragon, bell, invasion etc.); MVP only
+  routes on index 0.
+- **Hook strategy for task #3**: intercept at `FUN_14024F350`
+  (narrower than `FUN_1401a8f70` -- only fires for soapstone
+  use, not for any item). Check `EDX` (soapstone index); if 0,
+  route to mod-side spawn instead of letting the original run.
+  Other indices fall through to the original (probably no-op
+  because session manager is dormant, but doesn't hurt).
 
 ## Related
 

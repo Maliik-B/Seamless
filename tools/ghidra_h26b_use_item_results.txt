@@ -1,0 +1,57 @@
+======================================================================
+H-26 Plan B task #1: soapstone use-item handler hunt
+======================================================================
+
+### A. Item-ID literal occurrences ###
+
+  -- WhiteSignSoapstone = 0x03B280B0 --
+    occurrences: 1
+    code-section hits: 0  /  data-section hits: 1
+
+    Data-section hits (likely an item-DB record):
+
+      hit at 1410c3d70 (+0x10C3D70)
+    1410c3d68  00 00 00 00 00 00 00 00 B0 80 B2 03 00 00 00 00  ................
+    1410c3d78  C0 A7 B2 03 01 00 00 00 48 BB B2 03 02 00 00 00  ........H.......
+    1410c3d88  F0 1C B3 03 03 00 00 00  ........
+
+  -- SmallWhiteSignSoapstone = 0x03B2A7C0 --
+    occurrences: 1
+    code-section hits: 0  /  data-section hits: 1
+
+    Data-section hits (likely an item-DB record):
+
+      hit at 1410c3d78 (+0x10C3D78)
+    1410c3d70  B0 80 B2 03 00 00 00 00 C0 A7 B2 03 01 00 00 00  ................
+    1410c3d80  48 BB B2 03 02 00 00 00 F0 1C B3 03 03 00 00 00  H...............
+    1410c3d90  D0 CE B2 03 04 00 00 00  ........
+
+
+### B. RTTI string occurrences ###
+
+  -- ItemUse -- (10 hits)
+    [plain] 1410c13e8 (+0x10C13E8)  "ItemUse"
+    [plain] 1410c13f0 (+0x10C13F0)  "ItemUseLoop"
+    [plain] 1410c1412 (+0x10C1412)  "ItemUseCategory"
+    [plain] 1410c143a (+0x10C143A)  "ItemUse_Speed"
+    [plain] 1410c147c (+0x10C147C)  "ItemUseLoop"
+    [plain] 1410e30ba (+0x10E30BA)  "ItemUseAdjustHipsRotation"
+    [plain] 1410e30ea (+0x10E30EA)  "ItemUseAdustBlendWeight"
+    [plain] 1410e585e (+0x10E585E)  "ItemUse"
+    [plain] 14155e81d (+0x155E81D)  "ItemUseCheckWindowJob@FeInventoryJobFactory@@"
+    [plain] 141564e8b (+0x1564E8B)  "ItemUseCheck@@"
+
+  Found 0 RTTI class strings of interest
+
+======================================================================
+Done. Look for in the output:
+  - Code hits inside functions whose disasm contains a switch/cmp
+    on the item ID followed by a CALL to an unfamiliar function:
+    that CALL target is the per-item handler.
+  - Data hits with a function pointer (qword starting with 0x14...)
+    a few bytes after the item ID: that's an item-DB record with an
+    inline use-handler pointer.
+  - RTTI classes named *Soapstone* / *Sign*Item / similar: walk
+    their vtables in a follow-up pass (similar to the Plan A sign
+    hunt at tools/ghidra_h26_sign_hunt.py).
+======================================================================

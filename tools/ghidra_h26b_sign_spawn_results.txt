@@ -1,0 +1,200 @@
+======================================================================
+H-26 Plan B: full soapstone table + task #2 entry hunt
+======================================================================
+
+### A. Soapstone enumeration table @ +0x10C3D70 ###
+    layout: each row = uint32 item_id + uint32 index, 8 bytes total
+  row 0  +0x10C3D70  itemId=0x03B280B0  idx=0  WhiteSignSoapstone
+  row 1  +0x10C3D78  itemId=0x03B2A7C0  idx=1  SmallWhiteSignSoapstone
+  row 2  +0x10C3D80  itemId=0x03B2BB48  idx=2  (unknown soapstone)
+  row 3  +0x10C3D88  itemId=0x03B31CF0  idx=3  (unknown soapstone)
+  row 4  +0x10C3D90  itemId=0x03B2CED0  idx=4  (unknown soapstone)
+  row 5  +0x10C3D98  itemId=0x03B2F5E0  idx=5  (unknown soapstone)
+
+  bytes immediately after table end (+0x10C3DA0):
+    +0x10C3DA0  0A 00 00 00 00 00 00 00
+    +0x10C3DA8  80 6F 1A 40 01 00 00 00
+    +0x10C3DB0  14 00 00 00 00 00 00 00
+    +0x10C3DB8  40 64 1A 40 01 00 00 00
+
+
+### B. FUN_14024F350 -- soapstone-by-index dispatch ###
+
+  -- Method @ +0x24F300 --
+
+--- FUN_14024f300 @ +0x24F300 (21 bytes) ---
+  14024f300 (+0x24F300)  MOV RAX,qword ptr [0x1416148f0]
+  14024f307 (+0x24F307)  MOV RDX,qword ptr [RAX + 0x22f0]
+  14024f30e (+0x24F30E)  MOV RAX,RCX
+  14024f311 (+0x24F311)  MOV qword ptr [RCX],RDX
+  14024f314 (+0x24F314)  RET
+
+  -- Method @ +0x24F320 --
+
+--- FUN_14024f320 @ +0x24F320 (48 bytes) ---
+  14024f320 (+0x24F320)  SUB RSP,0x28
+  14024f324 (+0x24F324)  MOV RCX,qword ptr [RCX]
+  14024f327 (+0x24F327)  TEST RCX,RCX
+  14024f32a (+0x24F32A)  JNZ 0x14024f333
+  14024f32c (+0x24F32C)  XOR AL,AL
+  14024f32e (+0x24F32E)  ADD RSP,0x28
+  14024f332 (+0x24F332)  RET
+  14024f333 (+0x24F333)  CALL 0x140513270
+  14024f338 (+0x24F338)  TEST RAX,RAX
+  14024f33b (+0x24F33B)  JZ 0x14024f32c
+  14024f33d (+0x24F33D)  MOV RCX,RAX
+  14024f340 (+0x24F340)  CALL 0x14025ea40
+  14024f345 (+0x24F345)  CMP EAX,0x6
+  14024f348 (+0x24F348)  SETZ AL
+  14024f34b (+0x24F34B)  ADD RSP,0x28
+  14024f34f (+0x24F34F)  RET
+
+  -- Method @ +0x24F350 (soapstone-by-index dispatch -- task #2 entry) --
+
+--- FUN_14024f350 @ +0x24F350 (106 bytes) ---
+  14024f350 (+0x24F350)  PUSH RBX
+  14024f352 (+0x24F352)  SUB RSP,0x20
+  14024f356 (+0x24F356)  MOV RCX,qword ptr [RCX]
+  14024f359 (+0x24F359)  MOVSXD RBX,EDX
+  14024f35c (+0x24F35C)  TEST RCX,RCX
+  14024f35f (+0x24F35F)  JNZ 0x14024f369
+  14024f361 (+0x24F361)  XOR AL,AL
+  14024f363 (+0x24F363)  ADD RSP,0x20
+  14024f367 (+0x24F367)  POP RBX
+  14024f368 (+0x24F368)  RET
+  14024f369 (+0x24F369)  CALL 0x1405132a0
+  14024f36e (+0x24F36E)  MOV R9,RAX
+  14024f371 (+0x24F371)  LEA RAX,[0x1415756f0]
+  14024f378 (+0x24F378)  MOV RCX,qword ptr [RAX + RBX*0x8]
+  14024f37c (+0x24F37C)  MOV qword ptr [RSP + 0x30],RCX
+  14024f381 (+0x24F381)  MOV R8D,ECX
+  14024f384 (+0x24F384)  TEST ECX,ECX
+  14024f386 (+0x24F386)  JZ 0x14024f3a6
+  14024f388 (+0x24F388)  DEC R8D
+  14024f38b (+0x24F38B)  JNZ 0x14024f361
+  14024f38d (+0x24F38D)  MOV RAX,qword ptr [R9]
+  14024f390 (+0x24F390)  SHR RCX,0x20
+  14024f394 (+0x24F394)  MOVZX EDX,CL
+  14024f397 (+0x24F397)  MOV RCX,R9
+  14024f39a (+0x24F39A)  ADD RSP,0x20
+  14024f39e (+0x24F39E)  POP RBX
+  14024f39f (+0x24F39F)  JMP qword ptr [RAX + 0x98]
+  14024f3a6 (+0x24F3A6)  MOV RAX,qword ptr [R9]
+  14024f3a9 (+0x24F3A9)  MOVZX EDX,byte ptr [RSP + 0x34]
+  14024f3ae (+0x24F3AE)  MOV RCX,R9
+  14024f3b1 (+0x24F3B1)  ADD RSP,0x20
+  14024f3b5 (+0x24F3B5)  POP RBX
+  14024f3b6 (+0x24F3B6)  JMP qword ptr [RAX + 0x78]
+
+  -- Method @ +0x24F3C0 --
+
+--- FUN_14024f3c0 @ +0x24F3C0 (73 bytes) ---
+  14024f3c0 (+0x24F3C0)  PUSH RBX
+  14024f3c2 (+0x24F3C2)  SUB RSP,0x20
+  14024f3c6 (+0x24F3C6)  MOV RCX,qword ptr [RCX]
+  14024f3c9 (+0x24F3C9)  XOR EBX,EBX
+  14024f3cb (+0x24F3CB)  TEST RCX,RCX
+  14024f3ce (+0x24F3CE)  JNZ 0x14024f3de
+  14024f3d0 (+0x24F3D0)  MOV EAX,EBX
+  14024f3d2 (+0x24F3D2)  CMP EAX,0x1
+  14024f3d5 (+0x24F3D5)  SETZ AL
+  14024f3d8 (+0x24F3D8)  ADD RSP,0x20
+  14024f3dc (+0x24F3DC)  POP RBX
+  14024f3dd (+0x24F3DD)  RET
+  14024f3de (+0x24F3DE)  CALL 0x140513270
+  14024f3e3 (+0x24F3E3)  TEST RAX,RAX
+  14024f3e6 (+0x24F3E6)  JZ 0x14024f3d0
+  14024f3e8 (+0x24F3E8)  MOV RCX,RAX
+  14024f3eb (+0x24F3EB)  CALL 0x14025ed80
+  14024f3f0 (+0x24F3F0)  MOVSXD RCX,EAX
+  14024f3f3 (+0x24F3F3)  LEA RAX,[0x141575720]
+  14024f3fa (+0x24F3FA)  MOV EAX,dword ptr [RAX + RCX*0x4]
+  14024f3fd (+0x24F3FD)  CMP EAX,0x1
+  14024f400 (+0x24F400)  SETZ AL
+  14024f403 (+0x24F403)  ADD RSP,0x20
+  14024f407 (+0x24F407)  POP RBX
+  14024f408 (+0x24F408)  RET
+
+  -- Method @ +0x24F410 --
+
+--- FUN_14024f410 @ +0x24F410 (15 bytes) ---
+  14024f410 (+0x24F410)  MOV RCX,qword ptr [RCX]
+  14024f413 (+0x24F413)  TEST RCX,RCX
+  14024f416 (+0x24F416)  JNZ 0x140513600
+  14024f41c (+0x24F41C)  XOR AL,AL
+  14024f41e (+0x24F41E)  RET
+
+  -- Method @ +0x24F420 --
+
+--- FUN_14024f420 @ +0x24F420 (55 bytes) ---
+  14024f420 (+0x24F420)  SUB RSP,0x28
+  14024f424 (+0x24F424)  MOV RCX,qword ptr [RCX]
+  14024f427 (+0x24F427)  TEST RCX,RCX
+  14024f42a (+0x24F42A)  JNZ 0x14024f433
+  14024f42c (+0x24F42C)  XOR EAX,EAX
+  14024f42e (+0x24F42E)  ADD RSP,0x28
+  14024f432 (+0x24F432)  RET
+  14024f433 (+0x24F433)  CALL 0x140513270
+  14024f438 (+0x24F438)  TEST RAX,RAX
+  14024f43b (+0x24F43B)  JZ 0x14024f42c
+  14024f43d (+0x24F43D)  MOV RCX,RAX
+  14024f440 (+0x24F440)  CALL 0x14025ed80
+  14024f445 (+0x24F445)  MOVSXD RCX,EAX
+  14024f448 (+0x24F448)  LEA RAX,[0x141575720]
+  14024f44f (+0x24F44F)  MOV EAX,dword ptr [RAX + RCX*0x4]
+  14024f452 (+0x24F452)  ADD RSP,0x28
+  14024f456 (+0x24F456)  RET
+
+
+### C. Callers of FUN_1401a8f70 (the dispatcher itself) ###
+
+  FUN_1401a8f70 callers (code-flow refs): 1
+    from 1401a8d4c (+0x1A8D4C) in FUN_1401a8b90 @ +0x1A8B90 [UNCONDITIONAL_CALL]
+
+  Caller function heads (first ~40 inst):
+
+--- FUN_1401a8b90 @ +0x1A8B90 (462 bytes) ---
+  1401a8b90 (+0x1A8B90)  MOV qword ptr [RSP + 0x10],RSI
+  1401a8b95 (+0x1A8B95)  PUSH RDI
+  1401a8b96 (+0x1A8B96)  SUB RSP,0x20
+  1401a8b9a (+0x1A8B9A)  MOV RDI,RCX
+  1401a8b9d (+0x1A8B9D)  MOV RCX,qword ptr [RCX + 0x8]
+  1401a8ba1 (+0x1A8BA1)  MOV ESI,EDX
+  1401a8ba3 (+0x1A8BA3)  CALL 0x1401bb0f0
+  1401a8ba8 (+0x1A8BA8)  MOV R9,qword ptr [RDI + 0x8]
+  1401a8bac (+0x1A8BAC)  MOV RAX,qword ptr [R9 + 0x10]
+  1401a8bb0 (+0x1A8BB0)  MOV R8,qword ptr [RAX + 0x10]
+  1401a8bb4 (+0x1A8BB4)  TEST R8,R8
+  1401a8bb7 (+0x1A8BB7)  JZ 0x1401a8bef
+  1401a8bb9 (+0x1A8BB9)  CMP byte ptr [R8 + 0x2d],0x1
+  1401a8bbe (+0x1A8BBE)  JC 0x1401a8bd8
+  1401a8bc0 (+0x1A8BC0)  TEST R8,R8
+  1401a8bc3 (+0x1A8BC3)  JZ 0x1401a8bef
+  1401a8bc5 (+0x1A8BC5)  MOVZX EAX,word ptr [R8 + 0xa]
+  1401a8bca (+0x1A8BCA)  TEST EAX,EAX
+  1401a8bcc (+0x1A8BCC)  JZ 0x1401a8bef
+  1401a8bce (+0x1A8BCE)  MOV RAX,qword ptr [R8 + 0x48]
+  1401a8bd2 (+0x1A8BD2)  LEA RCX,[R8 + RAX*0x1]
+  1401a8bd6 (+0x1A8BD6)  JMP 0x1401a8bf1
+  1401a8bd8 (+0x1A8BD8)  TEST R8,R8
+  1401a8bdb (+0x1A8BDB)  JZ 0x1401a8bef
+  1401a8bdd (+0x1A8BDD)  MOVZX EAX,word ptr [R8 + 0xa]
+  1401a8be2 (+0x1A8BE2)  TEST EAX,EAX
+  1401a8be4 (+0x1A8BE4)  JZ 0x1401a8bef
+  1401a8be6 (+0x1A8BE6)  MOV ECX,dword ptr [R8 + 0x44]
+  1401a8bea (+0x1A8BEA)  ADD RCX,R8
+  1401a8bed (+0x1A8BED)  JMP 0x1401a8bf1
+  1401a8bef (+0x1A8BEF)  XOR ECX,ECX
+  1401a8bf1 (+0x1A8BF1)  CMP RCX,qword ptr [R9 + 0x48]
+  1401a8bf5 (+0x1A8BF5)  JZ 0x1401a8d51
+  1401a8bfb (+0x1A8BFB)  MOV qword ptr [RSP + 0x30],RBX
+  1401a8c00 (+0x1A8C00)  CALL 0x1401ab5e0
+  1401a8c05 (+0x1A8C05)  MOV RBX,RAX
+  1401a8c08 (+0x1A8C08)  TEST RAX,RAX
+  1401a8c0b (+0x1A8C0B)  JZ 0x1401a8ca7
+  1401a8c11 (+0x1A8C11)  XOR EDX,EDX
+  1401a8c13 (+0x1A8C13)  MOV RCX,RAX
+
+======================================================================
+Done.
+======================================================================
