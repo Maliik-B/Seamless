@@ -1,0 +1,232 @@
+=== DS2 Seamless Co-op Log ===
+Started: 2026-05-26 11:07:15
+===============================
+[11:07:15] [INFO ] ========================================
+[11:07:15] [INFO ] DLL_PROCESS_ATTACH - DLL IS LOADING!
+[11:07:15] [INFO ] DS2 Seamless Co-op Mod v1.0.0
+[11:07:15] [INFO ] DLL Module Handle: 0x00007FFCB6990000
+[11:07:15] [INFO ] Process ID: 20476
+[11:07:15] [INFO ] ========================================
+[11:07:15] [INFO ] DarkSoulsII.exe SHA-256: 0045931B8914504531B7864A9488D396DC50CBAF524964016E1D69C3D1173131 (allowlisted)
+[11:07:15] [INFO ] DllMain returning TRUE (success)
+[11:07:15] [INFO ] Mod initialization thread started...
+[11:07:18] [INFO ] Calling SeamlessCoopMod::Initialize()...
+[11:07:18] [INFO ] ==========================================
+[11:07:18] [INFO ] Initializing Seamless Co-op Mod...
+[11:07:18] [INFO ] ==========================================
+[11:07:18] [INFO ] Loading configuration...
+[11:07:18] [INFO ] Configuration loaded from file
+[11:07:18] [INFO ] Detecting game version...
+[11:07:18] [INFO ]   Module base: 0x00007FF6422C0000
+[11:07:18] [INFO ]   Assuming Steam latest version
+[11:07:18] [INFO ] [1/6] Initializing MinHook...
+[11:07:18] [INFO ] Initializing MinHook...
+[11:07:18] [INFO ] MinHook initialized
+[11:07:18] [INFO ]   MinHook ready
+[11:07:18] [INFO ] [2/6] Scanning for game addresses...
+[11:07:18] [INFO ] === Address Resolution Starting ===
+[11:07:18] [INFO ] Scanning for GameManagerImp...
+[11:07:18] [INFO ] Scanning for pattern in module (base: 0x00007FF6422C0000, size: 0x1D76000)
+[11:07:18] [INFO ] Pattern found at: 0x00007FF6426B5219 (offset: 0x3F5219)
+[11:07:18] [INFO ] RIP resolution: instruction=0x00007FF6426B5219, offset=3, size=7 -> absolute=0x00007FF6438D48F0
+[11:07:18] [INFO ] Scanning for NetSessionManager...
+[11:07:18] [INFO ] Scanning for pattern in module (base: 0x00007FF6422C0000, size: 0x1D76000)
+[11:07:19] [INFO ] Pattern found at: 0x00007FF6427DB272 (offset: 0x51B272)
+[11:07:19] [INFO ] RIP resolution: instruction=0x00007FF6427DB272, offset=3, size=7 -> absolute=0x00007FF6438D6CF8
+[11:07:19] [INFO ] Scanning for pattern in module (base: 0x00007FF6422C0000, size: 0x1D76000)
+[11:07:19] [INFO ] Pattern found at: 0x00007FF6425B0C30 (offset: 0x2F0C30)
+[11:07:19] [INFO ] RIP resolution: instruction=0x00007FF6425B0C30, offset=3, size=7 -> absolute=0x00007FF6439351F8
+[11:07:21] [INFO ] GameManagerImp = 0x00007FF41AC60260 (after 5 retries)
+[11:07:22] [INFO ] NetSessionManager = 0x00007FF40DC20CE0 (after 6 retries)
+[11:07:22] [INFO ] === Address Resolution Complete ===
+[11:07:22] [INFO ]   GameManagerImp:    0x00007FF41AC60260 [OK]
+[11:07:22] [INFO ]   NetSessionManager: 0x00007FF40DC20CE0 [OK]
+[11:07:22] [INFO ]   KatanaMainApp:     0x000000C6DC5FF4F0 [OK]
+[11:07:22] [INFO ]   GameManagerImp:    0x00007FF41AC60260 [OK]
+[11:07:22] [INFO ]   NetSessionManager: 0x00007FF40DC20CE0 [OK]
+[11:07:22] [INFO ] [3/6] Installing protobuf interception hooks...
+[11:07:22] [INFO ] ==========================================
+[11:07:22] [INFO ] Installing Protobuf Interception Hooks...
+[11:07:22] [INFO ] ==========================================
+[11:07:22] [INFO ] Scanning for SerializeWithCachedSizesToArray...
+[11:07:22] [INFO ] Scanning for pattern in module (base: 0x00007FF6422C0000, size: 0x1D76000)
+[11:07:22] [INFO ] Pattern found at: 0x00007FF642977FC0 (offset: 0x6B7FC0)
+[11:07:22] [INFO ]   Found at: 0x00007FF642977FC0
+[11:07:22] [INFO ]   HOOKED SerializeWithCachedSizesToArray
+[11:07:22] [INFO ] Scanning for ParseFromArray...
+[11:07:22] [INFO ] Scanning for pattern in module (base: 0x00007FF6422C0000, size: 0x1D76000)
+[11:07:22] [INFO ] Pattern found at: 0x00007FF642977EA0 (offset: 0x6B7EA0)
+[11:07:22] [INFO ]   Found at: 0x00007FF642977EA0
+[11:07:22] [INFO ]   HOOKED ParseFromArray
+[11:07:22] [INFO ] ==========================================
+[11:07:22] [INFO ] Protobuf Hooks Result: 2/2 installed
+[11:07:22] [INFO ] ==========================================
+[11:07:22] [INFO ] Protobuf interception active.
+[11:07:22] [INFO ]   Protobuf hooks ACTIVE - disconnect blocking available
+[11:07:22] [INFO ] [SEAMLESS] Disconnect blocking ENABLED
+[11:07:22] [INFO ] [4/7] Installing Winsock hooks...
+[11:07:22] [INFO ] Installing Winsock hooks...
+[11:07:22] [INFO ]   HOOKED Winsock connect()
+[11:07:22] [INFO ]   HOOKED ws2_32!getaddrinfo (H33 repro)
+[11:07:22] [INFO ]   HOOKED ws2_32!GetAddrInfoW (H33 repro)
+[11:07:22] [INFO ]   HOOKED ws2_32!WSAConnect (H33 repro)
+[11:07:22] [INFO ]   HOOKED ws2_32!WSAConnectByNameA (H33 repro)
+[11:07:22] [INFO ]   HOOKED ws2_32!WSAConnectByNameW (H33 repro)
+[11:07:23] [INFO ]   HOOKED mswsock!ConnectEx @ 0x00007FFD05A05FE0 (H33 repro)
+[11:07:23] [INFO ]   HOOKED steam_api64!SteamAPI_Init @ 000000006FD543A0 (H33 repro)
+[11:07:23] [INFO ]   HOOKED steam_api64!SteamAPI_InitSafe @ 000000006FD54390 (H33 repro)
+[11:07:23] [INFO ] [H33 STEAM] Installing vtable hooks (trigger=immediate)
+[11:07:23] [INFO ] [H33 STEAM] Accessors -> User=00000244B49D1BE0 Utils=00000244B49F17B0 Matchmaking=00000244B49F17E0
+[11:07:23] [INFO ] [H33 STEAM] ISteamUser vtbl @ 00007FFC3348BDF8 (this=00000244B49D1BE0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 0] = steamclient64.dll+0x6f8140 (00007FFC328B8140)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 1] = steamclient64.dll+0x6f36f0 (00007FFC328B36F0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 2] = steamclient64.dll+0x6f7c40 (00007FFC328B7C40)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 3] = steamclient64.dll+0x701a60 (00007FFC328C1A60)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 4] = steamclient64.dll+0x6f8f10 (00007FFC328B8F10)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 5] = steamclient64.dll+0x701ae0 (00007FFC328C1AE0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 6] = steamclient64.dll+0x701660 (00007FFC328C1660)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 7] = steamclient64.dll+0x6fc530 (00007FFC328BC530)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 8] = steamclient64.dll+0x64b380 (00007FFC3280B380)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[ 9] = steamclient64.dll+0x6547a0 (00007FFC328147A0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[10] = steamclient64.dll+0x701700 (00007FFC328C1700)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUser[11] = steamclient64.dll+0x701570 (00007FFC328C1570)
+[11:07:23] [INFO ] [H33 STEAM] ISteamUtils vtbl @ 00007FFC3348D6B8 (this=00000244B49F17B0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 0] = steamclient64.dll+0x6f36f0 (00007FFC328B36F0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 1] = steamclient64.dll+0x6f8420 (00007FFC328B8420)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 2] = steamclient64.dll+0x6f7cb0 (00007FFC328B7CB0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 3] = steamclient64.dll+0x6f9100 (00007FFC328B9100)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 4] = steamclient64.dll+0x6f90d0 (00007FFC328B90D0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 5] = steamclient64.dll+0x6f90c0 (00007FFC328B90C0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 6] = steamclient64.dll+0x6f7ff0 (00007FFC328B7FF0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 7] = steamclient64.dll+0x703200 (00007FFC328C3200)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 8] = steamclient64.dll+0x6f8690 (00007FFC328B8690)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[ 9] = steamclient64.dll+0x7031b0 (00007FFC328C31B0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[10] = steamclient64.dll+0x703490 (00007FFC328C3490)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[11] = steamclient64.dll+0x6f92c0 (00007FFC328B92C0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[12] = steamclient64.dll+0x6f7e60 (00007FFC328B7E60)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[13] = steamclient64.dll+0x7031a0 (00007FFC328C31A0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[14] = steamclient64.dll+0x6f51e0 (00007FFC328B51E0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[15] = steamclient64.dll+0x6f5200 (00007FFC328B5200)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[16] = steamclient64.dll+0x6f5280 (00007FFC328B5280)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[17] = steamclient64.dll+0x703280 (00007FFC328C3280)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[18] = steamclient64.dll+0x702d40 (00007FFC328C2D40)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[19] = steamclient64.dll+0x6f8180 (00007FFC328B8180)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[20] = steamclient64.dll+0x703550 (00007FFC328C3550)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[21] = steamclient64.dll+0x6f80e0 (00007FFC328B80E0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[22] = steamclient64.dll+0x6f8120 (00007FFC328B8120)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamUtils[23] = steamclient64.dll+0x1567c40 (00007FFC33727C40)
+[11:07:23] [INFO ] [H33 STEAM] ISteamMatchmaking vtbl @ 00007FFC334849C0 (this=00000244B49F17E0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 0] = steamclient64.dll+0x6f8140 (00007FFC328B8140)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 1] = steamclient64.dll+0x6fb310 (00007FFC328BB310)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 2] = steamclient64.dll+0x6fad30 (00007FFC328BAD30)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 3] = steamclient64.dll+0x6fb470 (00007FFC328BB470)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 4] = steamclient64.dll+0x6f36f0 (00007FFC328B36F0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 5] = steamclient64.dll+0x6f8420 (00007FFC328B8420)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 6] = steamclient64.dll+0x6f9270 (00007FFC328B9270)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 7] = steamclient64.dll+0x6f7cb0 (00007FFC328B7CB0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 8] = steamclient64.dll+0x6f9250 (00007FFC328B9250)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[ 9] = steamclient64.dll+0x6f9100 (00007FFC328B9100)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[10] = steamclient64.dll+0x6f90d0 (00007FFC328B90D0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[11] = steamclient64.dll+0x6f90c0 (00007FFC328B90C0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[12] = steamclient64.dll+0x6f9070 (00007FFC328B9070)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[13] = steamclient64.dll+0x6f7fd0 (00007FFC328B7FD0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[14] = steamclient64.dll+0x6f8690 (00007FFC328B8690)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[15] = steamclient64.dll+0x6f7c00 (00007FFC328B7C00)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[16] = steamclient64.dll+0x6f8130 (00007FFC328B8130)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[17] = steamclient64.dll+0x6f6ca0 (00007FFC328B6CA0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[18] = steamclient64.dll+0x6fb3c0 (00007FFC328BB3C0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[19] = steamclient64.dll+0x6f9290 (00007FFC328B9290)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[20] = steamclient64.dll+0x6f83f0 (00007FFC328B83F0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[21] = steamclient64.dll+0x6f7fe0 (00007FFC328B7FE0)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[22] = steamclient64.dll+0x6fb370 (00007FFC328BB370)
+[11:07:23] [INFO ] [H33 STEAM]   ISteamMatchmaking[23] = steamclient64.dll+0x6f7e60 (00007FFC328B7E60)
+[11:07:23] [INFO ]   HOOKED ISteamUser::BLoggedOn @ 00007FFC328B36F0 (slot 1, H33 repro)
+[11:07:23] [INFO ]   HOOKED ISteamUser::GetSteamID @ 00007FFC328B7C40 (slot 2, H33 repro)
+[11:07:23] [INFO ]   HOOKED ISteamUtils::GetServerRealTime @ 00007FFC328B9100 (slot 3, H33 repro)
+[11:07:23] [INFO ] [4/7] Setting up server redirect to 127.0.0.1:50031...
+[11:07:23] [INFO ] [NET] Server redirect configured: 127.0.0.1:50031
+[11:07:23] [INFO ] [5/7] Installing game state hooks...
+[11:07:23] [INFO ] Installing game state hooks...
+[11:07:23] [INFO ] Game state hooks: no addresses available (non-critical)
+[11:07:23] [INFO ] Protobuf interception handles disconnect prevention.
+[11:07:23] [INFO ] [6/7] Initializing subsystems...
+[11:07:23] [INFO ] Initializing peer manager on port 27015...
+[11:07:23] [INFO ] Peer manager initialized, local ID: 384561165, port: 27015
+[11:07:23] [INFO ]   Network manager ready (port 27015)
+[11:07:23] [INFO ] [REDIRECT] Installing server redirect to 127.0.0.1
+[11:07:23] [INFO ] Initializing session manager...
+[11:07:23] [INFO ] Session manager initialized
+[11:07:23] [INFO ]   Session manager ready
+[11:07:23] [INFO ] Installing DX11 Present hook...
+[11:07:23] [INFO ] [REDIRECT] Loaded public key from ds2_server_public.key (426 bytes)
+[11:07:23] [INFO ] [REDIRECT] Patching server hostname to: 127.0.0.1
+[11:07:23] [INFO ] IDXGISwapChain::Present at 00007FFD0446D9F0
+[11:07:23] [INFO ] IDXGISwapChain::ResizeBuffers at 00007FFD04499D40
+[11:07:23] [INFO ] [PRESENT] First Present call intercepted! swapChain=00000244FC839120
+[11:07:23] [INFO ] [PRESENT] Device=00000244B7D6E410 Context=00000244B7D7C388
+[11:07:23] [INFO ] RTV (re)built: 1920x1080
+[11:07:23] [INFO ] ImGui initialized on DX11 device (1920x1080)
+[11:07:23] [INFO ] Notification: Seamless Co-op loaded  |  INSERT to open menu
+[11:07:23] [INFO ] H-20: emergency-disable hotkey armed (ctrl=1 shift=1 alt=0 vk=0x23)
+[11:07:23] [INFO ] [REDIRECT] Patched hostname at 0x00007FF643394AB0
+[11:07:23] [INFO ] [REDIRECT] Patched hostname at 0x00007FF643394AAF
+[11:07:23] [INFO ] [REDIRECT] Hostname patching complete
+[11:07:23] [INFO ] [REDIRECT] Patching RSA public key...
+[11:07:23] [INFO ] [REDIRECT] Patched RSA key at 0x00007FF643394B40
+[11:07:23] [INFO ] [REDIRECT] RSA key patching complete
+[11:07:23] [INFO ] [REDIRECT] Server redirect installed successfully
+[11:07:23] [INFO ] ResizeBuffers hook installed
+[11:07:23] [INFO ] Present hook installed — ImGui initializes on first game frame
+[11:07:23] [INFO ]   DX11 Present hook installed
+[11:07:23] [INFO ] Overlay initialized
+[11:07:23] [INFO ]   UI overlay ready (Press INSERT for menu)
+[11:07:23] [INFO ] ==========================================
+[11:07:23] [INFO ] SEAMLESS CO-OP INITIALIZATION COMPLETE
+[11:07:23] [INFO ] ==========================================
+[11:07:23] [INFO ]   Addresses resolved: YES
+[11:07:23] [INFO ]   Protobuf hooks:     ACTIVE
+[11:07:23] [INFO ]   Disconnect blocking: ENABLED
+[11:07:23] [INFO ] 
+[11:07:23] [INFO ]   Press INSERT to open co-op menu
+[11:07:23] [INFO ]   Host a session or join via IP
+[11:07:23] [INFO ]   Sessions persist through boss kills and deaths
+[11:07:23] [INFO ] ==========================================
+[11:07:23] [INFO ] ========================================
+[11:07:23] [INFO ] MOD INITIALIZED SUCCESSFULLY!
+[11:07:23] [INFO ] Press INSERT in-game for co-op menu
+[11:07:23] [INFO ] ========================================
+[11:07:23] [INFO ] Update thread started
+[11:07:23] [INFO ] Title screen notifier thread started
+[11:07:23] [INFO ] ========================================
+[11:07:23] [INFO ] WINDOW TITLE UPDATED!
+[11:07:23] [INFO ] ========================================
+[11:07:23] [INFO ] Title bar now shows: DARK SOULS II * SEAMLESS CO-OP ACTIVE * Press INSERT for Menu
+[11:07:23] [INFO ] 
+[11:07:23] [INFO ] This confirms the mod is loaded and active!
+[11:07:23] [INFO ] Look at the top of your game window!
+[11:07:23] [INFO ] ========================================
+[11:07:53] [INFO ] [H33 DNS] frpg2-steam64-ope-login.fromsoftware-game.net -> 44.235.185.248 (W)
+[11:07:53] [INFO ] [H33 DNS] frpg2-steam64-ope-login.fromsoftware-game.net -> 54.201.29.248 (W)
+[11:07:53] [INFO ] [H33 DNS] frpg2-steam64-ope-login.fromsoftware-game.net -> 44.235.185.248
+[11:07:53] [INFO ] [H33 DNS] frpg2-steam64-ope-login.fromsoftware-game.net -> 54.201.29.248
+[11:07:53] [INFO ] [NET] Game connecting to 54.201.29.248:50031
+[11:07:53] [INFO ] [NET] REDIRECTING 54.201.29.248:50031 to custom server 127.0.0.1:50031 (keeping port)
+[11:07:53] [INFO ] [NET] Connection redirected to 127.0.0.1:50031
+[11:07:55] [INFO ] [NET] Game connecting to 44.235.185.248:50031
+[11:07:55] [INFO ] [NET] REDIRECTING 44.235.185.248:50031 to custom server 127.0.0.1:50031 (keeping port)
+[11:07:55] [INFO ] [NET] Connection redirected to 127.0.0.1:50031
+[11:08:44] [INFO ] Shutting down mod...
+[11:08:44] [INFO ] Shutting down mod...
+[11:08:44] [INFO ] [SEAMLESS] Disconnect blocking DISABLED
+[11:08:44] [INFO ] Blocked 0 disconnect messages during this session
+[11:08:44] [INFO ] Total protobuf messages processed: 0
+[11:08:44] [INFO ] Shutting down session manager...
+[11:08:44] [INFO ] Session manager shut down
+[11:08:44] [INFO ] Shutting down peer manager...
+[11:08:44] [INFO ] Uninstalling protobuf hooks...
+[11:08:44] [INFO ] Uninstalling Winsock hooks...
+[11:08:44] [INFO ] Uninstalling game state hooks...
+[11:08:44] [INFO ] Shutting down MinHook...
+[11:08:44] [INFO ] Mod shutdown complete
+===============================
+Ended: 2026-05-26 11:08:44

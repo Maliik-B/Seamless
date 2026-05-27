@@ -38,12 +38,22 @@
         "DS2COOP_ENABLE_ASAN": "ON",
         "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "OFF"
       }
+    },
+    {
+      "name": "H33Repro",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_TESTS": "OFF",
+        "DS2COOP_H33_REPRO_LOGGING": "ON"
+      }
     }
   ],
   "buildPresets": [
     { "name": "Release",        "configurePreset": "Release",        "configuration": "Release" },
     { "name": "RelWithDebInfo", "configurePreset": "RelWithDebInfo", "configuration": "RelWithDebInfo" },
-    { "name": "RelWithAsan",    "configurePreset": "RelWithAsan",    "configuration": "RelWithDebInfo" }
+    { "name": "RelWithAsan",    "configurePreset": "RelWithAsan",    "configuration": "RelWithDebInfo" },
+    { "name": "H33Repro",       "configurePreset": "H33Repro",       "configuration": "RelWithDebInfo" }
   ],
   "testPresets": [
     {

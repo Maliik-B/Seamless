@@ -1,0 +1,103 @@
+======================================================================
+FUN_1400fd230 identification + disassembly
+======================================================================
+  Entry: FUN_1400fd230 (+0xFD230)
+  Body bytes: 319
+  callers (CALL refs): 0
+  ALL refs (including data/vtable): 2
+    from 1418aa74c (+0x18AA74C) [DATA]
+    from 1410bd850 (+0x10BD850) [DATA]
+
+  --- disassembly ---
+    1400fd230 (+0xFD230) MOV qword ptr [RSP + 0x10],RBX
+    1400fd235 (+0xFD235) PUSH RDI
+    1400fd236 (+0xFD236) SUB RSP,0xa0
+    1400fd23d (+0xFD23D) MOV RAX,qword ptr [0x1415e1c50]
+    1400fd244 (+0xFD244) XOR RAX,RSP
+    1400fd247 (+0xFD247) MOV qword ptr [RSP + 0x90],RAX
+    1400fd24f (+0xFD24F) MOV RAX,qword ptr [0x1416148f0]
+    1400fd256 (+0xFD256) MOV RDI,RCX
+    1400fd259 (+0xFD259) MOV RCX,qword ptr [RAX + 0x22f0]
+    1400fd260 (+0xFD260) TEST RCX,RCX
+    1400fd263 (+0xFD263) JZ 0x1400fd280
+    1400fd265 (+0xFD265) CALL 0x1405132a0
+    1400fd26a (+0xFD26A) TEST RAX,RAX
+    1400fd26d (+0xFD26D) JZ 0x1400fd280
+    1400fd26f (+0xFD26F) MOV R8,qword ptr [RAX]
+    1400fd272 (+0xFD272) LEA RDX,[RSP + 0x28]
+    1400fd277 (+0xFD277) MOV RCX,RAX
+    1400fd27a (+0xFD27A) CALL qword ptr [R8 + 0x40]
+    1400fd27e (+0xFD27E) JMP 0x1400fd28a
+    1400fd280 (+0xFD280) LEA RCX,[RSP + 0x20]
+    1400fd285 (+0xFD285) CALL 0x14028f310
+    1400fd28a (+0xFD28A) MOV EDX,dword ptr [RAX]
+    1400fd28c (+0xFD28C) LEA R8,[0x1410bd8b0]
+    1400fd293 (+0xFD293) LEA RCX,[RSP + 0x30]
+    1400fd298 (+0xFD298) MOV R9D,0x5e
+    1400fd29e (+0xFD29E) CALL 0x1402d7af0
+    1400fd2a3 (+0xFD2A3) CMP qword ptr [RSP + 0x48],0x8
+    1400fd2a9 (+0xFD2A9) LEA RBX,[RSP + 0x30]
+    1400fd2ae (+0xFD2AE) CMOVNC RBX,qword ptr [RSP + 0x30]
+    1400fd2b4 (+0xFD2B4) LEA RCX,[RSP + 0x20]
+    1400fd2b9 (+0xFD2B9) MOV EDX,0x19
+    1400fd2be (+0xFD2BE) MOV R8D,0x33453
+    1400fd2c4 (+0xFD2C4) CALL 0x14003d870
+    1400fd2c9 (+0xFD2C9) LEA RDX,[RSP + 0x60]
+    1400fd2ce (+0xFD2CE) LEA RCX,[RSP + 0x20]
+    1400fd2d3 (+0xFD2D3) MOV R8,RBX
+    1400fd2d6 (+0xFD2D6) CALL 0x14003d8c0
+    1400fd2db (+0xFD2DB) CMP qword ptr [RAX + 0x18],0x8
+    1400fd2e0 (+0xFD2E0) JC 0x1400fd2e5
+    1400fd2e2 (+0xFD2E2) MOV RAX,qword ptr [RAX]
+    1400fd2e5 (+0xFD2E5) CMP word ptr [RAX],0x0
+    1400fd2e9 (+0xFD2E9) LEA RCX,[RDI + 0x38]
+    1400fd2ed (+0xFD2ED) JNZ 0x1400fd2f4
+    1400fd2ef (+0xFD2EF) XOR R8D,R8D
+    1400fd2f2 (+0xFD2F2) JMP 0x1400fd30b
+    1400fd2f4 (+0xFD2F4) OR R8,-0x1
+    1400fd2f8 (+0xFD2F8) NOP dword ptr [RAX + RAX*0x1]
+    1400fd300 (+0xFD300) INC R8
+    1400fd303 (+0xFD303) CMP word ptr [RAX + R8*0x2],0x0
+    1400fd309 (+0xFD309) JNZ 0x1400fd300
+    1400fd30b (+0xFD30B) MOV RDX,RAX
+    1400fd30e (+0xFD30E) CALL 0x14003dc00
+    1400fd313 (+0xFD313) CMP qword ptr [RSP + 0x78],0x8
+    1400fd319 (+0xFD319) JC 0x1400fd32e
+    1400fd31b (+0xFD31B) MOV RCX,qword ptr [RSP + 0x80]
+    1400fd323 (+0xFD323) MOV RDX,qword ptr [RSP + 0x60]
+    1400fd328 (+0xFD328) MOV RAX,qword ptr [RCX]
+    1400fd32b (+0xFD32B) CALL qword ptr [RAX + 0x68]
+    1400fd32e (+0xFD32E) MOV RCX,RDI
+    1400fd331 (+0xFD331) CALL 0x140104db0
+    1400fd336 (+0xFD336) CMP qword ptr [RSP + 0x48],0x8
+    1400fd33c (+0xFD33C) JC 0x1400fd34e
+    1400fd33e (+0xFD33E) MOV RCX,qword ptr [RSP + 0x50]
+    1400fd343 (+0xFD343) MOV RDX,qword ptr [RSP + 0x30]
+    1400fd348 (+0xFD348) MOV RAX,qword ptr [RCX]
+    1400fd34b (+0xFD34B) CALL qword ptr [RAX + 0x68]
+    1400fd34e (+0xFD34E) MOV RCX,qword ptr [RSP + 0x90]
+    1400fd356 (+0xFD356) XOR RCX,RSP
+    1400fd359 (+0xFD359) CALL 0x140c2c9e0
+    1400fd35e (+0xFD35E) MOV RBX,qword ptr [RSP + 0xb8]
+    1400fd366 (+0xFD366) ADD RSP,0xa0
+    1400fd36d (+0xFD36D) POP RDI
+    1400fd36e (+0xFD36E) RET
+
+### Searching for vtables that contain FUN_1400fd230 as a slot ###
+  qword refs to 0x1400FD230: 1
+    1410bd850 (+0x10BD850)
+      candidate vtable start: 1410bd848 (+0x10BD848)
+        slot[0] = 0x1400FD170 (FUN_1400fd170)
+        slot[1] = 0x1400FD230 (FUN_1400fd230)
+        slot[2] = 0x1401050A0 (FUN_1401050a0)
+        slot[3] = 0x140105150 (FUN_140105150)
+        slot[4] = 0x1400F89A0 (FUN_1400f89a0)
+        slot[5] = 0x140104F30 (FUN_140104f30)
+        slot[6] = 0x1401043A0 (FUN_1401043a0)
+        slot[7] = 0x1400F72C0 (FUN_1400f72c0)
+        slot[8] = 0x1400F89D0 (FUN_1400f89d0)
+        slot[9] = 0x1400F89C0 (FUN_1400f89c0)
+
+======================================================================
+Done.
+======================================================================

@@ -1,0 +1,28 @@
+======================================================================
+Frame-rate guard hunt (H-33 try-4)
+======================================================================
+
+### A. RTTI class names (FeSubState* and similar) for FrameRate/Fps ###
+  'Performance': 4 ASCII hits
+    14155a323 (+0x155A323)
+      full: PerformanceCounter
+    14155a611 (+0x155A611)
+      full: PerformanceFrequency
+    141aab76f (+0x1AAB76F)
+      full: PerformanceCounter
+    141aaba5d (+0x1AABA5D)
+      full: PerformanceFrequency
+
+### B. Inline error/log strings for the framerate popup ###
+
+### C. 60Hz-related f64 constants ###
+  1.0/120.0: 2 hits
+    1411f0630 (+0x11F0630) -- 2 xrefs
+      xref 140c2cdb2 in FUN_140c2cd00 @ +0xC2CD00
+      xref 140c2cf97 in FUN_140c2cd00 @ +0xC2CD00
+    1411f5e20 (+0x11F5E20) -- 1 xrefs
+      xref 140c36d7d in FUN_140c369f0 @ +0xC369F0
+
+======================================================================
+Done.
+======================================================================

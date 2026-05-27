@@ -1,0 +1,196 @@
+======================================================================
+H-33 task #12: drill into top popup-hunt leads
+======================================================================
+
+### A. MessageBoxW callers ###
+
+  Function FUN_140AEF500 (+0xAEF500)
+    body bytes : 849
+    return type: undefined
+    param count: 0
+    callers    : 1
+      CALL at 1402eb7b6 (+0x2EB7B6) from FUN_1402eb630 @ +0x2EB630
+    --- around MessageBoxW call site at +0xAEF74C ---
+      140aef6b4 (+0xAEF6B4) LEA RDX,[RDI + 0x160]
+      140aef6bb (+0xAEF6BB) LEA RCX,[RBP + 0x28]
+      140aef6bf (+0xAEF6BF) CALL 0x140b30e20
+      140aef6c4 (+0xAEF6C4) LEA RBX,[RDI + 0x140]
+      140aef6cb (+0xAEF6CB) LEA RCX,[RBP + 0x28]
+      140aef6cf (+0xAEF6CF) MOV EDX,dword ptr [RBX]
+      140aef6d1 (+0xAEF6D1) CALL 0x140b31260
+      140aef6d6 (+0xAEF6D6) MOV EDX,dword ptr [RDI + 0x144]
+      140aef6dc (+0xAEF6DC) LEA RCX,[RBP + 0x28]
+      140aef6e0 (+0xAEF6E0) MOV dword ptr [RBX],EAX
+      140aef6e2 (+0xAEF6E2) CALL 0x140b31160
+      140aef6e7 (+0xAEF6E7) MOV EDX,dword ptr [RDI + 0x14c]
+      140aef6ed (+0xAEF6ED) LEA RCX,[RBP + 0x28]
+      140aef6f1 (+0xAEF6F1) MOV dword ptr [RDI + 0x144],EAX
+      140aef6f7 (+0xAEF6F7) CALL 0x140b30e40
+      140aef6fc (+0xAEF6FC) MOV RCX,RDI
+      140aef6ff (+0xAEF6FF) MOV byte ptr [RDI + 0x150],R12B
+      140aef706 (+0xAEF706) MOV dword ptr [RDI + 0x14c],EAX
+      140aef70c (+0xAEF70C) MOV RAX,qword ptr [RDI]
+      140aef70f (+0xAEF70F) CALL qword ptr [RAX + 0x108]
+      140aef715 (+0xAEF715) MOV RAX,qword ptr [RDI]
+      140aef718 (+0xAEF718) LEA R9,[RDI + 0x150]
+      140aef71f (+0xAEF71F) LEA R8,[RDI + 0x144]
+      140aef726 (+0xAEF726) MOV RDX,RBX
+      140aef729 (+0xAEF729) MOV RCX,RDI
+      140aef72c (+0xAEF72C) CALL qword ptr [RAX + 0x110]
+      140aef732 (+0xAEF732) TEST AL,AL
+      140aef734 (+0xAEF734) JNZ 0x140aef759
+      140aef736 (+0xAEF736) LEA R8,[0x1411d56c0]
+      140aef73d (+0xAEF73D) LEA RDX,[0x1411d56d0]
+      140aef744 (+0xAEF744) MOV R9D,0x10010
+      140aef74a (+0xAEF74A) XOR ECX,ECX
+      140aef74c (+0xAEF74C) CALL qword ptr [0x141aae534]  <-- CALL MessageBoxW
+      140aef752 (+0xAEF752) XOR BL,BL
+      140aef754 (+0xAEF754) JMP 0x140aef826
+      140aef759 (+0xAEF759) MOV RDX,qword ptr [0x1415d5f08]
+      140aef760 (+0xAEF760) XOR R8D,R8D
+      140aef763 (+0xAEF763) MOV RCX,RDI
+      140aef766 (+0xAEF766) CALL 0x140aee270
+      140aef76b (+0xAEF76B) XOR R8D,R8D
+      140aef76e (+0xAEF76E) MOV RCX,RDI
+
+  Function FUN_140AA62E0 (+0xAA62E0)
+    body bytes : 615
+    return type: undefined
+    param count: 0
+    callers    : 1
+      CALL at 140aa65cd (+0xAA65CD) from FUN_140aa65b0 @ +0xAA65B0
+    --- around MessageBoxW call site at +0xAA6522 ---
+      140aa649b (+0xAA649B) MOV word ptr [RBP + 0x20e],SI
+      140aa64a2 (+0xAA64A2) CALL qword ptr [0x141aae0bc]
+      140aa64a8 (+0xAA64A8) CMP EAX,0x80000000
+      140aa64ad (+0xAA64AD) JNC 0x140aa650f
+      140aa64af (+0xAA64AF) CALL 0x140aa61b0
+      140aa64b4 (+0xAA64B4) TEST EAX,EAX
+      140aa64b6 (+0xAA64B6) JLE 0x140aa650f
+      140aa64b8 (+0xAA64B8) LEA RDX,[0x1411ba4b8]
+      140aa64bf (+0xAA64BF) XOR ECX,ECX
+      140aa64c1 (+0xAA64C1) CALL qword ptr [0x141aade24]
+      140aa64c7 (+0xAA64C7) MOV qword ptr [RSP + 0x40],RSI
+      140aa64cc (+0xAA64CC) MOV ECX,0x1
+      140aa64d1 (+0xAA64D1) MOV RBX,RAX
+      140aa64d4 (+0xAA64D4) LEA RAX,[RBP + 0x10]
+      140aa64d8 (+0xAA64D8) MOV EDX,ECX
+      140aa64da (+0xAA64DA) MOV qword ptr [RBP],RAX
+      140aa64de (+0xAA64DE) LEA RAX,[RBP]
+      140aa64e2 (+0xAA64E2) XOR R8D,R8D
+      140aa64e5 (+0xAA64E5) MOV qword ptr [RSP + 0x38],RAX
+      140aa64ea (+0xAA64EA) MOV dword ptr [RSP + 0x30],ESI
+      140aa64ee (+0xAA64EE) MOV word ptr [RSP + 0x28],CX
+      140aa64f3 (+0xAA64F3) MOV RCX,RBX
+      140aa64f6 (+0xAA64F6) XOR R9D,R9D
+      140aa64f9 (+0xAA64F9) MOV qword ptr [RSP + 0x20],RSI
+      140aa64fe (+0xAA64FE) CALL qword ptr [0x141aade4c]
+      140aa6504 (+0xAA6504) MOV RCX,RBX
+      140aa6507 (+0xAA6507) CALL qword ptr [0x141aade2c]
+      140aa650d (+0xAA650D) JMP 0x140aa6528
+      140aa650f (+0xAA650F) LEA R8,[0x1411ba4c8]
+      140aa6516 (+0xAA6516) LEA RDX,[RBP + 0x10]
+      140aa651a (+0xAA651A) MOV R9D,0x10
+      140aa6520 (+0xAA6520) XOR ECX,ECX
+      140aa6522 (+0xAA6522) CALL qword ptr [0x141aae534]  <-- CALL MessageBoxW
+      140aa6528 (+0xAA6528) MOV RCX,qword ptr [RBP + 0x210]
+      140aa652f (+0xAA652F) XOR RCX,RBP
+      140aa6532 (+0xAA6532) CALL 0x140c2c9e0
+      140aa6537 (+0xAA6537) LEA RSP,[RBP + 0x228]
+      140aa653e (+0xAA653E) POP R15
+      140aa6540 (+0xAA6540) POP R14
+      140aa6542 (+0xAA6542) POP RDI
+      140aa6543 (+0xAA6543) POP RSI
+
+  Function FUN_1408C3790 (+0x8C3790)
+    body bytes : 434
+    return type: undefined
+    param count: 0
+    callers    : 0
+    --- around MessageBoxW call site at +0x8C38DD ---
+      1408c384a (+0x8C384A) MOVAPS XMM0,xmmword ptr [RDX]
+      1408c384d (+0x8C384D) MOVAPS XMM1,xmmword ptr [RDX + 0x10]
+      1408c3851 (+0x8C3851) MOV EAX,dword ptr [RDX + 0x60]
+      1408c3854 (+0x8C3854) MOVAPS xmmword ptr [R8],XMM0
+      1408c3858 (+0x8C3858) MOVAPS XMM0,xmmword ptr [RDX + 0x20]
+      1408c385c (+0x8C385C) MOVAPS xmmword ptr [R8 + 0x10],XMM1
+      1408c3861 (+0x8C3861) MOVAPS XMM1,xmmword ptr [RDX + 0x30]
+      1408c3865 (+0x8C3865) MOVAPS xmmword ptr [R8 + 0x20],XMM0
+      1408c386a (+0x8C386A) MOVAPS XMM0,xmmword ptr [RDX + 0x40]
+      1408c386e (+0x8C386E) MOVAPS xmmword ptr [R8 + 0x30],XMM1
+      1408c3873 (+0x8C3873) MOVAPS XMM1,xmmword ptr [RDX + 0x50]
+      1408c3877 (+0x8C3877) MOVAPS xmmword ptr [R8 + 0x40],XMM0
+      1408c387c (+0x8C387C) MOVAPS xmmword ptr [R8 + 0x50],XMM1
+      1408c3881 (+0x8C3881) MOV dword ptr [R8 + 0x60],EAX
+      1408c3885 (+0x8C3885) MOVZX EAX,word ptr [RDX + 0x64]
+      1408c3889 (+0x8C3889) MOV word ptr [R8 + 0x64],AX
+      1408c388e (+0x8C388E) JMP 0x1408c389b
+      1408c3890 (+0x8C3890) MOV R8D,0xe6
+      1408c3896 (+0x8C3896) CALL 0x140c2d1d0
+      1408c389b (+0x8C389B) MOV RAX,qword ptr [RDI + 0x8]
+      1408c389f (+0x8C389F) MOV R9,qword ptr [RDI + 0x10]
+      1408c38a3 (+0x8C38A3) LEA R8,[RSP + 0x30]
+      1408c38a8 (+0x8C38A8) MOV qword ptr [RSP + 0x28],RAX
+      1408c38ad (+0x8C38AD) MOV EAX,dword ptr [RDI + 0x18]
+      1408c38b0 (+0x8C38B0) LEA RCX,[RSP + 0x120]
+      1408c38b8 (+0x8C38B8) MOV EDX,0x400
+      1408c38bd (+0x8C38BD) MOV dword ptr [RSP + 0x20],EAX
+      1408c38c1 (+0x8C38C1) CALL 0x140c383b0
+      1408c38c6 (+0x8C38C6) LEA R8,[0x141149cf8]
+      1408c38cd (+0x8C38CD) LEA RDX,[RSP + 0x120]
+      1408c38d5 (+0x8C38D5) MOV R9D,0x12
+      1408c38db (+0x8C38DB) XOR ECX,ECX
+      1408c38dd (+0x8C38DD) CALL qword ptr [0x141aae534]  <-- CALL MessageBoxW
+      1408c38e3 (+0x8C38E3) SUB EAX,0x3
+      1408c38e6 (+0x8C38E6) JZ 0x1408c391c
+      1408c38e8 (+0x8C38E8) DEC EAX
+      1408c38ea (+0x8C38EA) JZ 0x1408c3913
+      1408c38ec (+0x8C38EC) DEC EAX
+      1408c38ee (+0x8C38EE) JZ 0x1408c390a
+      1408c38f0 (+0x8C38F0) LEA R8,[0x141149d20]
+      1408c38f7 (+0x8C38F7) LEA RCX,[0x141149d68]
+
+### B. RTTI/class-name string xrefs (from code only) ###
+  ServiceMan (1) @ +0x1142B09 -- no xrefs
+  ServiceMan (2) @ +0x1142B57 -- no xrefs
+  ServiceMan (3) @ +0x1142BBF -- no xrefs
+  ServiceMan (4) @ +0x1142C17 -- no xrefs
+  ServiceMan (5) @ +0x15ACAEE -- no xrefs
+  ServiceMan (6) @ +0x15ACB26 -- no xrefs
+  NetworkMan (1) @ +0x156E6CA -- no xrefs
+  NetworkMan (2) @ +0x156E6F7 -- no xrefs
+  MessageDialog (1) @ +0x10AEB2D -- no xrefs
+  MessageDialog (2) @ +0x155D63B -- no xrefs
+  MessageDialog (3) @ +0x155DB5B -- no xrefs
+  LoginMan @ +0x15793AA -- no xrefs
+  SystemMessage @ +0x15832FF -- no xrefs
+
+### C. State-name cluster at +0x15669XX..+0x15672XX ###
+  141566f18 (+0x1566F18) .?AVFeSubStateProcessWindowBase@@
+  141566f50 (+0x1566F50) .?AVFeSubStateProcessWindowSimple@@
+  141566f88 (+0x1566F88) .?AVFeSubStateTitleSteamNetworkCheck@@
+  141566fc0 (+0x1566FC0) .?AVFeSubStateTitlePS3RegulationCheck@@
+  141566ff8 (+0x1566FF8) .?AVFeSubStateTitleGameServerLogin@@
+  141567030 (+0x1567030) .?AVFeSubStateTitleUserPolicy@@
+  141567060 (+0x1567060) .?AVFeSubStateTitleOnlineCheck@@
+  141567098 (+0x1567098) .?AVFeSubStateOfflineModeWindow@@
+  1415670d0 (+0x15670D0) .?AVFeSubStateTitleSetOfflineMode@@
+  141567108 (+0x1567108) .?AVDLRunnable@DLKR@@
+  141567130 (+0x1567130) .?AV?$FeTransitionEqualValue@C@@
+  141567168 (+0x1567168) .?AVFeSubStateTitleSteamLoadSystemData@@
+  1415671a8 (+0x15671A8) .?AVFeSubStateTitleSaveFirst@@
+  1415671d8 (+0x15671D8) .?AVFeSubStateTitleSaveSystemData@@
+
+  -- xrefs to keyword string starts in the cluster --
+  NetworkCheck @ +0x1566FA0 -- 0 xrefs
+  OnlineCheck (1) @ +0x1567073 -- 0 xrefs
+  OnlineCheck (2) @ +0x156733B -- 0 xrefs
+  OfflineMode (1) @ +0x15670A6 -- 0 xrefs
+  OfflineMode (2) @ +0x15670E6 -- 0 xrefs
+
+### D. Read the actual MessageBoxW arguments (string args) ###
+  (See section A disassembly; manual review of LEA loads is needed.)
+
+======================================================================
+Done.
+======================================================================

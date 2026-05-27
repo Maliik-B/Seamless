@@ -1,0 +1,145 @@
+======================================================================
+H-33 task #12: DarkSoulsII.exe popup-creation site hunt
+Base: 140000000
+======================================================================
+
+### 1. Imported Win32 APIs that build popups ###
+  MessageBoxW @ EXTERNAL:00000171 -- 4 xrefs
+    xref from 141aae534 in (no func) @ ?
+    xref from 140aef74c in FUN_140aef500 @ +0xAEF500
+    xref from 140aa6522 in FUN_140aa62e0 @ +0xAA62E0
+    xref from 1408c38dd in FUN_1408c3790 @ +0x8C3790
+  DialogBoxParamW @ EXTERNAL:00000163 -- 1 xrefs
+    xref from 141aae4c4 in (no func) @ ?
+
+### 2. HTTP/WinINet imports (online-check candidates) ###
+
+### 3. Online/service/login internal debug strings ###
+  Trying ASCII first; only UTF-16 fallback if a term has no ASCII hits.
+  'OnlineCheck': 2 hits
+    141567073 (+0x1567073)
+    14156733b (+0x156733B)
+  'ServiceStatus': 6 hits
+    1411215c3 (+0x11215C3)
+    14120ae17 (+0x120AE17)
+    14120ae47 (+0x120AE47)
+    141591def (+0x1591DEF)
+    141591fc7 (+0x1591FC7)
+    141592007 (+0x1592007)
+  'OfflineMode': 2 hits
+    1415670a6 (+0x15670A6)
+    1415670e6 (+0x15670E6)
+  'NetworkCheck': 1 hits
+    141566fa0 (+0x1566FA0)
+  'Login': 47 hits
+    1411201c0 (+0x11201C0)
+    141121555 (+0x1121555)
+    1411216a0 (+0x11216A0)
+    141121707 (+0x1121707)
+    1411bf97b (+0x11BF97B)
+    14120ad48 (+0x120AD48)
+    14120ad88 (+0x120AD88)
+    14120ae74 (+0x120AE74)
+    14120af3e (+0x120AF3E)
+    14120af6e (+0x120AF6E)
+  'Authentication': 2 hits
+    1411c225f (+0x11C225F)
+    1411c228f (+0x11C228F)
+  'SystemMessage': 1 hits
+    1415832ff (+0x15832FF)
+  'frpg2': 2 hits
+    1411d6e68 (+0x11D6E68)
+      xref from 140b06d70 in FUN_140b06910 @ +0xB06910 [DATA]
+    1411d7888 (+0x11D7888)
+      xref from 140b13f77 in FUN_140b13bf0 @ +0xB13BF0 [DATA]
+  'FRPG2': 79 hits
+    1410ac8d3 (+0x10AC8D3)
+    1410acba3 (+0x10ACBA3)
+    1410ae4d3 (+0x10AE4D3)
+    1410c2ae3 (+0x10C2AE3)
+    1410c2af3 (+0x10C2AF3)
+    1410c7893 (+0x10C7893)
+    1410d3103 (+0x10D3103)
+    1410d3173 (+0x10D3173)
+    1410ffd75 (+0x10FFD75)
+    1411056c3 (+0x11056C3)
+
+### 4. RTTI class names: menu / dialog / online managers ###
+  'MessageDialog': 3 hits
+    1410aeb2d (+0x10AEB2D)
+    14155d63b (+0x155D63B)
+    14155db5b (+0x155DB5B)
+  'SystemMessage': 1 hits
+    1415832ff (+0x15832FF)
+  'MessageBox': 3 hits
+    1411feb90 (+0x11FEB90)
+      xref from 140c4fbb2 in FID_conflict:__crtMessageBoxA @ +0xC4FB24 [DATA]
+    14155ab7e (+0x155AB7E)
+    141aabeb6 (+0x1AABEB6)
+  'NetworkMan': 2 hits
+    14156e6ca (+0x156E6CA)
+    14156e6f7 (+0x156E6F7)
+  'ServiceMan': 6 hits
+    141142b09 (+0x1142B09)
+    141142b57 (+0x1142B57)
+    141142bbf (+0x1142BBF)
+    141142c17 (+0x1142C17)
+    1415acaee (+0x15ACAEE)
+    1415acb26 (+0x15ACB26)
+  'LoginMan': 1 hits
+    1415793aa (+0x15793AA)
+  'Frpg2': 764 hits
+    14120acce (+0x120ACCE)
+    14120ad28 (+0x120AD28)
+      xref from 140c8345d in FUN_140c83450 @ +0xC83450 [DATA]
+    14120ad68 (+0x120AD68)
+      xref from 140c8348d in FUN_140c83480 @ +0xC83480 [DATA]
+    14120ada8 (+0x120ADA8)
+      xref from 140c82e2d in FUN_140c82e20 @ +0xC82E20 [DATA]
+    14120add0 (+0x120ADD0)
+      xref from 140c82e5d in FUN_140c82e50 @ +0xC82E50 [DATA]
+    14120ae00 (+0x120AE00)
+      xref from 140c8192d in FUN_140c81920 @ +0xC81920 [DATA]
+    14120ae30 (+0x120AE30)
+      xref from 140c8195d in FUN_140c81950 @ +0xC81950 [DATA]
+    14120ae60 (+0x120AE60)
+      xref from 140c819ed in FUN_140c819e0 @ +0xC819E0 [DATA]
+    14120ae88 (+0x120AE88)
+      xref from 140c83f9d in FUN_140c83f90 @ +0xC83F90 [DATA]
+    14120aeb0 (+0x120AEB0)
+      xref from 140c818fd in FUN_140c818f0 @ +0xC818F0 [DATA]
+
+### 5. Numeric FMG IDs that may belong to the popup ###
+  (Scanning for candidate IDs in code -- xrefs need manual review)
+  ID 350100 (0x55794): 1 code occurrences
+    141072cb8 (+0x1072CB8) in FUN_141072ca0 : LEA RCX,[0x1410c8450]
+  ID 100000 (0x186A0): 11 code occurrences
+    1402e6ce6 (+0x2E6CE6) in FUN_1402e6c90 : MOV ECX,0x186a0
+    1403e3b6b (+0x3E3B6B) in FUN_1403e39f0 : IMUL R8D,R8D,0x186a0
+    1404a4c78 (+0x4A4C78) in FUN_1404a4a70 : IMUL EDI,EDI,0x186a0
+    1404a5d2b (+0x4A5D2B) in FUN_1404a5c30 : IMUL R9D,R9D,0x186a0
+    1406c4c72 (+0x6C4C72) in FUN_1406c4b40 : MOV EDX,0x186a0
+    1408f3b19 (+0x8F3B19) in FUN_1408f3920 : MOV ECX,0x186a0
+  ID 100100 (0x18704): 3 code occurrences
+    1401be97c (+0x1BE97C) in FUN_1401be677 : MOV ECX,0x18704
+    14047492b (+0x47492B) in FUN_1404747c0 : MOV EDX,0x18704
+    14047495c (+0x47495C) in FUN_1404747c0 : MOV EDX,0x18704
+  ID 100200 (0x18768): 1 code occurrences
+    1400fde50 (+0xFDE50) in FUN_1400fde30 : MOV dword ptr [RSP + 0x30],0x18768
+
+### 6. JP/KR popup body text (UTF-16 LE) ###
+  UTF-16 'DARK SOULS II': 1 hits
+    141a686b8 (+0x1A686B8)
+  UTF-16 'DarkSoulsII': 2 hits
+    1410d04aa (+0x10D04AA)
+    1410da71e (+0x10DA71E)
+
+======================================================================
+Done. Promising leads to follow up in the GUI:
+ 1. Section 1 (MessageBox/DialogBox) -- if any non-zero xref appears,
+    follow that caller; it is the most likely popup site.
+ 2. Section 3/4 strings with xrefs in code (not just data) -- those
+    callers are candidate predicates for the online-check.
+ 3. Section 5 candidate IDs -- correlate with the modal-dialog factory
+    once we know its address.
+======================================================================
