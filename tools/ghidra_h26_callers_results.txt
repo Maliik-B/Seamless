@@ -1,0 +1,35 @@
+======================================================================
+H-26 caller-tree: who invokes the sign send-wrappers?
+======================================================================
+
+=== RequestCreateSign_send @ +0x6A1DE0 ===
+  refMgr refs: 3
+    14190bfe8 (+0x190BFE8) in (no func) @ ? [DATA]
+    14140d16c (+0x140D16C) in (no func) @ ? [DATA]
+    141113320 (+0x1113320) in (no func) @ ? [DATA]
+
+=== RequestGetSignList_send @ +0x6A2040 ===
+  refMgr refs: 3
+    14190bff4 (+0x190BFF4) in (no func) @ ? [DATA]
+    14140d2ec (+0x140D2EC) in (no func) @ ? [DATA]
+    141113340 (+0x1113340) in (no func) @ ? [DATA]
+
+=== RequestRemoveSign_send @ +0x6A24F0 ===
+  refMgr refs: 3
+    14190c00c (+0x190C00C) in (no func) @ ? [DATA]
+    14140d27c (+0x140D27C) in (no func) @ ? [DATA]
+    141113338 (+0x1113338) in (no func) @ ? [DATA]
+
+=== RequestSummonSign_send @ +0x6A2610 ===
+  refMgr refs: 3
+    14190c018 (+0x190C018) in (no func) @ ? [DATA]
+    14140d424 (+0x140D424) in (no func) @ ? [DATA]
+    141113350 (+0x1113350) in (no func) @ ? [DATA]
+
+======================================================================
+Caller bodies (look for the predicate just above the CALL):
+======================================================================
+
+======================================================================
+Done.
+======================================================================

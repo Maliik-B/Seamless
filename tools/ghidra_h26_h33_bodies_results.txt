@@ -1,0 +1,681 @@
+======================================================================
+H-33 patched functions: full bodies + first level of callees
+======================================================================
+Purpose: find state-writes in the success path that our prologue
+patches skipped. Hunting for writes that would normally wake up the
+session/RPC subsystem (currently confirmed dormant: 0 protobuf sent).
+======================================================================
+
+======================================================================
+=== OnlineCheck_slot8 @ +0xF98C0 ===
+    5-byte patch (XOR EAX,EAX; RET) -- offline-arm shortcut
+======================================================================
+
+--- FUN_1400f98c0 @ +0xF98C0 (117 bytes) ---
+  1400f98c0 (+0xF98C0)  MOV qword ptr [RSP + 0x8],RBX
+  1400f98c5 (+0xF98C5)  MOV qword ptr [RSP + 0x10],RSI
+  1400f98ca (+0xF98CA)  PUSH RDI
+  1400f98cb (+0xF98CB)  SUB RSP,0x20
+  1400f98cf (+0xF98CF)  MOV RAX,qword ptr [0x1416148f0]
+  1400f98d6 (+0xF98D6)  MOV RSI,RCX
+  1400f98d9 (+0xF98D9)  MOV RBX,qword ptr [RAX + 0x22f0]
+  1400f98e0 (+0xF98E0)  MOV RCX,RBX
+  1400f98e3 (+0xF98E3)  CALL 0x1405132a0
+  1400f98e8 (+0xF98E8)  MOV RCX,RBX
+  1400f98eb (+0xF98EB)  MOV RDI,RAX
+  1400f98ee (+0xF98EE)  CALL 0x140513600
+  1400f98f3 (+0xF98F3)  TEST AL,AL
+  1400f98f5 (+0xF98F5)  JNZ 0x1400f9909
+  1400f98f7 (+0xF98F7)  XOR EAX,EAX
+  1400f98f9 (+0xF98F9)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f98fe (+0xF98FE)  MOV RSI,qword ptr [RSP + 0x38]
+  1400f9903 (+0xF9903)  ADD RSP,0x20
+  1400f9907 (+0xF9907)  POP RDI
+  1400f9908 (+0xF9908)  RET
+  1400f9909 (+0xF9909)  MOV RAX,qword ptr [RDI]
+  1400f990c (+0xF990C)  MOVZX EDX,byte ptr [RSI + 0x30]
+  1400f9910 (+0xF9910)  MOV RCX,RDI
+  1400f9913 (+0xF9913)  CALL qword ptr [RAX + 0x48]
+  1400f9916 (+0xF9916)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f991b (+0xF991B)  MOV RSI,qword ptr [RSP + 0x38]
+  1400f9920 (+0xF9920)  OR ECX,0xffffffff
+  1400f9923 (+0xF9923)  TEST AL,AL
+  1400f9925 (+0xF9925)  MOV EDX,0x1
+  1400f992a (+0xF992A)  CMOVZ ECX,EDX
+  1400f992d (+0xF992D)  MOV EAX,ECX
+  1400f992f (+0xF992F)  ADD RSP,0x20
+  1400f9933 (+0xF9933)  POP RDI
+  1400f9934 (+0xF9934)  RET
+
+======================================================================
+=== SteamNetCheck_OnEnter @ +0xF8FB0 ===
+    10-byte patch ([RCX+0x10]=3; XOR EAX,EAX; RET)
+======================================================================
+
+--- FUN_1400f8fb0 @ +0xF8FB0 (131 bytes) ---
+  1400f8fb0 (+0xF8FB0)  MOV qword ptr [RSP + 0x8],RBX
+  1400f8fb5 (+0xF8FB5)  PUSH RDI
+  1400f8fb6 (+0xF8FB6)  SUB RSP,0x20
+  1400f8fba (+0xF8FBA)  MOV RAX,qword ptr [0x1416148f0]
+  1400f8fc1 (+0xF8FC1)  MOV RBX,RCX
+  1400f8fc4 (+0xF8FC4)  MOV RDI,qword ptr [RAX + 0x22f0]
+  1400f8fcb (+0xF8FCB)  MOV RCX,RDI
+  1400f8fce (+0xF8FCE)  CALL 0x1405132c0
+  1400f8fd3 (+0xF8FD3)  MOV RCX,RAX
+  1400f8fd6 (+0xF8FD6)  MOV RDX,qword ptr [RAX]
+  1400f8fd9 (+0xF8FD9)  CALL qword ptr [RDX + 0x8]
+  1400f8fdc (+0xF8FDC)  TEST AL,AL
+  1400f8fde (+0xF8FDE)  JNZ 0x1400f8ff2
+  1400f8fe0 (+0xF8FE0)  MOV dword ptr [RBX + 0x10],0x2
+  1400f8fe7 (+0xF8FE7)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f8fec (+0xF8FEC)  ADD RSP,0x20
+  1400f8ff0 (+0xF8FF0)  POP RDI
+  1400f8ff1 (+0xF8FF1)  RET
+  1400f8ff2 (+0xF8FF2)  MOV RCX,RDI
+  1400f8ff5 (+0xF8FF5)  CALL 0x1405135a0
+  1400f8ffa (+0xF8FFA)  TEST AL,AL
+  1400f8ffc (+0xF8FFC)  JNZ 0x1400f9021
+  1400f8ffe (+0xF8FFE)  MOV RAX,qword ptr [0x14160de10]
+  1400f9005 (+0xF9005)  MOV dword ptr [RAX + 0x54c],0x1f
+  1400f900f (+0xF900F)  MOV dword ptr [RBX + 0x10],0x1
+  1400f9016 (+0xF9016)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f901b (+0xF901B)  ADD RSP,0x20
+  1400f901f (+0xF901F)  POP RDI
+  1400f9020 (+0xF9020)  RET
+  1400f9021 (+0xF9021)  MOV dword ptr [RBX + 0x10],0x3
+  1400f9028 (+0xF9028)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f902d (+0xF902D)  ADD RSP,0x20
+  1400f9031 (+0xF9031)  POP RDI
+  1400f9032 (+0xF9032)  RET
+
+======================================================================
+=== GameServerLogin_slot8 @ +0xF9820 ===
+    5-byte patch (XOR EAX,EAX; RET)
+======================================================================
+
+--- FUN_1400f9820 @ +0xF9820 (148 bytes) ---
+  1400f9820 (+0xF9820)  MOV qword ptr [RSP + 0x8],RBX
+  1400f9825 (+0xF9825)  PUSH RDI
+  1400f9826 (+0xF9826)  SUB RSP,0x20
+  1400f982a (+0xF982A)  MOV RAX,qword ptr [0x1416148f0]
+  1400f9831 (+0xF9831)  MOV RDI,RCX
+  1400f9834 (+0xF9834)  MOV RCX,qword ptr [RAX + 0x22f0]
+  1400f983b (+0xF983B)  CALL 0x1405132a0
+  1400f9840 (+0xF9840)  MOV RCX,RAX
+  1400f9843 (+0xF9843)  MOV RBX,RAX
+  1400f9846 (+0xF9846)  MOV RDX,qword ptr [RAX]
+  1400f9849 (+0xF9849)  CALL qword ptr [RDX + 0x60]
+  1400f984c (+0xF984C)  MOV RDX,qword ptr [RBX]
+  1400f984f (+0xF984F)  MOV RCX,RBX
+  1400f9852 (+0xF9852)  CALL qword ptr [RDX + 0x8]
+  1400f9855 (+0xF9855)  TEST AL,AL
+  1400f9857 (+0xF9857)  JNZ 0x1400f98a6
+  1400f9859 (+0xF9859)  MOV EDX,0x1fbd6
+  1400f985e (+0xF985E)  MOV ECX,0x19
+  1400f9863 (+0xF9863)  CALL 0x140503620
+  1400f9868 (+0xF9868)  MOV RCX,RDI
+  1400f986b (+0xF986B)  MOV RBX,RAX
+  1400f986e (+0xF986E)  CALL 0x1400f9780
+  1400f9873 (+0xF9873)  TEST RBX,RBX
+  1400f9876 (+0xF9876)  JZ 0x1400f9896
+  1400f9878 (+0xF9878)  TEST RAX,RAX
+  1400f987b (+0xF987B)  JZ 0x1400f9896
+  1400f987d (+0xF987D)  MOV RCX,qword ptr [0x14160de10]
+  1400f9884 (+0xF9884)  MOV R8,RAX
+  1400f9887 (+0xF9887)  MOV RDX,RBX
+  1400f988a (+0xF988A)  ADD RCX,0x118
+  1400f9891 (+0xF9891)  CALL 0x1400f8a30
+  1400f9896 (+0xF9896)  MOV EAX,0x7
+  1400f989b (+0xF989B)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f98a0 (+0xF98A0)  ADD RSP,0x20
+  1400f98a4 (+0xF98A4)  POP RDI
+  1400f98a5 (+0xF98A5)  RET
+  1400f98a6 (+0xF98A6)  OR EAX,0xffffffff
+  1400f98a9 (+0xF98A9)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f98ae (+0xF98AE)  ADD RSP,0x20
+  1400f98b2 (+0xF98B2)  POP RDI
+  1400f98b3 (+0xF98B3)  RET
+
+======================================================================
+=== UserPolicy_OnEnter @ +0xF9040 ===
+    10-byte patch ([RCX+0x10]=3; XOR EAX,EAX; RET)
+======================================================================
+
+--- FUN_1400f9040 @ +0xF9040 (505 bytes) ---
+  1400f9040 (+0xF9040)  MOV qword ptr [RSP + 0x20],RBP
+  1400f9045 (+0xF9045)  PUSH RSI
+  1400f9046 (+0xF9046)  SUB RSP,0x40
+  1400f904a (+0xF904A)  MOV RAX,qword ptr [0x14160de10]
+  1400f9051 (+0xF9051)  MOV RSI,RCX
+  1400f9054 (+0xF9054)  MOV RBP,qword ptr [RAX + 0xa0]
+  1400f905b (+0xF905B)  MOV RAX,qword ptr [0x1416148f0]
+  1400f9062 (+0xF9062)  MOV RDX,qword ptr [RAX + 0xa8]
+  1400f9069 (+0xF9069)  MOV RAX,qword ptr [RDX + 0xd8]
+  1400f9070 (+0xF9070)  CMP byte ptr [RAX + 0x136e],0x0
+  1400f9077 (+0xF9077)  JZ 0x1400f908b
+  1400f9079 (+0xF9079)  MOV dword ptr [RCX + 0x10],0x3
+  1400f9080 (+0xF9080)  MOV RBP,qword ptr [RSP + 0x68]
+  1400f9085 (+0xF9085)  ADD RSP,0x40
+  1400f9089 (+0xF9089)  POP RSI
+  1400f908a (+0xF908A)  RET
+  1400f908b (+0xF908B)  CMP byte ptr [RAX + 0x136d],0x0
+  1400f9092 (+0xF9092)  JZ 0x1400f90a6
+  1400f9094 (+0xF9094)  MOV dword ptr [RCX + 0x10],0x4
+  1400f909b (+0xF909B)  MOV RBP,qword ptr [RSP + 0x68]
+  1400f90a0 (+0xF90A0)  ADD RSP,0x40
+  1400f90a4 (+0xF90A4)  POP RSI
+  1400f90a5 (+0xF90A5)  RET
+  1400f90a6 (+0xF90A6)  TEST RBP,RBP
+  1400f90a9 (+0xF90A9)  JZ 0x1400f9079
+  1400f90ab (+0xF90AB)  MOV qword ptr [RSP + 0x50],RBX
+  1400f90b0 (+0xF90B0)  CALL 0x140833dc0
+  1400f90b5 (+0xF90B5)  LEA RDX,[RSP + 0x58]
+  1400f90ba (+0xF90BA)  MOV RBX,RAX
+  1400f90bd (+0xF90BD)  MOV RAX,qword ptr [RAX]
+  1400f90c0 (+0xF90C0)  XOR R8D,R8D
+  1400f90c3 (+0xF90C3)  MOV RCX,RBX
+  1400f90c6 (+0xF90C6)  CALL qword ptr [RAX + 0x18]
+  1400f90c9 (+0xF90C9)  MOV ECX,dword ptr [RAX]
+  1400f90cb (+0xF90CB)  SHR ECX,0x5
+  1400f90ce (+0xF90CE)  TEST CL,0x1
+  1400f90d1 (+0xF90D1)  JZ 0x1400f9226
+  1400f90d7 (+0xF90D7)  MOV RCX,qword ptr [0x1416751f8]
+  1400f90de (+0xF90DE)  XOR EAX,EAX
+  1400f90e0 (+0xF90E0)  MOV qword ptr [RSP + 0x38],RBX
+  1400f90e5 (+0xF90E5)  MOV qword ptr [RSP + 0x20],RAX
+  1400f90ea (+0xF90EA)  MOV qword ptr [RSP + 0x28],RAX
+  1400f90ef (+0xF90EF)  MOV qword ptr [RSP + 0x30],RAX
+  1400f90f4 (+0xF90F4)  MOV RAX,qword ptr [RCX]
+  1400f90f7 (+0xF90F7)  MOV qword ptr [RSP + 0x60],RDI
+  1400f90fc (+0xF90FC)  CALL qword ptr [RAX + 0x40]
+  1400f90ff (+0xF90FF)  MOV EAX,dword ptr [0x141616cb8]
+  1400f9105 (+0xF9105)  MOV EBX,0x7739435c
+  1400f910a (+0xF910A)  CMP EAX,0x2
+  1400f910d (+0xF910D)  JZ 0x1400f9114
+  1400f910f (+0xF910F)  CMP EAX,0x5
+  1400f9112 (+0xF9112)  JNZ 0x1400f914a
+  1400f9114 (+0xF9114)  MOV EDI,EBX
+  1400f9116 (+0xF9116)  NOP dword ptr [RAX + RAX*0x1]
+  1400f9120 (+0xF9120)  MOV EDX,EDI
+  1400f9122 (+0xF9122)  MOV ECX,0x18
+  1400f9127 (+0xF9127)  CALL 0x140503620
+  1400f912c (+0xF912C)  LEA RDX,[RSP + 0x58]
+  1400f9131 (+0xF9131)  LEA RCX,[RSP + 0x20]
+  1400f9136 (+0xF9136)  MOV qword ptr [RSP + 0x58],RAX
+  1400f913b (+0xF913B)  CALL 0x1400fa520
+  1400f9140 (+0xF9140)  INC EDI
+  1400f9142 (+0xF9142)  CMP EDI,0x7739436d
+  1400f9148 (+0xF9148)  JBE 0x1400f9120
+  1400f914a (+0xF914A)  MOV EDI,0x77363234
+  1400f914f (+0xF914F)  NOP
+  1400f9150 (+0xF9150)  MOV EDX,EDI
+  1400f9152 (+0xF9152)  MOV ECX,0x18
+  1400f9157 (+0xF9157)  CALL 0x140503620
+  1400f915c (+0xF915C)  LEA RDX,[RSP + 0x58]
+  1400f9161 (+0xF9161)  LEA RCX,[RSP + 0x20]
+  1400f9166 (+0xF9166)  MOV qword ptr [RSP + 0x58],RAX
+  1400f916b (+0xF916B)  CALL 0x1400fa520
+  1400f9170 (+0xF9170)  INC EDI
+  1400f9172 (+0xF9172)  CMP EDI,0x77363249
+  1400f9178 (+0xF9178)  JBE 0x1400f9150
+  1400f917a (+0xF917A)  CMP dword ptr [0x141616cb8],0x1
+  1400f9181 (+0xF9181)  MOV RDI,qword ptr [RSP + 0x60]
+  1400f9186 (+0xF9186)  JNZ 0x1400f91ea
+  1400f9188 (+0xF9188)  NOP dword ptr [RAX + RAX*0x1]
+  1400f9190 (+0xF9190)  MOV EDX,EBX
+  1400f9192 (+0xF9192)  MOV ECX,0x18
+  1400f9197 (+0xF9197)  CALL 0x140503620
+  1400f919c (+0xF919C)  LEA RDX,[RSP + 0x58]
+  1400f91a1 (+0xF91A1)  LEA RCX,[RSP + 0x20]
+  1400f91a6 (+0xF91A6)  MOV qword ptr [RSP + 0x58],RAX
+  1400f91ab (+0xF91AB)  CALL 0x1400fa520
+  1400f91b0 (+0xF91B0)  INC EBX
+  1400f91b2 (+0xF91B2)  CMP EBX,0x7739436d
+  1400f91b8 (+0xF91B8)  JBE 0x1400f9190
+  1400f91ba (+0xF91BA)  MOV EBX,0x77394744
+  1400f91bf (+0xF91BF)  NOP
+  1400f91c0 (+0xF91C0)  MOV EDX,EBX
+  1400f91c2 (+0xF91C2)  MOV ECX,0x18
+  1400f91c7 (+0xF91C7)  CALL 0x140503620
+  1400f91cc (+0xF91CC)  LEA RDX,[RSP + 0x58]
+  1400f91d1 (+0xF91D1)  LEA RCX,[RSP + 0x20]
+  1400f91d6 (+0xF91D6)  MOV qword ptr [RSP + 0x58],RAX
+  1400f91db (+0xF91DB)  CALL 0x1400fa520
+  1400f91e0 (+0xF91E0)  INC EBX
+  1400f91e2 (+0xF91E2)  CMP EBX,0x77394754
+  1400f91e8 (+0xF91E8)  JBE 0x1400f91c0
+  1400f91ea (+0xF91EA)  LEA RDX,[RSP + 0x20]
+  1400f91ef (+0xF91EF)  XOR R8D,R8D
+  1400f91f2 (+0xF91F2)  MOV RCX,RBP
+  1400f91f5 (+0xF91F5)  CALL 0x1400f5720
+  1400f91fa (+0xF91FA)  MOV RDX,qword ptr [RSP + 0x20]
+  1400f91ff (+0xF91FF)  MOV dword ptr [RSI + 0x10],0x1
+  1400f9206 (+0xF9206)  TEST RDX,RDX
+  1400f9209 (+0xF9209)  JZ 0x1400f9216
+  1400f920b (+0xF920B)  MOV RCX,qword ptr [RSP + 0x38]
+  1400f9210 (+0xF9210)  MOV RAX,qword ptr [RCX]
+  1400f9213 (+0xF9213)  CALL qword ptr [RAX + 0x68]
+  1400f9216 (+0xF9216)  MOV RBX,qword ptr [RSP + 0x50]
+  1400f921b (+0xF921B)  MOV RBP,qword ptr [RSP + 0x68]
+  1400f9220 (+0xF9220)  ADD RSP,0x40
+  1400f9224 (+0xF9224)  POP RSI
+  1400f9225 (+0xF9225)  RET
+  1400f9226 (+0xF9226)  LEA R8,[0x141138600]
+  1400f922d (+0xF922D)  MOV EDX,0x3e
+  1400f9232 (+0xF9232)  XOR ECX,ECX
+  1400f9234 (+0xF9234)  CALL 0x140832cb0
+
+======================================================================
+=== SharedSubStateOnEnter @ +0x104ED0 ===
+    Shared OnEnter (calls vtable[slot 8] then stores result)
+======================================================================
+
+--- FUN_140104ed0 @ +0x104ED0 (84 bytes) ---
+  140104ed0 (+0x104ED0)  PUSH RBX
+  140104ed2 (+0x104ED2)  SUB RSP,0x20
+  140104ed6 (+0x104ED6)  MOV RAX,qword ptr [RCX]
+  140104ed9 (+0x104ED9)  MOV RBX,RCX
+  140104edc (+0x104EDC)  CALL qword ptr [RAX + 0x40]
+  140104edf (+0x104EDF)  MOV dword ptr [RBX + 0x24],EAX
+  140104ee2 (+0x104EE2)  TEST EAX,EAX
+  140104ee4 (+0x104EE4)  JNS 0x140104f17
+  140104ee6 (+0x104EE6)  MOV RCX,qword ptr [0x1416148f0]
+  140104eed (+0x104EED)  MOV RDX,qword ptr [RBX + 0x18]
+  140104ef1 (+0x104EF1)  MOV R9B,0x1
+  140104ef4 (+0x104EF4)  MOV RCX,qword ptr [RCX + 0x22e0]
+  140104efb (+0x104EFB)  XOR R8D,R8D
+  140104efe (+0x104EFE)  CALL 0x1404fe760
+  140104f03 (+0x104F03)  MOV dword ptr [RBX + 0x14],0x0
+  140104f0a (+0x104F0A)  MOV dword ptr [RBX + 0x20],0x1
+  140104f11 (+0x104F11)  ADD RSP,0x20
+  140104f15 (+0x104F15)  POP RBX
+  140104f16 (+0x104F16)  RET
+  140104f17 (+0x104F17)  MOV dword ptr [RBX + 0x20],0x3
+  140104f1e (+0x104F1E)  ADD RSP,0x20
+  140104f22 (+0x104F22)  POP RBX
+  140104f23 (+0x104F23)  RET
+
+======================================================================
+First-level callees (heads only, deduplicated)
+======================================================================
+
+  -- callee FUN_1400f5720 @ +0xF5720 (473 bytes, head only) --
+    1400f5720 (+0xF5720)  MOV RAX,RSP
+    1400f5723 (+0xF5723)  MOV qword ptr [RAX + 0x20],RBP
+    1400f5727 (+0xF5727)  PUSH RSI
+    1400f5728 (+0xF5728)  SUB RSP,0x60
+    1400f572c (+0xF572C)  MOV RBP,qword ptr [RCX + 0x8]
+    1400f5730 (+0xF5730)  MOV RSI,RCX
+    1400f5733 (+0xF5733)  TEST RBP,RBP
+    1400f5736 (+0xF5736)  JZ 0x1400f58e9
+    1400f573c (+0xF573C)  MOV qword ptr [RAX + 0x8],RBX
+    1400f5740 (+0xF5740)  MOV qword ptr [RAX + 0x10],RDI
+    1400f5744 (+0xF5744)  MOV dword ptr [RCX + 0x5e68],R8D
+    1400f574b (+0xF574B)  MOV qword ptr [RAX + 0x18],R14
+    1400f574f (+0xF574F)  CALL 0x1400f5e20
+    1400f5754 (+0xF5754)  DEC dword ptr [RBP + 0x18]
+    1400f5757 (+0xF5757)  XORPS XMM3,XMM3
+    1400f575a (+0xF575A)  XOR R8D,R8D
+    1400f575d (+0xF575D)  MOV RCX,RBP
+    1400f5760 (+0xF5760)  LEA EDX,[R8 + 0x66]
+    1400f5764 (+0xF5764)  CALL 0x140afdb80
+    1400f5769 (+0xF5769)  XOR EDI,EDI
+    1400f576b (+0xF576B)  CMP dword ptr [RSI + 0x5e68],0x1
+    1400f5772 (+0xF5772)  MOV dword ptr [RSP + 0x50],EDI
+    1400f5776 (+0xF5776)  MOV dword ptr [RSP + 0x48],EDI
+    1400f577a (+0xF577A)  MOV dword ptr [RSP + 0x40],EDI
+    1400f577e (+0xF577E)  MOV dword ptr [RSP + 0x38],EDI
+    1400f5782 (+0xF5782)  MOV dword ptr [RSP + 0x30],EDI
+    1400f5786 (+0xF5786)  MOV EDX,0x1038d83
+    1400f578b (+0xF578B)  MOV dword ptr [RSP + 0x28],EDI
+    1400f578f (+0xF578F)  MOV R9D,0x5f5b9f2
+    1400f5795 (+0xF5795)  MOV RCX,RBP
+    1400f5798 (+0xF5798)  MOV dword ptr [RSP + 0x20],EDI
+    1400f579c (+0xF579C)  LEA R8D,[RDX + -0x1]
+    1400f57a0 (+0xF57A0)  JZ 0x1400f5831
+    1400f57a6 (+0xF57A6)  CALL 0x140afda00
+    1400f57ab (+0xF57AB)  MOV R14,RAX
+    1400f57ae (+0xF57AE)  TEST RAX,RAX
+    1400f57b1 (+0xF57B1)  JZ 0x1400f57cf
+    1400f57b3 (+0xF57B3)  MOV RBX,qword ptr [RAX]
+    1400f57b6 (+0xF57B6)  LEA ECX,[RDI + 0x18]
+    1400f57b9 (+0xF57B9)  MOV EDX,0x77363041
+    1400f57be (+0xF57BE)  CALL 0x140503620
+    1400f57c3 (+0xF57C3)  MOV RCX,R14
+    1400f57c6 (+0xF57C6)  MOV RDX,RAX
+    1400f57c9 (+0xF57C9)  CALL qword ptr [RBX + 0x140]
+    1400f57cf (+0xF57CF)  MOV dword ptr [RSP + 0x50],EDI
+    1400f57d3 (+0xF57D3)  MOV dword ptr [RSP + 0x48],EDI
+    1400f57d7 (+0xF57D7)  MOV dword ptr [RSP + 0x40],EDI
+    1400f57db (+0xF57DB)  MOV dword ptr [RSP + 0x38],EDI
+    1400f57df (+0xF57DF)  MOV EDX,0x1038d83
+    1400f57e4 (+0xF57E4)  MOV dword ptr [RSP + 0x30],EDI
+    1400f57e8 (+0xF57E8)  LEA R8D,[RDX + -0x1f]
+    1400f57ec (+0xF57EC)  XOR R9D,R9D
+    1400f57ef (+0xF57EF)  MOV RCX,RBP
+    1400f57f2 (+0xF57F2)  MOV dword ptr [RSP + 0x28],EDI
+    1400f57f6 (+0xF57F6)  MOV dword ptr [RSP + 0x20],EDI
+    1400f57fa (+0xF57FA)  CALL 0x140afda00
+    1400f57ff (+0xF57FF)  TEST RAX,RAX
+    1400f5802 (+0xF5802)  JZ 0x1400f5825
+    1400f5804 (+0xF5804)  MOV R9,qword ptr [RAX]
+    1400f5807 (+0xF5807)  XOR R8D,R8D
+    1400f580a (+0xF580A)  XORPS XMM3,XMM3
+    1400f580d (+0xF580D)  LEA EDX,[R8 + 0x70]
+    1400f5811 (+0xF5811)  MOV RCX,RAX
+    1400f5814 (+0xF5814)  CALL qword ptr [R9 + 0xc0]
+    1400f581b (+0xF581B)  XOR EDX,EDX
+    1400f581d (+0xF581D)  MOV RCX,RSI
+    1400f5820 (+0xF5820)  CALL 0x1400f6500
+    1400f5825 (+0xF5825)  MOV dword ptr [RSI + 0x18],0x1
+    1400f582c (+0xF582C)  JMP 0x1400f58c7
+    1400f5831 (+0xF5831)  CALL 0x140afda00
+    1400f5836 (+0xF5836)  MOV R14,RAX
+    1400f5839 (+0xF5839)  TEST RAX,RAX
+    1400f583c (+0xF583C)  JZ 0x1400f585c
+    1400f583e (+0xF583E)  MOV RBX,qword ptr [RAX]
+    1400f5841 (+0xF5841)  MOV EDX,0x77365751
+    1400f5846 (+0xF5846)  MOV ECX,0x18
+    1400f584b (+0xF584B)  CALL 0x140503620
+    1400f5850 (+0xF5850)  MOV RCX,R14
+    1400f5853 (+0xF5853)  MOV RDX,RAX
+    1400f5856 (+0xF5856)  CALL qword ptr [RBX + 0x140]
+
+  -- callee FUN_1400f8a30 @ +0xF8A30 (34 bytes, head only) --
+    1400f8a30 (+0xF8A30)  MOV qword ptr [RSP + 0x10],RDX
+    1400f8a35 (+0xF8A35)  MOV qword ptr [RSP + 0x18],R8
+    1400f8a3a (+0xF8A3A)  MOV qword ptr [RSP + 0x20],R9
+    1400f8a3f (+0xF8A3F)  SUB RSP,0x28
+    1400f8a43 (+0xF8A43)  LEA R8,[RSP + 0x40]
+    1400f8a48 (+0xF8A48)  CALL 0x1400f8a60
+    1400f8a4d (+0xF8A4D)  ADD RSP,0x28
+    1400f8a51 (+0xF8A51)  RET
+
+  -- callee FUN_1400f9780 @ +0xF9780 (118 bytes, head only) --
+    1400f9780 (+0xF9780)  SUB RSP,0x28
+    1400f9784 (+0xF9784)  MOV RCX,qword ptr [0x1416751f8]
+    1400f978b (+0xF978B)  MOV RAX,qword ptr [RCX]
+    1400f978e (+0xF978E)  CALL qword ptr [RAX + 0x40]
+    1400f9791 (+0xF9791)  MOV ECX,EAX
+    1400f9793 (+0xF9793)  TEST EAX,EAX
+    1400f9795 (+0xF9795)  JZ 0x1400f97e3
+    1400f9797 (+0xF9797)  DEC ECX
+    1400f9799 (+0xF9799)  JZ 0x1400f97d0
+    1400f979b (+0xF979B)  DEC ECX
+    1400f979d (+0xF979D)  JZ 0x1400f97bd
+    1400f979f (+0xF979F)  DEC ECX
+    1400f97a1 (+0xF97A1)  JNZ 0x1400f97b6
+    1400f97a3 (+0xF97A3)  MOV EDX,0xf4243
+    1400f97a8 (+0xF97A8)  MOV ECX,0x19
+    1400f97ad (+0xF97AD)  ADD RSP,0x28
+    1400f97b1 (+0xF97B1)  JMP 0x140503620
+    1400f97b6 (+0xF97B6)  XOR EAX,EAX
+    1400f97b8 (+0xF97B8)  ADD RSP,0x28
+    1400f97bc (+0xF97BC)  RET
+    1400f97bd (+0xF97BD)  MOV EDX,0xf4242
+    1400f97c2 (+0xF97C2)  MOV ECX,0x19
+    1400f97c7 (+0xF97C7)  ADD RSP,0x28
+    1400f97cb (+0xF97CB)  JMP 0x140503620
+    1400f97d0 (+0xF97D0)  MOV EDX,0xf4244
+    1400f97d5 (+0xF97D5)  MOV ECX,0x19
+    1400f97da (+0xF97DA)  ADD RSP,0x28
+    1400f97de (+0xF97DE)  JMP 0x140503620
+    1400f97e3 (+0xF97E3)  MOV EDX,0xf4241
+    1400f97e8 (+0xF97E8)  MOV ECX,0x19
+    1400f97ed (+0xF97ED)  ADD RSP,0x28
+    1400f97f1 (+0xF97F1)  JMP 0x140503620
+
+  -- callee FUN_1400fa520 @ +0xFA520 (510 bytes, head only) --
+    1400fa520 (+0xFA520)  MOV qword ptr [RSP + 0x10],RDX
+    1400fa525 (+0xFA525)  MOV qword ptr [RSP + 0x8],RCX
+    1400fa52a (+0xFA52A)  PUSH RBX
+    1400fa52b (+0xFA52B)  SUB RSP,0x30
+    1400fa52f (+0xFA52F)  MOV ECX,dword ptr [0x141627aac]
+    1400fa535 (+0xFA535)  MOV byte ptr [RSP + 0x20],0x0
+    1400fa53a (+0xFA53A)  TEST ECX,ECX
+    1400fa53c (+0xFA53C)  JNZ 0x1400fa550
+    1400fa53e (+0xFA53E)  LEA RCX,[0x141627aac]
+    1400fa545 (+0xFA545)  CALL 0x140832e70
+    1400fa54a (+0xFA54A)  MOV ECX,dword ptr [0x141627aac]
+    1400fa550 (+0xFA550)  CALL 0x140832f10
+    1400fa555 (+0xFA555)  TEST RAX,RAX
+    1400fa558 (+0xFA558)  JNZ 0x1400fa571
+    1400fa55a (+0xFA55A)  MOV ECX,dword ptr [0x141627aac]
+    1400fa560 (+0xFA560)  LEA EDX,[RAX + 0x18]
+    1400fa563 (+0xFA563)  CALL 0x140832f50
+    1400fa568 (+0xFA568)  TEST RAX,RAX
+    1400fa56b (+0xFA56B)  JZ 0x1400fa6a6
+    1400fa571 (+0xFA571)  MOV dword ptr [RAX + 0x10],0x1
+    1400fa578 (+0xFA578)  MOV ECX,dword ptr [0x141627aac]
+    1400fa57e (+0xFA57E)  TEST ECX,ECX
+    1400fa580 (+0xFA580)  JNZ 0x1400fa594
+    1400fa582 (+0xFA582)  LEA RCX,[0x141627aac]
+    1400fa589 (+0xFA589)  CALL 0x140832e70
+    1400fa58e (+0xFA58E)  MOV ECX,dword ptr [0x141627aac]
+    1400fa594 (+0xFA594)  CALL 0x140832f10
+    1400fa599 (+0xFA599)  TEST RAX,RAX
+    1400fa59c (+0xFA59C)  JNZ 0x1400fa5b5
+    1400fa59e (+0xFA59E)  MOV ECX,dword ptr [0x141627aac]
+    1400fa5a4 (+0xFA5A4)  LEA EDX,[RAX + 0x18]
+    1400fa5a7 (+0xFA5A7)  CALL 0x140832f50
+    1400fa5ac (+0xFA5AC)  TEST RAX,RAX
+    1400fa5af (+0xFA5AF)  JZ 0x1400fa6bf
+    1400fa5b5 (+0xFA5B5)  MOV ECX,dword ptr [0x141627aa8]
+    1400fa5bb (+0xFA5BB)  TEST ECX,ECX
+    1400fa5bd (+0xFA5BD)  JNZ 0x1400fa5d1
+    1400fa5bf (+0xFA5BF)  LEA RCX,[0x141627aa8]
+    1400fa5c6 (+0xFA5C6)  CALL 0x140832e70
+    1400fa5cb (+0xFA5CB)  MOV ECX,dword ptr [0x141627aa8]
+    1400fa5d1 (+0xFA5D1)  CALL 0x140832f10
+    1400fa5d6 (+0xFA5D6)  TEST RAX,RAX
+    1400fa5d9 (+0xFA5D9)  JNZ 0x1400fa5f4
+    1400fa5db (+0xFA5DB)  MOV ECX,dword ptr [0x141627aa8]
+    1400fa5e1 (+0xFA5E1)  MOV EDX,0x110
+    1400fa5e6 (+0xFA5E6)  CALL 0x140832f50
+    1400fa5eb (+0xFA5EB)  TEST RAX,RAX
+    1400fa5ee (+0xFA5EE)  JZ 0x1400fa6d8
+    1400fa5f4 (+0xFA5F4)  LEA RCX,[RAX + 0x10]
+    1400fa5f8 (+0xFA5F8)  MOV RDX,RSP
+    1400fa5fb (+0xFA5FB)  CALL 0x140c2ea70
+    1400fa600 (+0xFA600)  TEST EAX,EAX
+    1400fa602 (+0xFA602)  JNZ 0x1400fa61b
+    1400fa604 (+0xFA604)  MOV RDX,qword ptr [RSP + 0x48]
+    1400fa609 (+0xFA609)  MOV RCX,qword ptr [RSP + 0x40]
+    1400fa60e (+0xFA60E)  CALL 0x1400fa490
+    1400fa613 (+0xFA613)  MOV BL,0x1
+    1400fa615 (+0xFA615)  MOV byte ptr [RSP + 0x20],BL
+    1400fa619 (+0xFA619)  JMP 0x1400fa620
+    1400fa61b (+0xFA61B)  MOVZX EBX,byte ptr [RSP + 0x20]
+    1400fa620 (+0xFA620)  MOV ECX,dword ptr [0x141627aac]
+    1400fa626 (+0xFA626)  TEST ECX,ECX
+    1400fa628 (+0xFA628)  JNZ 0x1400fa63c
+    1400fa62a (+0xFA62A)  LEA RCX,[0x141627aac]
+    1400fa631 (+0xFA631)  CALL 0x140832e70
+    1400fa636 (+0xFA636)  MOV ECX,dword ptr [0x141627aac]
+    1400fa63c (+0xFA63C)  CALL 0x140832f10
+    1400fa641 (+0xFA641)  TEST RAX,RAX
+    1400fa644 (+0xFA644)  JNZ 0x1400fa65d
+    1400fa646 (+0xFA646)  MOV ECX,dword ptr [0x141627aac]
+    1400fa64c (+0xFA64C)  LEA EDX,[RAX + 0x18]
+    1400fa64f (+0xFA64F)  CALL 0x140832f50
+    1400fa654 (+0xFA654)  TEST RAX,RAX
+    1400fa657 (+0xFA657)  JZ 0x1400fa6f1
+    1400fa65d (+0xFA65D)  MOV dword ptr [RAX + 0x10],0x0
+    1400fa664 (+0xFA664)  MOV ECX,dword ptr [0x141627aac]
+    1400fa66a (+0xFA66A)  TEST ECX,ECX
+    1400fa66c (+0xFA66C)  JNZ 0x1400fa680
+    1400fa66e (+0xFA66E)  LEA RCX,[0x141627aac]
+    1400fa675 (+0xFA675)  CALL 0x140832e70
+
+  -- callee FUN_1404fe760 @ +0x4FE760 (174 bytes, head only) --
+    1404fe760 (+0x4FE760)  PUSH RBX
+    1404fe762 (+0x4FE762)  SUB RSP,0xb0
+    1404fe769 (+0x4FE769)  MOV RBX,RCX
+    1404fe76c (+0x4FE76C)  LEA RCX,[RSP + 0x70]
+    1404fe771 (+0x4FE771)  MOV byte ptr [RSP + 0x20],0x1
+    1404fe776 (+0x4FE776)  CALL 0x1405105f0
+    1404fe77b (+0x4FE77B)  MOV R8,RAX
+    1404fe77e (+0x4FE77E)  MOV RDX,qword ptr [RAX]
+    1404fe781 (+0x4FE781)  MOV qword ptr [RSP + 0x30],RDX
+    1404fe786 (+0x4FE786)  MOV RDX,qword ptr [RAX + 0x8]
+    1404fe78a (+0x4FE78A)  MOV qword ptr [RSP + 0x38],RDX
+    1404fe78f (+0x4FE78F)  MOV RCX,qword ptr [RAX + 0x10]
+    1404fe793 (+0x4FE793)  MOV qword ptr [RSP + 0x40],RCX
+    1404fe798 (+0x4FE798)  MOV RCX,qword ptr [RAX + 0x18]
+    1404fe79c (+0x4FE79C)  MOV qword ptr [RSP + 0x48],RCX
+    1404fe7a1 (+0x4FE7A1)  MOV RCX,qword ptr [RAX + 0x20]
+    1404fe7a5 (+0x4FE7A5)  MOV qword ptr [RSP + 0x50],RCX
+    1404fe7aa (+0x4FE7AA)  MOV RCX,qword ptr [RAX + 0x28]
+    1404fe7ae (+0x4FE7AE)  MOV qword ptr [RSP + 0x58],RCX
+    1404fe7b3 (+0x4FE7B3)  MOV RAX,qword ptr [RAX + 0x30]
+    1404fe7b7 (+0x4FE7B7)  MOV RCX,qword ptr [RBX + 0xf0]
+    1404fe7be (+0x4FE7BE)  MOV qword ptr [RSP + 0x60],RAX
+    1404fe7c3 (+0x4FE7C3)  MOV RAX,qword ptr [R8 + 0x38]
+    1404fe7c7 (+0x4FE7C7)  MOV qword ptr [RSP + 0x68],RAX
+    1404fe7cc (+0x4FE7CC)  TEST RCX,RCX
+    1404fe7cf (+0x4FE7CF)  JNZ 0x1404fe7dc
+    1404fe7d1 (+0x4FE7D1)  XOR EAX,EAX
+    1404fe7d3 (+0x4FE7D3)  ADD RSP,0xb0
+    1404fe7da (+0x4FE7DA)  POP RBX
+    1404fe7db (+0x4FE7DB)  RET
+    1404fe7dc (+0x4FE7DC)  LEA RDX,[RSP + 0x30]
+    1404fe7e1 (+0x4FE7E1)  CALL 0x140051d90
+    1404fe7e6 (+0x4FE7E6)  INC dword ptr [RBX + 0x324]
+    1404fe7ec (+0x4FE7EC)  CMP dword ptr [RBX + 0x324],0x0
+    1404fe7f3 (+0x4FE7F3)  JG 0x1404fe7ff
+    1404fe7f5 (+0x4FE7F5)  MOV dword ptr [RBX + 0x324],0x1
+    1404fe7ff (+0x4FE7FF)  MOV EAX,dword ptr [RBX + 0x324]
+    1404fe805 (+0x4FE805)  ADD RSP,0xb0
+    1404fe80c (+0x4FE80C)  POP RBX
+    1404fe80d (+0x4FE80D)  RET
+
+  -- callee FUN_140503620 @ +0x503620 (282 bytes, head only) --
+    140503620 (+0x503620)  MOV qword ptr [RSP + 0x18],RBP
+    140503625 (+0x503625)  MOV qword ptr [RSP + 0x20],RSI
+    14050362a (+0x50362A)  PUSH R14
+    14050362c (+0x50362C)  SUB RSP,0x20
+    140503630 (+0x503630)  MOV RSI,qword ptr [0x141616cb0]
+    140503637 (+0x503637)  MOV EBP,EDX
+    140503639 (+0x503639)  MOVSXD R14,ECX
+    14050363c (+0x50363C)  TEST RSI,RSI
+    14050363f (+0x50363F)  JNZ 0x140503659
+    140503641 (+0x503641)  LEA RAX,[0x1410add80]
+    140503648 (+0x503648)  MOV RBP,qword ptr [RSP + 0x40]
+    14050364d (+0x50364D)  MOV RSI,qword ptr [RSP + 0x48]
+    140503652 (+0x503652)  ADD RSP,0x20
+    140503656 (+0x503656)  POP R14
+    140503658 (+0x503658)  RET
+    140503659 (+0x503659)  MOV qword ptr [RSP + 0x30],RBX
+    14050365e (+0x50365E)  LEA RBX,[RSI + 0x10]
+    140503662 (+0x503662)  XOR ECX,ECX
+    140503664 (+0x503664)  MOV RAX,RBX
+    140503667 (+0x503667)  CMP qword ptr [RAX],0x0
+    14050366b (+0x50366B)  JNZ 0x14050367a
+    14050366d (+0x50366D)  INC ECX
+    14050366f (+0x50366F)  ADD RAX,0x10
+    140503673 (+0x503673)  CMP ECX,0x1b
+    140503676 (+0x503676)  JC 0x140503667
+    140503678 (+0x503678)  JMP 0x1405036de
+    14050367a (+0x50367A)  MOV qword ptr [RSP + 0x38],RDI
+    14050367f (+0x50367F)  MOV EDI,0x1b
+    140503684 (+0x503684)  MOV RCX,qword ptr [RBX]
+    140503687 (+0x503687)  TEST RCX,RCX
+    14050368a (+0x50368A)  JZ 0x140503691
+    14050368c (+0x50368C)  CALL 0x140af6c00
+    140503691 (+0x503691)  ADD RBX,0x10
+    140503695 (+0x503695)  DEC RDI
+    140503698 (+0x503698)  JNZ 0x140503684
+    14050369a (+0x50369A)  LEA RBX,[RSI + 0x570]
+    1405036a1 (+0x5036A1)  MOV EDI,0x4
+    1405036a6 (+0x5036A6)  MOV RCX,qword ptr [RBX + -0x40]
+    1405036aa (+0x5036AA)  TEST RCX,RCX
+    1405036ad (+0x5036AD)  JZ 0x1405036b4
+    1405036af (+0x5036AF)  CALL 0x140af6c00
+    1405036b4 (+0x5036B4)  MOV RCX,qword ptr [RBX]
+    1405036b7 (+0x5036B7)  TEST RCX,RCX
+    1405036ba (+0x5036BA)  JZ 0x1405036c1
+    1405036bc (+0x5036BC)  CALL 0x140af6c00
+    1405036c1 (+0x5036C1)  ADD RBX,0x10
+    1405036c5 (+0x5036C5)  DEC RDI
+    1405036c8 (+0x5036C8)  JNZ 0x1405036a6
+    1405036ca (+0x5036CA)  MOV RCX,RSI
+    1405036cd (+0x5036CD)  CALL 0x140505850
+    1405036d2 (+0x5036D2)  MOV RSI,qword ptr [0x141616cb0]
+    1405036d9 (+0x5036D9)  MOV RDI,qword ptr [RSP + 0x38]
+    1405036de (+0x5036DE)  MOV RBX,qword ptr [RSP + 0x30]
+    1405036e3 (+0x5036E3)  TEST EBP,EBP
+    1405036e5 (+0x5036E5)  JNZ 0x140503702
+    1405036e7 (+0x5036E7)  LEA RCX,[0x1410ae858]
+    1405036ee (+0x5036EE)  MOV RAX,RCX
+    1405036f1 (+0x5036F1)  MOV RBP,qword ptr [RSP + 0x40]
+    1405036f6 (+0x5036F6)  MOV RSI,qword ptr [RSP + 0x48]
+    1405036fb (+0x5036FB)  ADD RSP,0x20
+    1405036ff (+0x5036FF)  POP R14
+    140503701 (+0x503701)  RET
+    140503702 (+0x503702)  MOV RCX,R14
+    140503705 (+0x503705)  MOV EDX,EBP
+    140503707 (+0x503707)  SHL RCX,0x5
+    14050370b (+0x50370B)  MOV RCX,qword ptr [RCX + RSI*0x1 + 0x1d8]
+    140503713 (+0x503713)  CALL 0x140503410
+    140503718 (+0x503718)  MOV RBP,qword ptr [RSP + 0x40]
+    14050371d (+0x50371D)  MOV RSI,qword ptr [RSP + 0x48]
+    140503722 (+0x503722)  TEST RAX,RAX
+    140503725 (+0x503725)  LEA RCX,[0x1410add80]
+    14050372c (+0x50372C)  CMOVNZ RCX,RAX
+    140503730 (+0x503730)  MOV RAX,RCX
+    140503733 (+0x503733)  ADD RSP,0x20
+    140503737 (+0x503737)  POP R14
+    140503739 (+0x503739)  RET
+
+  -- callee FUN_1405132a0 @ +0x5132A0 (19 bytes, head only) --
+    1405132a0 (+0x5132A0)  MOV RAX,qword ptr [0x141616cf8]
+    1405132a7 (+0x5132A7)  TEST RAX,RAX
+    1405132aa (+0x5132AA)  JZ 0x1405132b1
+    1405132ac (+0x5132AC)  MOV RAX,qword ptr [RAX + 0x30]
+    1405132b0 (+0x5132B0)  RET
+    1405132b1 (+0x5132B1)  RET
+
+  -- callee FUN_1405132c0 @ +0x5132C0 (18 bytes, head only) --
+    1405132c0 (+0x5132C0)  MOV RAX,qword ptr [0x141616cf8]
+    1405132c7 (+0x5132C7)  TEST RAX,RAX
+    1405132ca (+0x5132CA)  JZ 0x1405132d0
+    1405132cc (+0x5132CC)  MOV RAX,qword ptr [RAX]
+    1405132cf (+0x5132CF)  RET
+    1405132d0 (+0x5132D0)  RET
+
+  -- callee FUN_1405135a0 @ +0x5135A0 (44 bytes, head only) --
+    1405135a0 (+0x5135A0)  MOV RCX,qword ptr [0x141616cf8]
+    1405135a7 (+0x5135A7)  XOR EAX,EAX
+    1405135a9 (+0x5135A9)  TEST RCX,RCX
+    1405135ac (+0x5135AC)  JZ 0x1405135b4
+    1405135ae (+0x5135AE)  MOV RCX,qword ptr [RCX + 0x30]
+    1405135b2 (+0x5135B2)  JMP 0x1405135b7
+    1405135b4 (+0x5135B4)  MOV RCX,RAX
+    1405135b7 (+0x5135B7)  MOV RDX,qword ptr [RCX + 0xe0]
+    1405135be (+0x5135BE)  TEST RDX,RDX
+    1405135c1 (+0x5135C1)  JZ 0x1405135ca
+    1405135c3 (+0x5135C3)  CMP dword ptr [RDX + 0x8],0x3
+    1405135c7 (+0x5135C7)  SETZ AL
+    1405135ca (+0x5135CA)  RET
+
+  -- callee FUN_140513600 @ +0x513600 (5 bytes, head only) --
+    140513600 (+0x513600)  MOVZX EAX,byte ptr [RCX + 0x3a]
+    140513604 (+0x513604)  RET
+
+  -- callee thunk_FUN_141b77d76 @ +0x832CB0 (5 bytes, head only) --
+    140832cb0 (+0x832CB0)  JMP 0x141b77d76
+
+  -- callee FUN_140833dc0 @ +0x833DC0 (18 bytes, head only) --
+    140833dc0 (+0x833DC0)  SUB RSP,0x28
+    140833dc4 (+0x833DC4)  CALL 0x140834b90
+    140833dc9 (+0x833DC9)  ADD RAX,0x28
+    140833dcd (+0x833DCD)  ADD RSP,0x28
+    140833dd1 (+0x833DD1)  RET
+
+======================================================================
+Done.
+Next step in the txt file: look for instructions of the form
+  MOV [RAX/RCX/RDI + small_offset], imm32  (state writes)
+  MOV [global_va], reg                      (global writes)
+  CALL <function whose name/comment suggests Init/Start/Connect>
+======================================================================

@@ -431,7 +431,31 @@ static void H33InstallSteamHooks() {
 #endif
 
 // ============================================================================
-// Hooked Winsock connect() — redirects FromSoft server to custom server
+// Hooked Winsock connect() — redirects FromSoft P2P ports to localhost AND
+// refuses any other outbound connect (H-26 defense-in-depth layer 3).
+//
+// Behaviour matrix:
+//   destination port in {50031, 50000, 50010-50100} (DS2 P2P range):
+//       redirect IP -> g_redirectIP (default 127.0.0.1), keep port,
+//       pass to original connect().
+//   destination IP in 127.0.0.0/8 (loopback), any port:
+//       pass through unmodified (Steam loopback, debug tools, mod's own
+//       localhost P2P server, etc.).
+//   anything else:
+//       refuse with WSAECONNREFUSED. To the caller this is
+//       indistinguishable from "port not listening" — the game's standard
+//       error path runs without any popup or retry storm.
+//
+// Why the off-allowlist refusal exists:
+//   The H-26 OnlineFlagAccessor patch (src/sync/player_sync.cpp's kSites)
+//   flips the engine's runtime "am I online?" state to 1 for all 34
+//   callers. That unlocks code paths the existing redirect was never
+//   designed to handle — HTTPS to FROM / Bandai-Namco auth servers,
+//   port-80 status probes to Cloudflare-fronted endpoints, possibly
+//   WSAConnect/ConnectEx routes that bypass connect() entirely (those
+//   need a separate hook; this branch handles only the connect() path).
+//   The OS-level firewall rule (tools/firewall-block-ds2-outbound.ps1)
+//   is the broader complement; this hook is the inner line of defense.
 // ============================================================================
 static int WSAAPI ConnectHook(SOCKET s, const sockaddr* name, int namelen) {
     if (name && name->sa_family == AF_INET) {
@@ -441,11 +465,19 @@ static int WSAAPI ConnectHook(SOCKET s, const sockaddr* name, int namelen) {
         char ipStr[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &addr->sin_addr, ipStr, sizeof(ipStr));
 
+        // Capture loopback status of the ORIGINAL destination, before
+        // any potential rewrite. Used by the off-allowlist refusal branch
+        // to keep Steam-overlay and mod-internal loopback traffic flowing.
+        const bool originatedFromLoopback =
+            (addr->sin_addr.S_un.S_un_b.s_b1 == 127);
+
+        const bool isP2PPort =
+            (port == DS2_LOGIN_PORT || port == 50000 ||
+             (port >= 50010 && port <= 50100));
+
         LOG_INFO("[NET] Game connecting to %s:%u", ipStr, port);
 
-        // Redirect all game server connections (login=50031, auth=50000, game=50010+)
-        if (g_redirectActive && (port == DS2_LOGIN_PORT || port == 50000 ||
-            (port >= 50010 && port <= 50100))) {
+        if (g_redirectActive && isP2PPort) {
             LOG_INFO("[NET] REDIRECTING %s:%u to custom server %s:%u (keeping port)",
                      ipStr, port, g_redirectIP.c_str(), port);
 
@@ -458,10 +490,20 @@ static int WSAAPI ConnectHook(SOCKET s, const sockaddr* name, int namelen) {
             LOG_INFO("[NET] Connection redirected to %s:%u", newIp, port);
 
             g_gameOnline = true;
-        } else if (port == DS2_LOGIN_PORT) {
-            LOG_INFO("[NET] Detected DS2 login server connection (port %u) — redirect OFF", DS2_LOGIN_PORT);
+        } else if (isP2PPort) {
+            // P2P port but redirect is OFF — pass through unmodified.
+            // Mark online state for telemetry.
+            LOG_INFO("[NET] DS2 P2P port %u (redirect OFF, passing through)", port);
             g_gameOnline = true;
+        } else if (!originatedFromLoopback) {
+            // Off-allowlist outbound — refuse. See header comment for why.
+            LOG_WARNING("[NET] BLOCKED outbound to %s:%u "
+                        "(off-allowlist; not loopback, not P2P-range)",
+                        ipStr, port);
+            WSASetLastError(WSAECONNREFUSED);
+            return SOCKET_ERROR;
         }
+        // else: loopback destination on a non-P2P port — pass through.
     }
 
     return g_originalConnect(s, name, namelen);
