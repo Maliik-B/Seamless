@@ -25,6 +25,7 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include <intrin.h>     // _ReturnAddress (H-26 empirical hooks)
 
 using namespace DS2Coop::Hooks;
 using namespace DS2Coop::Utils;
@@ -425,6 +426,129 @@ static bool __fastcall ParseHook(void* thisPtr, void* data, int size) {
 }
 
 // ============================================================================
+// H-26 task #2 phase 2 empirical hooks.
+//
+// Context: the OnlineFlagAccessor patch in src/sync/player_sync.cpp's kSites
+// table flips the engine's runtime "is online?" boolean (the byte at
+// [serviceMgr + 0x3A]) to 1 for all 34 callers. That removed the title-screen
+// "Offline Mode" label and unlocked exactly one outbound port-80 probe (caught
+// by layer 3), but `Total protobuf messages processed: 0` still holds: the
+// session/RPC layer remains dormant. The H-26 task #1 evidence directory
+// (docs/repro/runs/h26-2026-05-26-solo-confirm/) captured the same zero
+// count BEFORE this patch, so the gate is something further upstream than
+// the byte we flipped.
+//
+// These two probe-only hooks instrument the protobuf-send path so the next
+// repro tells us which side of the gate the engine is on:
+//
+//   FUN_1406a1de0 @ exe+0x6A1DE0  -- RequestCreateSign send wrapper. Vtable
+//     slot[1] of the SignProtocol vtable at exe+0x1113318. Builds a
+//     RequestCreateSign protobuf and calls FUN_140693cc0 with opcode 0x394
+//     to send it. Per Ghidra disassembly the function reads stack args at
+//     RBP+0x6f (5th arg, used as RBX) and RBP+0x7f (7th arg, used as R14),
+//     so the trampoline signature has to include those stack slots for
+//     MinHook to replay the call correctly.
+//
+//   FUN_140693cc0 @ exe+0x693CC0  -- generic protobuf-send helper. Every
+//     outgoing protobuf message reaches the wire through this with EDX set
+//     to the message opcode. Counts every send regardless of class.
+//
+// Decision matrix after the next repro:
+//   - both fire during placement attempt  -> gate is internal to FUN_1406a1de0
+//   - only FUN_140693cc0 fires (other opcodes only)  -> session layer alive,
+//     but sign-placement specifically is short-circuited above FUN_1406a1de0
+//   - neither fires  -> session layer entirely dormant; the gate is in
+//     session-manager init / dispatcher state, not in the per-message wrapper
+//
+// Hooks are probe-only (log on entry, then call original) so they can stay
+// in any H26Repro build without changing behaviour.
+// ============================================================================
+#ifdef H26_REPRO_LOGGING
+
+// 8-arg signature for FUN_1406a1de0: 4 register args (RCX, RDX, R8D, R9D)
+// plus 4 stack-arg slots. The function provably reads up to arg 7, and we
+// over-declare to arg 8 to be safe against any MinHook trampoline replay
+// edge case. All stack args are passed through unmodified.
+typedef int (__fastcall *FN_RequestCreateSignSend)(
+    void* this_, void* arg2, uint32_t arg3, uint32_t arg4,
+    void* arg5, void* arg6, void* arg7, void* arg8);
+
+// 4-arg signature for FUN_140693cc0: the only caller we have disassembly
+// for (FUN_1406a1de0 at +0x6A1FEB) sets just RCX/EDX/R8/R9 before the CALL.
+// If a later trace shows misbehaviour from stack-arg truncation we'll
+// widen this signature.
+typedef int (__fastcall *FN_ProtobufSendHelper)(
+    void* svc, uint32_t opcode, void* msg, void* arg5);
+
+static FN_RequestCreateSignSend g_origRequestCreateSignSend = nullptr;
+static FN_ProtobufSendHelper    g_origProtobufSendHelper    = nullptr;
+
+static std::atomic<uint32_t> g_h26SignSendCount{0};
+static std::atomic<uint32_t> g_h26ProtoSendCount{0};
+
+static int __fastcall H26RequestCreateSignSendHook(
+        void* this_, void* arg2, uint32_t arg3, uint32_t arg4,
+        void* arg5, void* arg6, void* arg7, void* arg8) {
+    void* caller = _ReturnAddress();
+    uintptr_t exeBase = reinterpret_cast<uintptr_t>(GetModuleHandle(nullptr));
+    uint32_t n = ++g_h26SignSendCount;
+    LOG_INFO("[H26 SIGN] RequestCreateSign_send ENTER #%u caller=exe+0x%llX "
+             "this=%p arg2=%p arg3=0x%X arg4=0x%X arg5=%p arg7=%p",
+             n,
+             static_cast<unsigned long long>(
+                 reinterpret_cast<uintptr_t>(caller) - exeBase),
+             this_, arg2, arg3, arg4, arg5, arg7);
+    int rc = g_origRequestCreateSignSend(this_, arg2, arg3, arg4,
+                                          arg5, arg6, arg7, arg8);
+    LOG_INFO("[H26 SIGN] RequestCreateSign_send LEAVE #%u rc=%d", n, rc);
+    return rc;
+}
+
+static int __fastcall H26ProtobufSendHelperHook(
+        void* svc, uint32_t opcode, void* msg, void* arg5) {
+    void* caller = _ReturnAddress();
+    uintptr_t exeBase = reinterpret_cast<uintptr_t>(GetModuleHandle(nullptr));
+    uint32_t n = ++g_h26ProtoSendCount;
+    // First 64 hits at full verbosity, then every 100th. Sign-placement
+    // gate diagnosis only needs the first few; later sends are noise.
+    if (n <= 64 || (n % 100) == 0) {
+        LOG_INFO("[H26 PROTO] protobuf_send_helper ENTER #%u caller=exe+0x%llX "
+                 "svc=%p opcode=0x%X msg=%p",
+                 n,
+                 static_cast<unsigned long long>(
+                     reinterpret_cast<uintptr_t>(caller) - exeBase),
+                 svc, opcode, msg);
+    }
+    return g_origProtobufSendHelper(svc, opcode, msg, arg5);
+}
+
+static void InstallH26EmpiricalHooks() {
+    uintptr_t exeBase = reinterpret_cast<uintptr_t>(GetModuleHandle(nullptr));
+
+    void* signSendAddr = reinterpret_cast<void*>(exeBase + 0x6A1DE0);
+    if (HookManager::GetInstance().InstallHook(
+            signSendAddr,
+            reinterpret_cast<void*>(&H26RequestCreateSignSendHook),
+            reinterpret_cast<void**>(&g_origRequestCreateSignSend))) {
+        LOG_INFO("  HOOKED RequestCreateSign_send @ exe+0x6A1DE0 (H26 repro)");
+    } else {
+        LOG_WARNING("  H26: failed to hook RequestCreateSign_send @ exe+0x6A1DE0");
+    }
+
+    void* protoSendAddr = reinterpret_cast<void*>(exeBase + 0x693CC0);
+    if (HookManager::GetInstance().InstallHook(
+            protoSendAddr,
+            reinterpret_cast<void*>(&H26ProtobufSendHelperHook),
+            reinterpret_cast<void**>(&g_origProtobufSendHelper))) {
+        LOG_INFO("  HOOKED protobuf_send_helper @ exe+0x693CC0 (H26 repro)");
+    } else {
+        LOG_WARNING("  H26: failed to hook protobuf_send_helper @ exe+0x693CC0");
+    }
+}
+
+#endif // H26_REPRO_LOGGING
+
+// ============================================================================
 // Installation
 // ============================================================================
 bool ProtobufHooks::InstallHooks() {
@@ -487,6 +611,10 @@ bool ProtobufHooks::InstallHooks() {
     LOG_INFO("==========================================");
     LOG_INFO("Protobuf Hooks Result: %d/2 installed", hooked);
     LOG_INFO("==========================================");
+
+#ifdef H26_REPRO_LOGGING
+    InstallH26EmpiricalHooks();
+#endif
 
     if (hooked >= 1) {
         LOG_INFO("Protobuf interception active.");
