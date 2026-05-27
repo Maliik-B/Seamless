@@ -1,0 +1,92 @@
+==============================================================================
+H-26 Plan B stage 3c: SignManager singleton hunt
+==============================================================================
+
+----------------------------------------------------------------------------
+FUN_1401BD7F0 entry (function prologue)  (+0x1BD7F0)
+----------------------------------------------------------------------------
+entry=1401bd7f0 body-min=1401bd7f0 body-max=1401bdd9a name=FUN_1401bd7f0
+  1401bd7f0 (+0x1BD7F0)  MOV      qword ptr [RSP + 0x10], RBX
+  1401bd7f5 (+0x1BD7F5)  MOV      qword ptr [RSP + 0x18], RBP
+  1401bd7fa (+0x1BD7FA)  MOV      qword ptr [RSP + 0x20], RSI
+  1401bd7ff (+0x1BD7FF)  PUSH     RDI
+  1401bd800 (+0x1BD800)  PUSH     R14
+  1401bd802 (+0x1BD802)  PUSH     R15
+  1401bd804 (+0x1BD804)  SUB      RSP, 0x70
+  1401bd808 (+0x1BD808)  MOV      RDI, RCX
+  1401bd80b (+0x1BD80B)  MOV      ECX, 0x2
+  1401bd810 (+0x1BD810)  CALL     0x140aee210
+  1401bd815 (+0x1BD815)  MOV      RCX, qword ptr [0x1416751f8]
+  1401bd81c (+0x1BD81C)  MOV      R14D, dword ptr [RDI + 0x2480]
+  1401bd823 (+0x1BD823)  MOV      RBP, RAX
+  1401bd826 (+0x1BD826)  CALL     0x140aeed50
+  1401bd82b (+0x1BD82B)  TEST     AL, AL
+  1401bd82d (+0x1BD82D)  JZ       0x1401bd855
+  1401bd82f (+0x1BD82F)  LEA      RDX, [0x1410c4f30]
+  1401bd836 (+0x1BD836)  LEA      RCX, [0x1410c4f58]
+  1401bd83d (+0x1BD83D)  CALL     0x140859590
+  1401bd842 (+0x1BD842)  LEA      RDX, [0x1410c4f70]
+  1401bd849 (+0x1BD849)  LEA      RCX, [0x1410c4f58]
+  1401bd850 (+0x1BD850)  CALL     0x140859600
+  1401bd855 (+0x1BD855)  CMP      qword ptr [RDI + 0x30], 0x0
+  1401bd85a (+0x1BD85A)  JZ       0x1401bd88f
+  1401bd85c (+0x1BD85C)  MOV      RAX, qword ptr [0x1416751f8]
+  1401bd863 (+0x1BD863)  MOV      RCX, qword ptr [RAX + 0x40]
+  1401bd867 (+0x1BD867)  MOV      RAX, qword ptr [RDI + 0x80]
+  1401bd86e (+0x1BD86E)  CMP      dword ptr [RCX + 0xc70], 0x3
+  1401bd875 (+0x1BD875)  SETZ     DL
+  1401bd878 (+0x1BD878)  TEST     RAX, RAX
+
+----------------------------------------------------------------------------
+FUN_1401BD7F0 around SignManager ctor call (~0x3F bytes before call)  (+0x1BDAC0)
+----------------------------------------------------------------------------
+entry=1401bd7f0 body-min=1401bd7f0 body-max=1401bdd9a name=FUN_1401bd7f0
+
+----------------------------------------------------------------------------
+FUN_1401BD7F0 after SignManager ctor call (store-back pattern)  (+0x1BDB04)
+----------------------------------------------------------------------------
+entry=1401bd7f0 body-min=1401bd7f0 body-max=1401bdd9a name=FUN_1401bd7f0
+  1401bdb04 (+0x1BDB04)  JMP      0x1401bdb09
+  1401bdb06 (+0x1BDB06)  MOV      RAX, RSI
+  1401bdb09 (+0x1BDB09)  MOV      qword ptr [RDI + 0x90], RAX
+  1401bdb10 (+0x1BDB10)  TEST     RAX, RAX
+  1401bdb13 (+0x1BDB13)  JZ       0x1401bdb1d
+  1401bdb15 (+0x1BDB15)  MOV      RCX, RAX
+  1401bdb18 (+0x1BDB18)  CALL     0x140210f60
+  1401bdb1d (+0x1BDB1D)  TEST     EBX, EBX
+  1401bdb1f (+0x1BDB1F)  JZ       0x1401bdb59
+  1401bdb21 (+0x1BDB21)  MOV      R8, RBP
+  1401bdb24 (+0x1BDB24)  MOV      EDX, 0x8
+  1401bdb29 (+0x1BDB29)  MOV      ECX, 0x1f0
+  1401bdb2e (+0x1BDB2E)  CALL     0x140833320
+  1401bdb33 (+0x1BDB33)  TEST     RAX, RAX
+  1401bdb36 (+0x1BDB36)  JZ       0x1401bdb42
+  1401bdb38 (+0x1BDB38)  MOV      RCX, RAX
+  1401bdb3b (+0x1BDB3B)  CALL     0x14019ef60
+  1401bdb40 (+0x1BDB40)  JMP      0x1401bdb45
+  1401bdb42 (+0x1BDB42)  MOV      RAX, RSI
+  1401bdb45 (+0x1BDB45)  MOV      qword ptr [RDI + 0x98], RAX
+  1401bdb4c (+0x1BDB4C)  TEST     RAX, RAX
+  1401bdb4f (+0x1BDB4F)  JZ       0x1401bdb59
+  1401bdb51 (+0x1BDB51)  MOV      RCX, RAX
+  1401bdb54 (+0x1BDB54)  CALL     0x14019fa30
+  1401bdb59 (+0x1BDB59)  BT       R14D, 0xb
+  1401bdb5e (+0x1BDB5E)  JNC      0x1401bdb97
+  1401bdb60 (+0x1BDB60)  MOV      EDX, 0x8
+  1401bdb65 (+0x1BDB65)  MOV      R8, RBP
+  1401bdb68 (+0x1BDB68)  LEA      ECX, [RDX + 0x48]
+  1401bdb6b (+0x1BDB6B)  CALL     0x140833320
+  1401bdb70 (+0x1BDB70)  TEST     RAX, RAX
+  1401bdb73 (+0x1BDB73)  JZ       0x1401bdb85
+  1401bdb75 (+0x1BDB75)  MOV      RDX, RBP
+  1401bdb78 (+0x1BDB78)  MOV      RCX, RAX
+  1401bdb7b (+0x1BDB7B)  CALL     0x140489720
+  1401bdb80 (+0x1BDB80)  MOV      RBX, RAX
+  1401bdb83 (+0x1BDB83)  JMP      0x1401bdb88
+  1401bdb85 (+0x1BDB85)  MOV      RBX, RSI
+  1401bdb88 (+0x1BDB88)  MOV      RCX, RBX
+  1401bdb8b (+0x1BDB8B)  CALL     0x140489b00
+
+==============================================================================
+Done.
+==============================================================================
