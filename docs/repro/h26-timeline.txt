@@ -1,0 +1,120 @@
+H-26 SOAPSTONE-PLACEMENT REPRO TIMELINE
+========================================
+
+Date:      ____-__-__
+Run ID:    h26-________
+Stage:     1 (solo bare-metal)   OR   2 (with VM joiner)
+DLL:       ds2_seamless_coop.dll built from h26-soapstone
+           with H26_REPRO_LOGGING=1 (H26Repro preset)
+
+NOTES BEFORE STARTING
+- Log file:  <DS2 install>\ds2_seamless_coop.log (truncated each launch)
+- The H26 instrumentation logs EVERY protobuf message:
+    [H26 >>] <classname>   = outgoing
+    [H26 <<] <classname>   = incoming
+- Soapstone-place is expected to send class name containing
+  "Sign" or "Summon" (e.g. RequestSummonSign, opcode 0x039B per
+  SESSION_LOG_2026_03_17.md).
+- If you don't see ANY [H26 >>] line when you click to place, the
+  game refused to send — local offline-mode check is the culprit.
+- If you see [H26 >>] but no [H26 <<] response, server-side.
+
+CHARACTER STATE
+- Throwaway character per H-04. Level 1-15ish.
+- Have White Sign Soapstone in inventory (overlay "Grant Soapstones"
+  button, or use a character that already has it).
+- Be HUMAN (not hollow) if possible. Sign placement may require
+  effigy use first.
+- Be in a sign-placement area — outside Majula bonfire, NEAR the
+  bonfire (a few steps away from the flame itself), works. Avoid
+  boss-locked areas.
+
+================================================================
+STAGE 1 — SOLO BARE-METAL REPRO (~5 min)
+================================================================
+
+S1A __:__:__  Launch DS2 on host. Note any popups during boot:
+              "Service not available"?      Y / N
+              "Connecting to game servers"? Y / N
+              Other:                        ___________________
+
+S1B __:__:__  At main menu — is "Online Play" / multiplayer
+              enabled in the menu options?  Y / N / GREYED OUT
+
+S1C __:__:__  Load character. Verify soapstones in inventory.
+              If not, open overlay (INSERT), click Grant Soapstones.
+              Result: ___________________
+
+S1D __:__:__  Walk to placement-suitable area (outside Majula
+              bonfire is fine).
+
+S1E __:__:__  Equip white sign soapstone in active item slot.
+
+S1F __:__:__  Attempt to USE the soapstone (default key for
+              "use item"). Note exact in-game outcome:
+                [ ] Sign placed visibly in world
+                [ ] Animation plays but no sign appears
+                [ ] No animation, button does nothing
+                [ ] "Service not available" popup appears
+                [ ] Other (describe): _____________________
+
+S1G __:__:__  Wait 5s after attempt. Try once more for log
+              confirmation.
+
+S1H __:__:__  Try Small White Sign Soapstone (different item ID).
+              Outcome: _________________
+
+S1I __:__:__  Quit DS2 cleanly. Grab the log immediately.
+
+POST-STAGE-1 CHECKLIST
+[ ] Copy ds2_seamless_coop.log → docs/repro/runs/h26-<date>/host.log
+[ ] Save this file as            docs/repro/runs/h26-<date>/timeline.txt
+[ ] In the log, grep for [H26 >>] entries during S1F window:
+      - At least one "Sign" or "Summon" classname?       Y / N
+      - Any [H26 <<] response within 2s?                 Y / N
+[ ] Note initial verdict:
+    [ ] Bug reproduced — bug is local (no protobuf sent)
+    [ ] Bug reproduced — bug is server-side (no response)
+    [ ] Bug NOT reproduced solo — needs joiner (proceed Stage 2)
+    [ ] Inconclusive — additional instrumentation needed
+
+================================================================
+STAGE 2 — WITH JOINER (only if Stage 1 did NOT reproduce)
+================================================================
+
+Requires VM + second Steam account per docs/repro/h25-vm-setup.md.
+Run AFTER the H-25 repro session so you don't burn two VM sessions.
+
+S2A __:__:__  Same as S1A but on host with VM also booting.
+
+S2B __:__:__  VM:  launch DS2 in VM, load character, connect to
+              host via mod overlay.
+              VM connection result: ___________________
+
+S2C __:__:__  HOST: confirm joiner is visible / in session.
+
+S2D __:__:__  HOST: walk to Majula bonfire vicinity.
+
+S2E __:__:__  HOST: equip + use white sign soapstone.
+              Outcome: ___________________
+
+S2F __:__:__  VM:   walk to Things Betwixt or Majula area.
+              VM:   equip + use white sign soapstone.
+              Outcome: ___________________
+
+S2G __:__:__  HOST: if HOST sign appears, VM tries to pick it up
+              and summon. Outcome: ___________________
+
+S2H __:__:__  Quit both cleanly. Grab BOTH logs.
+
+POST-STAGE-2 CHECKLIST
+[ ] Copy host\ds2_seamless_coop.log → docs/repro/runs/h26-<date>/host.log
+[ ] Copy vm\ds2_seamless_coop.log   → docs/repro/runs/h26-<date>/vm.log
+[ ] Save this file as                docs/repro/runs/h26-<date>/timeline.txt
+[ ] Cross-reference [H26 >>] on placer side with [H26 <<] on
+    other side.
+
+OBSERVATIONS / WEIRDNESS:
+________________________________________________________________
+________________________________________________________________
+________________________________________________________________

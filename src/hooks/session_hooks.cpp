@@ -262,6 +262,15 @@ static uint8_t* __fastcall SerializeHook(void* thisPtr, uint8_t* target) {
 
     const char* className = GetRttiClassName(thisPtr);
 
+#ifdef H26_REPRO_LOGGING
+    // H-26 unfiltered outgoing protobuf trace. The existing substring filter
+    // (~30 lines below) only logs Sign/Summon/Item/etc., which is good for
+    // steady-state debugging but loses messages we didn't know to filter for.
+    // During a soapstone-place repro we want everything so we can spot what
+    // is — or isn't — leaving the client. Strip or guard-flip before PR.
+    LOG_INFO("[H26 >>] %s", className);
+#endif
+
     // If seamless mode is active, block disconnect messages
     if (g_seamlessActive.load()) {
         if (IsOutgoingDisconnect(className)) {
@@ -376,6 +385,12 @@ static bool __fastcall ParseHook(void* thisPtr, void* data, int size) {
 
     if (result) {
         const char* className = GetRttiClassName(thisPtr);
+
+#ifdef H26_REPRO_LOGGING
+        // H-26 unfiltered incoming protobuf trace — mirror of the SerializeHook
+        // companion above. See note there.
+        LOG_INFO("[H26 <<] %s", className);
+#endif
 
         // Log ALL session-related incoming messages (INFO level for debugging)
         if (strstr(className, "Session") || strstr(className, "Guest") ||

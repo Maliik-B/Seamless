@@ -62,3 +62,10 @@ if(DS2COOP_H33_REPRO_LOGGING)
     target_compile_definitions(ds2_seamless_coop PRIVATE H33_REPRO_LOGGING=1)
 endif()
 
+# H-26 throwaway: unfiltered protobuf classname trace in session_hooks.
+# Default OFF — flip on via the `H26Repro` preset for capture sessions only.
+option(DS2COOP_H26_REPRO_LOGGING "Verbose H-26 protobuf-flow repro logging" OFF)
+if(DS2COOP_H26_REPRO_LOGGING)
+    target_compile_definitions(ds2_seamless_coop PRIVATE H26_REPRO_LOGGING=1)
+endif()
+
