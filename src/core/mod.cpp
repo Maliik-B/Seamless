@@ -76,6 +76,14 @@ bool SeamlessCoopMod::Initialize() {
     }
 
     // ================================================================
+    // STEP 2b (H-33 task #12): suppress the boot "service unavailable"
+    // popup BEFORE the title screen FSM constructs its OfflineModeWindow
+    // substate. Patches the FeSubStateTitleOnlineCheck predicate at
+    // exe+0xF98C0 to always report success. See player_sync.cpp.
+    // ================================================================
+    Sync::ApplyBootPopupPatch();
+
+    // ================================================================
     // STEP 3: Install protobuf interception hooks (THE CRITICAL HOOKS)
     // These hook SerializeWithCachedSizesToArray and ParseFromArray
     // to intercept and block disconnect messages at the network layer.

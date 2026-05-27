@@ -1,0 +1,134 @@
+======================================================================
+FeSubState class -> vtable -> caller chain
+Image base: 140000000
+======================================================================
+
+--- FeSubStateTitleSteamNetworkCheck ---
+  name string @ +0x1566F88
+  TypeDescriptor @ +0x1566F78
+  CompleteObjectLocator candidates: 1 (validated by sig=1)
+    COL @ 1412b05b0 (+0x12B05B0)
+      vtable @ 1410bd198 (+0x10BD198)
+        slot[0] = 0x1400F8EB0 (FUN_1400f8eb0 @ +0xF8EB0)
+        slot[1] = 0x1400F8FB0 (FUN_1400f8fb0 @ +0xF8FB0)
+        slot[2] = 0x1400F9680 (FUN_1400f9680 @ +0xF9680)
+        slot[3] = 0x1400F8990 (FUN_1400f8990 @ +0xF8990)
+        slot[4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+        slot[5] = 0x1400F93E0 (FUN_1400f93e0 @ +0xF93E0)
+        slot[6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+        slot[7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+      vtable xrefs: 2
+        from 1400f8c50 (+0xF8C50) in FUN_1400f8c50 @ +0xF8C50 [DATA]
+        from 1400f8c65 (+0xF8C65) in FUN_1400f8c50 @ +0xF8C50 [DATA]
+
+--- FeSubStateTitleOnlineCheck ---
+  name string @ +0x1567060
+  TypeDescriptor @ +0x1567050
+  CompleteObjectLocator candidates: 1 (validated by sig=1)
+    COL @ 1412b07f0 (+0x12B07F0)
+      vtable @ 1410bd318 (+0x10BD318)
+        slot[0] = 0x1400F8E00 (FUN_1400f8e00 @ +0xF8E00)
+        slot[1] = 0x140104ED0 (FUN_140104ed0 @ +0x104ED0)
+        slot[2] = 0x140105110 (FUN_140105110 @ +0x105110)
+        slot[3] = 0x140105270 (FUN_140105270 @ +0x105270)
+        slot[4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+        slot[5] = 0x140105090 (FUN_140105090 @ +0x105090)
+        slot[6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+        slot[7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+      vtable xrefs: 2
+        from 1400f8bd1 (+0xF8BD1) in FUN_1400f8b70 @ +0xF8B70 [DATA]
+        from 1400f8bd8 (+0xF8BD8) in FUN_1400f8b70 @ +0xF8B70 [DATA]
+
+--- FeSubStateOfflineModeWindow ---
+  name string @ +0x1567098
+  TypeDescriptor @ +0x1567088
+  CompleteObjectLocator candidates: 1 (validated by sig=1)
+    COL @ 1412b0880 (+0x12B0880)
+      vtable @ 1410bd388 (+0x10BD388)
+        slot[0] = 0x1400F8DA0 (FUN_1400f8da0 @ +0xF8DA0)
+        slot[1] = 0x140104DB0 (FUN_140104db0 @ +0x104DB0)
+        slot[2] = 0x1401050A0 (FUN_1401050a0 @ +0x1050A0)
+        slot[3] = 0x140105150 (FUN_140105150 @ +0x105150)
+        slot[4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+        slot[5] = 0x140104F30 (FUN_140104f30 @ +0x104F30)
+        slot[6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+        slot[7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+      vtable xrefs: 2
+        from 1400f8b0a (+0xF8B0A) in FUN_1400f8af0 @ +0xF8AF0 [DATA]
+        from 1400f8b11 (+0xF8B11) in FUN_1400f8af0 @ +0xF8AF0 [DATA]
+
+--- FeSubStateTitleSetOfflineMode ---
+  name string @ +0x15670D0
+  TypeDescriptor @ +0x15670C0
+  CompleteObjectLocator candidates: 1 (validated by sig=1)
+    COL @ 1412b0908 (+0x12B0908)
+      vtable @ 1410bd3f8 (+0x10BD3F8)
+        slot[0] = 0x1400F8E80 (FUN_1400f8e80 @ +0xF8E80)
+        slot[1] = 0x1400F8F80 (FUN_1400f8f80 @ +0xF8F80)
+        slot[2] = 0x1400F8970 (FUN_1400f8970 @ +0xF8970)
+        slot[3] = 0x1400F8990 (FUN_1400f8990 @ +0xF8990)
+        slot[4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+        slot[5] = 0x1400F9370 (FUN_1400f9370 @ +0xF9370)
+        slot[6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+        slot[7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+      vtable xrefs: 2
+        from 1400f8c30 (+0xF8C30) in FUN_1400f8c30 @ +0xF8C30 [DATA]
+        from 1400f8c40 (+0xF8C40) in FUN_1400f8c30 @ +0xF8C30 [DATA]
+
+--- FeSubStateTitleGameServerLogin ---
+  name string @ +0x1566FF8
+  TypeDescriptor @ +0x1566FE8
+  CompleteObjectLocator candidates: 1 (validated by sig=1)
+    COL @ 1412b06e8 (+0x12B06E8)
+      vtable @ 1410bd258 (+0x10BD258)
+        slot[0] = 0x1400F8DD0 (FUN_1400f8dd0 @ +0xF8DD0)
+        slot[1] = 0x140104ED0 (FUN_140104ed0 @ +0x104ED0)
+        slot[2] = 0x140105110 (FUN_140105110 @ +0x105110)
+        slot[3] = 0x140105270 (FUN_140105270 @ +0x105270)
+        slot[4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+        slot[5] = 0x140105090 (FUN_140105090 @ +0x105090)
+        slot[6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+        slot[7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+      vtable xrefs: 2
+        from 1400f8b50 (+0xF8B50) in FUN_1400f8b20 @ +0xF8B20 [DATA]
+        from 1400f8b57 (+0xF8B57) in FUN_1400f8b20 @ +0xF8B20 [DATA]
+
+--- FeSubStateTitleUserPolicy ---
+  name string @ +0x1567030
+  TypeDescriptor @ +0x1567020
+  CompleteObjectLocator candidates: 1 (validated by sig=1)
+    COL @ 1412b0770 (+0x12B0770)
+      vtable @ 1410bd2c8 (+0x10BD2C8)
+        slot[0] = 0x1400F8EE0 (FUN_1400f8ee0 @ +0xF8EE0)
+        slot[1] = 0x1400F9040 (FUN_1400f9040 @ +0xF9040)
+        slot[2] = 0x1400F96B0 (FUN_1400f96b0 @ +0xF96B0)
+        slot[3] = 0x1400F96F0 (FUN_1400f96f0 @ +0xF96F0)
+        slot[4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+        slot[5] = 0x1400F9510 (FUN_1400f9510 @ +0xF9510)
+        slot[6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+        slot[7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+      vtable xrefs: 2
+        from 1400f8c70 (+0xF8C70) in FUN_1400f8c70 @ +0xF8C70 [DATA]
+        from 1400f8c85 (+0xF8C85) in FUN_1400f8c70 @ +0xF8C70 [DATA]
+
+--- FeSubStateProcessWindowBase ---
+  name string @ +0x1566F18
+  TypeDescriptor @ +0x1566F08
+  CompleteObjectLocator candidates: 1 (validated by sig=1)
+    COL @ 1412b1800 (+0x12B1800)
+      vtable @ 1410bde58 (+0x10BDE58)
+        slot[0] = 0x140104D50 (FUN_140104d50 @ +0x104D50)
+        slot[1] = 0x140104ED0 (FUN_140104ed0 @ +0x104ED0)
+        slot[2] = 0x140105110 (FUN_140105110 @ +0x105110)
+        slot[3] = 0x140105270 (FUN_140105270 @ +0x105270)
+        slot[4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+        slot[5] = 0x140105090 (FUN_140105090 @ +0x105090)
+        slot[6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+        slot[7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+      vtable xrefs: 2
+        from 140104c70 (+0x104C70) in FUN_140104c70 @ +0x104C70 [DATA]
+        from 140104c82 (+0x104C82) in FUN_140104c70 @ +0x104C70 [DATA]
+
+======================================================================
+Done.
+======================================================================

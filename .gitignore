@@ -57,3 +57,9 @@ Release/Server/Saved/default/private.key
 Release/Server/Saved/default/database.sqlite
 Release/Server/Saved/default/last_activity.time
 third_party/ds3os/build/
+
+# Ghidra working dirs (per-machine, contains huge .gbf cache)
+tools/ghidra_project/
+
+# Intermediate / partial Ghidra analysis output
+tools/*_partial.txt

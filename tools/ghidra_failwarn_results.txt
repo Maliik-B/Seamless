@@ -1,0 +1,29 @@
+======================================================================
+FeSubStateTitleOnlineCheckFailWarn — vtable / OnEnter / trigger
+======================================================================
+
+Looking for COL referencing TD at +0x1567318...
+  TD RVA refs: 2
+    COL @ +0x12B0ED8
+      vtable @ +0x10BD7D8
+        slot[ 0] = FUN_1400fd1d0 @ +0xFD1D0
+        slot[ 1] = FUN_1400fd370 @ +0xFD370
+        slot[ 2] = FUN_1401050a0 @ +0x1050A0
+        slot[ 3] = FUN_140105150 @ +0x105150
+        slot[ 4] = FUN_1400f89a0 @ +0xF89A0
+        slot[ 5] = FUN_140104f30 @ +0x104F30
+        slot[ 6] = FUN_1401043a0 @ +0x1043A0
+        slot[ 7] = FUN_1400f72c0 @ +0xF72C0
+        slot[ 8] = FUN_1400f89d0 @ +0xF89D0
+        slot[ 9] = FUN_1400f89c0 @ +0xF89C0
+        slot[10] = FUN_1400f89e0 @ +0xF89E0
+        slot[11] = FUN_1400fd4c0 @ +0xFD4C0
+      vtable xrefs (constructors): 2
+        from 1400fd0a3 in FUN_1400fd080 @ +0xFD080
+        from 1400fd0aa in FUN_1400fd080 @ +0xFD080
+
+Finding constructor(s) and tracing callers...
+
+======================================================================
+Done.
+======================================================================

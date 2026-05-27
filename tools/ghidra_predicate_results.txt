@@ -1,0 +1,250 @@
+======================================================================
+FeSubState vtable slot 8..15 + predicate inspection
+======================================================================
+
+--- FeSubStateTitleSteamNetworkCheck vtable @ +0x10BD198 ---
+  slot[ 0] = 0x1400F8EB0 (FUN_1400f8eb0 @ +0xF8EB0)
+  slot[ 1] = 0x1400F8FB0 (FUN_1400f8fb0 @ +0xF8FB0)
+  slot[ 2] = 0x1400F9680 (FUN_1400f9680 @ +0xF9680)
+  slot[ 3] = 0x1400F8990 (FUN_1400f8990 @ +0xF8990)
+  slot[ 4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[ 5] = 0x1400F93E0 (FUN_1400f93e0 @ +0xF93E0)
+  slot[ 6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+  slot[ 7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+  slot[ 8] = (end / invalid)
+
+--- FeSubStateTitleOnlineCheck vtable @ +0x10BD318 ---
+  slot[ 0] = 0x1400F8E00 (FUN_1400f8e00 @ +0xF8E00)
+  slot[ 1] = 0x140104ED0 (FUN_140104ed0 @ +0x104ED0)
+  slot[ 2] = 0x140105110 (FUN_140105110 @ +0x105110)
+  slot[ 3] = 0x140105270 (FUN_140105270 @ +0x105270)
+  slot[ 4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[ 5] = 0x140105090 (FUN_140105090 @ +0x105090)
+  slot[ 6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+  slot[ 7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+  slot[ 8] = 0x1400F98C0 (FUN_1400f98c0 @ +0xF98C0)
+  slot[ 9] = 0x1400F9FB0 (FUN_1400f9fb0 @ +0xF9FB0)
+  slot[10] = 0x1400F9970 (FUN_1400f9970 @ +0xF9970)
+  slot[11] = 0x1400F9E90 (FUN_1400f9e90 @ +0xF9E90)
+  slot[12] = 0x140105340 (FUN_140105340 @ +0x105340)
+  slot[13] = 0x1412B0880 ((no func) @ ?)
+  slot[14] = 0x1400F8DA0 (FUN_1400f8da0 @ +0xF8DA0)
+  slot[15] = 0x140104DB0 (FUN_140104db0 @ +0x104DB0)
+  slot[16] = 0x1401050A0 (FUN_1401050a0 @ +0x1050A0)
+  slot[17] = 0x140105150 (FUN_140105150 @ +0x105150)
+  slot[18] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[19] = 0x140104F30 (FUN_140104f30 @ +0x104F30)
+
+--- FeSubStateOfflineModeWindow vtable @ +0x10BD388 ---
+  slot[ 0] = 0x1400F8DA0 (FUN_1400f8da0 @ +0xF8DA0)
+  slot[ 1] = 0x140104DB0 (FUN_140104db0 @ +0x104DB0)
+  slot[ 2] = 0x1401050A0 (FUN_1401050a0 @ +0x1050A0)
+  slot[ 3] = 0x140105150 (FUN_140105150 @ +0x105150)
+  slot[ 4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[ 5] = 0x140104F30 (FUN_140104f30 @ +0x104F30)
+  slot[ 6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+  slot[ 7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+  slot[ 8] = 0x1400F89D0 (FUN_1400f89d0 @ +0xF89D0)
+  slot[ 9] = 0x1400F89C0 (FUN_1400f89c0 @ +0xF89C0)
+  slot[10] = 0x1400F89E0 (FUN_1400f89e0 @ +0xF89E0)
+  slot[11] = 0x1400F9800 (FUN_1400f9800 @ +0xF9800)
+  slot[12] = (end / invalid)
+
+--- FeSubStateTitleSetOfflineMode vtable @ +0x10BD3F8 ---
+  slot[ 0] = 0x1400F8E80 (FUN_1400f8e80 @ +0xF8E80)
+  slot[ 1] = 0x1400F8F80 (FUN_1400f8f80 @ +0xF8F80)
+  slot[ 2] = 0x1400F8970 (FUN_1400f8970 @ +0xF8970)
+  slot[ 3] = 0x1400F8990 (FUN_1400f8990 @ +0xF8990)
+  slot[ 4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[ 5] = 0x1400F9370 (FUN_1400f9370 @ +0xF9370)
+  slot[ 6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+  slot[ 7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+  slot[ 8] = 0x1412B03A0 ((no func) @ ?)
+  slot[ 9] = 0x1400F8D10 (FUN_1400f8d10 @ +0xF8D10)
+  slot[10] = 0x1400F9240 (FUN_1400f9240 @ +0xF9240)
+  slot[11] = 0x1400F8F40 (FUN_1400f8f40 @ +0xF8F40)
+  slot[12] = 0x1412B0320 ((no func) @ ?)
+  slot[13] = 0x1400F8D40 (FUN_1400f8d40 @ +0xF8D40)
+  slot[14] = 0x1400F9260 (FUN_1400f9260 @ +0xF9260)
+  slot[15] = 0x1400F8F40 (FUN_1400f8f40 @ +0xF8F40)
+  slot[16] = 0x1412B0988 ((no func) @ ?)
+  slot[17] = 0x140C2E1FC (FUN_140c2e1fc @ +0xC2E1FC)
+  slot[18] = 0x1400FAC20 (FUN_1400fac20 @ +0xFAC20)
+  slot[19] = (end / invalid)
+
+--- FeSubStateTitleGameServerLogin vtable @ +0x10BD258 ---
+  slot[ 0] = 0x1400F8DD0 (FUN_1400f8dd0 @ +0xF8DD0)
+  slot[ 1] = 0x140104ED0 (FUN_140104ed0 @ +0x104ED0)
+  slot[ 2] = 0x140105110 (FUN_140105110 @ +0x105110)
+  slot[ 3] = 0x140105270 (FUN_140105270 @ +0x105270)
+  slot[ 4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[ 5] = 0x140105090 (FUN_140105090 @ +0x105090)
+  slot[ 6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+  slot[ 7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+  slot[ 8] = 0x1400F9820 (FUN_1400f9820 @ +0xF9820)
+  slot[ 9] = 0x1400F9FA0 (FUN_1400f9fa0 @ +0xF9FA0)
+  slot[10] = 0x1400F9940 (FUN_1400f9940 @ +0xF9940)
+  slot[11] = 0x1400F9C50 (FUN_1400f9c50 @ +0xF9C50)
+  slot[12] = 0x1400F99A0 (FUN_1400f99a0 @ +0xF99A0)
+  slot[13] = 0x1412B0770 ((no func) @ ?)
+  slot[14] = 0x1400F8EE0 (FUN_1400f8ee0 @ +0xF8EE0)
+  slot[15] = 0x1400F9040 (FUN_1400f9040 @ +0xF9040)
+  slot[16] = 0x1400F96B0 (FUN_1400f96b0 @ +0xF96B0)
+  slot[17] = 0x1400F96F0 (FUN_1400f96f0 @ +0xF96F0)
+  slot[18] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[19] = 0x1400F9510 (FUN_1400f9510 @ +0xF9510)
+
+--- FeSubStateProcessWindowBase vtable @ +0x10BDE58 ---
+  slot[ 0] = 0x140104D50 (FUN_140104d50 @ +0x104D50)
+  slot[ 1] = 0x140104ED0 (FUN_140104ed0 @ +0x104ED0)
+  slot[ 2] = 0x140105110 (FUN_140105110 @ +0x105110)
+  slot[ 3] = 0x140105270 (FUN_140105270 @ +0x105270)
+  slot[ 4] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[ 5] = 0x140105090 (FUN_140105090 @ +0x105090)
+  slot[ 6] = 0x1401043A0 (FUN_1401043a0 @ +0x1043A0)
+  slot[ 7] = 0x1400F72C0 (FUN_1400f72c0 @ +0xF72C0)
+  slot[ 8] = 0x140105300 (FUN_140105300 @ +0x105300)
+  slot[ 9] = 0x140105450 (FUN_140105450 @ +0x105450)
+  slot[10] = 0x140105320 (FUN_140105320 @ +0x105320)
+  slot[11] = 0x140105430 (FUN_140105430 @ +0x105430)
+  slot[12] = 0x140C2E1FC (FUN_140c2e1fc @ +0xC2E1FC)
+  slot[13] = 0x1412B1828 ((no func) @ ?)
+  slot[14] = 0x140104D80 (FUN_140104d80 @ +0x104D80)
+  slot[15] = 0x140104ED0 (FUN_140104ed0 @ +0x104ED0)
+  slot[16] = 0x140105110 (FUN_140105110 @ +0x105110)
+  slot[17] = 0x140105270 (FUN_140105270 @ +0x105270)
+  slot[18] = 0x1400F89A0 (FUN_1400f89a0 @ +0xF89A0)
+  slot[19] = 0x140105090 (FUN_140105090 @ +0x105090)
+
+### Disassembly of slot 8 functions (the per-class predicate) ###
+
+  Function at 0x1400F89D0 (FUN_1400f89d0 @ +0xF89D0, 3 bytes)
+    1400f89d0 (+0xF89D0) RET 0x0
+
+  Function at 0x1400F9820 (FUN_1400f9820 @ +0xF9820, 148 bytes)
+    1400f9820 (+0xF9820) MOV qword ptr [RSP + 0x8],RBX
+    1400f9825 (+0xF9825) PUSH RDI
+    1400f9826 (+0xF9826) SUB RSP,0x20
+    1400f982a (+0xF982A) MOV RAX,qword ptr [0x1416148f0]
+    1400f9831 (+0xF9831) MOV RDI,RCX
+    1400f9834 (+0xF9834) MOV RCX,qword ptr [RAX + 0x22f0]
+    1400f983b (+0xF983B) CALL 0x1405132a0
+    1400f9840 (+0xF9840) MOV RCX,RAX
+    1400f9843 (+0xF9843) MOV RBX,RAX
+    1400f9846 (+0xF9846) MOV RDX,qword ptr [RAX]
+    1400f9849 (+0xF9849) CALL qword ptr [RDX + 0x60]
+    1400f984c (+0xF984C) MOV RDX,qword ptr [RBX]
+    1400f984f (+0xF984F) MOV RCX,RBX
+    1400f9852 (+0xF9852) CALL qword ptr [RDX + 0x8]
+    1400f9855 (+0xF9855) TEST AL,AL
+    1400f9857 (+0xF9857) JNZ 0x1400f98a6
+    1400f9859 (+0xF9859) MOV EDX,0x1fbd6
+    1400f985e (+0xF985E) MOV ECX,0x19
+    1400f9863 (+0xF9863) CALL 0x140503620
+    1400f9868 (+0xF9868) MOV RCX,RDI
+    1400f986b (+0xF986B) MOV RBX,RAX
+    1400f986e (+0xF986E) CALL 0x1400f9780
+    1400f9873 (+0xF9873) TEST RBX,RBX
+    1400f9876 (+0xF9876) JZ 0x1400f9896
+    1400f9878 (+0xF9878) TEST RAX,RAX
+    1400f987b (+0xF987B) JZ 0x1400f9896
+    1400f987d (+0xF987D) MOV RCX,qword ptr [0x14160de10]
+    1400f9884 (+0xF9884) MOV R8,RAX
+    1400f9887 (+0xF9887) MOV RDX,RBX
+    1400f988a (+0xF988A) ADD RCX,0x118
+    1400f9891 (+0xF9891) CALL 0x1400f8a30
+    1400f9896 (+0xF9896) MOV EAX,0x7
+    1400f989b (+0xF989B) MOV RBX,qword ptr [RSP + 0x30]
+    1400f98a0 (+0xF98A0) ADD RSP,0x20
+    1400f98a4 (+0xF98A4) POP RDI
+    1400f98a5 (+0xF98A5) RET
+    1400f98a6 (+0xF98A6) OR EAX,0xffffffff
+    1400f98a9 (+0xF98A9) MOV RBX,qword ptr [RSP + 0x30]
+    1400f98ae (+0xF98AE) ADD RSP,0x20
+    1400f98b2 (+0xF98B2) POP RDI
+    1400f98b3 (+0xF98B3) RET
+
+  Function at 0x1400F98C0 (FUN_1400f98c0 @ +0xF98C0, 117 bytes)
+    1400f98c0 (+0xF98C0) MOV qword ptr [RSP + 0x8],RBX
+    1400f98c5 (+0xF98C5) MOV qword ptr [RSP + 0x10],RSI
+    1400f98ca (+0xF98CA) PUSH RDI
+    1400f98cb (+0xF98CB) SUB RSP,0x20
+    1400f98cf (+0xF98CF) MOV RAX,qword ptr [0x1416148f0]
+    1400f98d6 (+0xF98D6) MOV RSI,RCX
+    1400f98d9 (+0xF98D9) MOV RBX,qword ptr [RAX + 0x22f0]
+    1400f98e0 (+0xF98E0) MOV RCX,RBX
+    1400f98e3 (+0xF98E3) CALL 0x1405132a0
+    1400f98e8 (+0xF98E8) MOV RCX,RBX
+    1400f98eb (+0xF98EB) MOV RDI,RAX
+    1400f98ee (+0xF98EE) CALL 0x140513600
+    1400f98f3 (+0xF98F3) TEST AL,AL
+    1400f98f5 (+0xF98F5) JNZ 0x1400f9909
+    1400f98f7 (+0xF98F7) XOR EAX,EAX
+    1400f98f9 (+0xF98F9) MOV RBX,qword ptr [RSP + 0x30]
+    1400f98fe (+0xF98FE) MOV RSI,qword ptr [RSP + 0x38]
+    1400f9903 (+0xF9903) ADD RSP,0x20
+    1400f9907 (+0xF9907) POP RDI
+    1400f9908 (+0xF9908) RET
+    1400f9909 (+0xF9909) MOV RAX,qword ptr [RDI]
+    1400f990c (+0xF990C) MOVZX EDX,byte ptr [RSI + 0x30]
+    1400f9910 (+0xF9910) MOV RCX,RDI
+    1400f9913 (+0xF9913) CALL qword ptr [RAX + 0x48]
+    1400f9916 (+0xF9916) MOV RBX,qword ptr [RSP + 0x30]
+    1400f991b (+0xF991B) MOV RSI,qword ptr [RSP + 0x38]
+    1400f9920 (+0xF9920) OR ECX,0xffffffff
+    1400f9923 (+0xF9923) TEST AL,AL
+    1400f9925 (+0xF9925) MOV EDX,0x1
+    1400f992a (+0xF992A) CMOVZ ECX,EDX
+    1400f992d (+0xF992D) MOV EAX,ECX
+    1400f992f (+0xF992F) ADD RSP,0x20
+    1400f9933 (+0xF9933) POP RDI
+    1400f9934 (+0xF9934) RET
+
+  Function at 0x140105300 (FUN_140105300 @ +0x105300, 4 bytes)
+    140105300 (+0x105300) OR EAX,0xffffffff
+    140105303 (+0x105303) RET
+
+  fn at 0x1412B03A0 NOT FOUND
+
+### Predicate 0x140500580 inspection ###
+  Function @ +0x500580, 35 bytes
+    140500580 (+0x500580) MOV RAX,qword ptr [RCX + 0xf0]
+    140500587 (+0x500587) TEST RAX,RAX
+    14050058a (+0x50058A) JZ 0x1405005a0
+    14050058c (+0x50058C) TEST EDX,EDX
+    14050058e (+0x50058E) JLE 0x140500598
+    140500590 (+0x500590) CMP dword ptr [RCX + 0x324],EDX
+    140500596 (+0x500596) JNZ 0x1405005a0
+    140500598 (+0x500598) MOV RCX,RAX
+    14050059b (+0x50059B) JMP 0x1400524d0
+    1405005a0 (+0x5005A0) MOV AL,0x1
+    1405005a2 (+0x5005A2) RET
+
+  Callers of +0x500580:
+    total: 8
+    from 1400fbcb8 (+0xFBCB8) in FUN_1400fbba0 @ +0xFBBA0 [UNCONDITIONAL_CALL]
+    from 1400ff7b9 (+0xFF7B9) in FUN_1400ff710 @ +0xFF710 [UNCONDITIONAL_CALL]
+    from 14010517e (+0x10517E) in FUN_140105150 @ +0x105150 [UNCONDITIONAL_CALL]
+    from 140105299 (+0x105299) in FUN_140105270 @ +0x105270 [UNCONDITIONAL_CALL]
+    from 140199f0f (+0x199F0F) in FUN_140199e40 @ +0x199E40 [UNCONDITIONAL_CALL]
+    from 140199bbe (+0x199BBE) in FUN_140199a70 @ +0x199A70 [UNCONDITIONAL_CALL]
+    from 1400fc16b (+0xFC16B) in FUN_1400fbdb0 @ +0xFBDB0 [UNCONDITIONAL_CALL]
+    from 1401998b5 (+0x1998B5) in FUN_1401998a0 @ +0x1998A0 [UNCONDITIONAL_CALL]
+
+### Predicate 0x140500440 inspection (referenced in OfflineModeWindow update) ###
+  Function @ +0x500440, 35 bytes
+    140500440 (+0x500440) MOV RAX,qword ptr [RCX + 0xf0]
+    140500447 (+0x500447) TEST RAX,RAX
+    14050044a (+0x50044A) JZ 0x140500460
+    14050044c (+0x50044C) TEST EDX,EDX
+    14050044e (+0x50044E) JLE 0x140500458
+    140500450 (+0x500450) CMP dword ptr [RCX + 0x324],EDX
+    140500456 (+0x500456) JNZ 0x140500460
+    140500458 (+0x500458) MOV RCX,RAX
+    14050045b (+0x50045B) JMP 0x140052440
+    140500460 (+0x500460) MOV AL,0x1
+    140500462 (+0x500462) RET
+
+======================================================================
+Done.
+======================================================================
