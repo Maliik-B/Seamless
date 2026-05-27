@@ -495,3 +495,100 @@ Optional fallback: extend task #11 with the remaining ~21 vtable
 slots per interface (~250 lines of single-signature trampolines). Not
 recommended — the existing evidence converges hard on #3 and Ghidra is
 the higher-leverage move.
+
+---
+
+## 2026-05-26 update #5 — task #12 result, original popup bypassed but second popup surfaces as artifact
+
+Full evidence + try-by-try writeup:
+`docs/repro/runs/h33-2026-05-26-patch/README.md`.
+
+### What landed in `h33-ghidra-patch` (try-7)
+
+Two runtime byte-patches in `DarkSoulsII.exe`, applied from
+`SeamlessCoopMod::Initialize` (DllMain time, before title-screen FSM
+renders):
+
+- **`OnlineCheck`** — `exe+0xF98C0`:
+  `FeSubStateTitleOnlineCheck::slot[8]` (the per-class predicate)
+  forced to `XOR EAX,EAX ; RET`. Shared `OnEnter` at exe+0x104ED0 sees
+  EAX≥0 → state=3 (success).
+- **`SteamNetCheck`** — `exe+0xF8FB0`:
+  `FeSubStateTitleSteamNetworkCheck::OnEnter` (override) replaced with
+  `MOV [RCX+0x10], 3 ; XOR EAX,EAX ; RET`. Skips both failure branches
+  that would otherwise route the FSM into `FeSubStateOfflineModeWindow`.
+
+Both validated applied at boot via host.log
+`PatchBootPopup: PATCHED ...` lines.
+
+### What works
+
+The original **"DARK SOULS II service is not available"** popup at boot
+— the load-bearing blocker from updates #1–#4 of this doc — is gone.
+The title-screen FSM advances past the original popup chain on every
+launch.
+
+### What replaced it
+
+A different popup appears at the title screen instead:
+
+> Unable to play in online mode due to a detected frame rate issue.
+> Please restart the game after resolving the issue to play online.
+
+OK loops back to the same popup (same behaviour as the original blocker).
+
+### Verdict: framerate popup is an artifact, not a real FPS check
+
+Tested with NVCP `Max Frame Rate = 60` set for `DarkSoulsII.exe` — popup
+still appears identically. User has played DS2 online in the two weeks
+prior to this session on the same hardware without any FPS cap. The
+"framerate" text is DS2's generic error message that maps to the
+current half-initialised online state.
+
+**Mechanism (working hypothesis):** the patches return success from the
+predicates *without* doing the side-effect work the legitimate flow
+does — auth token, session manager state, service manager handshake at
+`[GameManager+0x22f0]`. A later FSM check (probably during
+`FeSubStateTitleGameServerLogin`) notices the inconsistency and fires
+the popup. Capping FPS does not help because nothing in the chain
+actually measures FPS.
+
+### Patches we ABANDONED (do not re-apply blindly)
+
+- `FailWarn::OnEnter` (+0xFD370) and `InfoFailWarn::OnEnter` (+0xFD230)
+  no-op: each is a wrapper that prepares a different FMG message ID
+  (0x35B62 vs 0x33453) then `CALL`s `OfflineModeWindow::OnEnter` at
+  exe+0x104DB0. Both wrappers patched separately → popup still
+  appeared, because the framerate popup reaches +0x104DB0 via
+  polymorphic vtable dispatch from a *third* class, not via either
+  wrapper.
+- `OfflineModeWindow::OnEnter` (+0x104DB0) no-op: killed the popup
+  cleanly but **deadlocked the post-Start FSM** at "checking for
+  online". Root cause discovered post-hoc:
+  `ghidra_offline_callers_results.txt` shows +0x104DB0 is the shared
+  `OnEnter` slot of *four distinct vtables* (+0x10BD000, +0x10BD390 =
+  OfflineModeWindow, +0x10BD6D0, +0x10BDDF0). Nuking it broke the three
+  other classes' legitimate post-Start use of it.
+
+### Where this ticket goes next (task #13 or task #12 continued)
+
+1. Disassemble the side-effect path of
+   `FeSubStateTitleOnlineCheck::slot[8]` (+0xF98C0) — what fields does
+   the legitimate predicate populate on `[GameManager+0x22f0]` (the
+   service manager)? Auth token? Session id? Login state byte? Same
+   for `SteamNetworkCheck::OnEnter` (+0xF8FB0).
+2. Construct a "fake-but-coherent" online state: after our
+   succeed-shortcuts, set those fields ourselves so the post-Start
+   consistency check sees a plausible online environment.
+3. If that's too invasive, find the *consumer* of the half-init state
+   (the check that fires the framerate popup as a side effect of
+   detecting inconsistency) and short-circuit it directly. Likely
+   inside `FeSubStateTitleGameServerLogin` or
+   `FeSubStateTitleUserPolicy` — the two states immediately downstream
+   of OnlineCheck in the success path.
+
+Ghidra project is preserved at `tools/ghidra_project/DS2/` (gitignored;
+~33 min to re-import if it ever needs rebuilding). All task-#12 Ghidra
+scripts are committed under `tools/ghidra_*.py` with their
+`_results.txt` companions, so the next session can pick up the
+investigation without re-doing the discovery work.

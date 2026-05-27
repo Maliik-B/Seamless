@@ -104,5 +104,12 @@ private:
     static constexpr float STATE_SYNC_INTERVAL = 0.5f;     // 2 times per second
 };
 
+// H-33 task #12: Patch FeSubStateTitleOnlineCheck's predicate so the
+// title-screen FSM never transitions into FeSubStateOfflineModeWindow
+// (the "DARK SOULS II service is not available" popup). Must run before
+// the title screen renders, so it is called from SeamlessCoopMod::Initialize
+// rather than the session-create path.
+void ApplyBootPopupPatch();
+
 } // namespace DS2Coop::Sync
 

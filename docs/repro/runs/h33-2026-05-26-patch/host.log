@@ -1,0 +1,148 @@
+=== DS2 Seamless Co-op Log ===
+Started: 2026-05-26 21:14:37
+===============================
+[21:14:37] [INFO ] ========================================
+[21:14:37] [INFO ] DLL_PROCESS_ATTACH - DLL IS LOADING!
+[21:14:37] [INFO ] DS2 Seamless Co-op Mod v1.0.0
+[21:14:37] [INFO ] DLL Module Handle: 0x00007FFDDF6C0000
+[21:14:37] [INFO ] Process ID: 3668
+[21:14:37] [INFO ] ========================================
+[21:14:37] [INFO ] DarkSoulsII.exe SHA-256: 0045931B8914504531B7864A9488D396DC50CBAF524964016E1D69C3D1173131 (allowlisted)
+[21:14:37] [INFO ] DllMain returning TRUE (success)
+[21:14:37] [INFO ] Mod initialization thread started...
+[21:14:40] [INFO ] Calling SeamlessCoopMod::Initialize()...
+[21:14:40] [INFO ] ==========================================
+[21:14:40] [INFO ] Initializing Seamless Co-op Mod...
+[21:14:40] [INFO ] ==========================================
+[21:14:40] [INFO ] Loading configuration...
+[21:14:40] [INFO ] Configuration loaded from file
+[21:14:40] [INFO ] Detecting game version...
+[21:14:40] [INFO ]   Module base: 0x00007FF6EF450000
+[21:14:40] [INFO ]   Assuming Steam latest version
+[21:14:40] [INFO ] [1/6] Initializing MinHook...
+[21:14:40] [INFO ] Initializing MinHook...
+[21:14:40] [INFO ] MinHook initialized
+[21:14:40] [INFO ]   MinHook ready
+[21:14:40] [INFO ] [2/6] Scanning for game addresses...
+[21:14:40] [INFO ] === Address Resolution Starting ===
+[21:14:40] [INFO ] Scanning for GameManagerImp...
+[21:14:40] [INFO ] Scanning for pattern in module (base: 0x00007FF6EF450000, size: 0x1D76000)
+[21:14:40] [INFO ] Pattern found at: 0x00007FF6EF845219 (offset: 0x3F5219)
+[21:14:40] [INFO ] RIP resolution: instruction=0x00007FF6EF845219, offset=3, size=7 -> absolute=0x00007FF6F0A648F0
+[21:14:40] [INFO ] Scanning for NetSessionManager...
+[21:14:40] [INFO ] Scanning for pattern in module (base: 0x00007FF6EF450000, size: 0x1D76000)
+[21:14:40] [INFO ] Pattern found at: 0x00007FF6EF96B272 (offset: 0x51B272)
+[21:14:40] [INFO ] RIP resolution: instruction=0x00007FF6EF96B272, offset=3, size=7 -> absolute=0x00007FF6F0A66CF8
+[21:14:40] [INFO ] Scanning for pattern in module (base: 0x00007FF6EF450000, size: 0x1D76000)
+[21:14:40] [INFO ] Pattern found at: 0x00007FF6EF740C30 (offset: 0x2F0C30)
+[21:14:40] [INFO ] RIP resolution: instruction=0x00007FF6EF740C30, offset=3, size=7 -> absolute=0x00007FF6F0AC51F8
+[21:14:40] [INFO ] GameManagerImp = 0x00007FF43E4A0260 (after 1 retries)
+[21:14:41] [INFO ] NetSessionManager = 0x00007FF431460BA0 (after 2 retries)
+[21:14:41] [INFO ] === Address Resolution Complete ===
+[21:14:41] [INFO ]   GameManagerImp:    0x00007FF43E4A0260 [OK]
+[21:14:41] [INFO ]   NetSessionManager: 0x00007FF431460BA0 [OK]
+[21:14:41] [INFO ]   KatanaMainApp:     0x0000006FFAF0F570 [OK]
+[21:14:41] [INFO ]   GameManagerImp:    0x00007FF43E4A0260 [OK]
+[21:14:41] [INFO ]   NetSessionManager: 0x00007FF431460BA0 [OK]
+[21:14:41] [INFO ] PatchBootPopup: PATCHED OnlineCheck at exe+0xF98C0 (5 bytes)
+[21:14:41] [INFO ] PatchBootPopup: PATCHED SteamNetCheck at exe+0xF8FB0 (10 bytes)
+[21:14:41] [INFO ] [3/6] Installing protobuf interception hooks...
+[21:14:41] [INFO ] ==========================================
+[21:14:41] [INFO ] Installing Protobuf Interception Hooks...
+[21:14:41] [INFO ] ==========================================
+[21:14:41] [INFO ] Scanning for SerializeWithCachedSizesToArray...
+[21:14:41] [INFO ] Scanning for pattern in module (base: 0x00007FF6EF450000, size: 0x1D76000)
+[21:14:41] [INFO ] Pattern found at: 0x00007FF6EFB07FC0 (offset: 0x6B7FC0)
+[21:14:41] [INFO ]   Found at: 0x00007FF6EFB07FC0
+[21:14:41] [INFO ]   HOOKED SerializeWithCachedSizesToArray
+[21:14:41] [INFO ] Scanning for ParseFromArray...
+[21:14:41] [INFO ] Scanning for pattern in module (base: 0x00007FF6EF450000, size: 0x1D76000)
+[21:14:41] [INFO ] Pattern found at: 0x00007FF6EFB07EA0 (offset: 0x6B7EA0)
+[21:14:41] [INFO ]   Found at: 0x00007FF6EFB07EA0
+[21:14:41] [INFO ]   HOOKED ParseFromArray
+[21:14:41] [INFO ] ==========================================
+[21:14:41] [INFO ] Protobuf Hooks Result: 2/2 installed
+[21:14:41] [INFO ] ==========================================
+[21:14:41] [INFO ] Protobuf interception active.
+[21:14:41] [INFO ]   Protobuf hooks ACTIVE - disconnect blocking available
+[21:14:41] [INFO ] [SEAMLESS] Disconnect blocking ENABLED
+[21:14:41] [INFO ] [4/7] Installing Winsock hooks...
+[21:14:41] [INFO ] Installing Winsock hooks...
+[21:14:41] [INFO ]   HOOKED Winsock connect()
+[21:14:41] [INFO ] [4/7] Setting up server redirect to 127.0.0.1:50031...
+[21:14:41] [INFO ] [NET] Server redirect configured: 127.0.0.1:50031
+[21:14:41] [INFO ] [5/7] Installing game state hooks...
+[21:14:41] [INFO ] Installing game state hooks...
+[21:14:41] [INFO ] Game state hooks: no addresses available (non-critical)
+[21:14:41] [INFO ] Protobuf interception handles disconnect prevention.
+[21:14:41] [INFO ] [6/7] Initializing subsystems...
+[21:14:41] [INFO ] Initializing peer manager on port 27015...
+[21:14:41] [INFO ] [REDIRECT] Installing server redirect to 127.0.0.1
+[21:14:41] [INFO ] Peer manager initialized, local ID: 3318973, port: 27015
+[21:14:41] [INFO ]   Network manager ready (port 27015)
+[21:14:41] [INFO ] Initializing session manager...
+[21:14:41] [INFO ] Session manager initialized
+[21:14:41] [INFO ]   Session manager ready
+[21:14:41] [INFO ] Installing DX11 Present hook...
+[21:14:41] [INFO ] [REDIRECT] Loaded public key from ds2_server_public.key (426 bytes)
+[21:14:41] [INFO ] [REDIRECT] Patching server hostname to: 127.0.0.1
+[21:14:41] [INFO ] IDXGISwapChain::Present at 00007FFE5276D9F0
+[21:14:41] [INFO ] IDXGISwapChain::ResizeBuffers at 00007FFE52799D40
+[21:14:41] [INFO ] [REDIRECT] Patched hostname at 0x00007FF6F0524AB0
+[21:14:41] [INFO ] [REDIRECT] Patched hostname at 0x00007FF6F0524AAF
+[21:14:41] [INFO ] [REDIRECT] Hostname patching complete
+[21:14:41] [INFO ] [REDIRECT] Patching RSA public key...
+[21:14:41] [INFO ] [PRESENT] First Present call intercepted! swapChain=0000021FEF952010
+[21:14:41] [INFO ] [PRESENT] Device=0000021FDAE68A40 Context=0000021FDAE75548
+[21:14:41] [INFO ] RTV (re)built: 1920x1080
+[21:14:41] [INFO ] ImGui initialized on DX11 device (1920x1080)
+[21:14:41] [INFO ] Notification: Seamless Co-op loaded  |  INSERT to open menu
+[21:14:41] [INFO ] H-20: emergency-disable hotkey armed (ctrl=1 shift=1 alt=0 vk=0x23)
+[21:14:41] [INFO ] [REDIRECT] Patched RSA key at 0x00007FF6F0524B40
+[21:14:41] [INFO ] [REDIRECT] RSA key patching complete
+[21:14:41] [INFO ] [REDIRECT] Server redirect installed successfully
+[21:14:41] [INFO ] ResizeBuffers hook installed
+[21:14:41] [INFO ] Present hook installed — ImGui initializes on first game frame
+[21:14:41] [INFO ]   DX11 Present hook installed
+[21:14:41] [INFO ] Overlay initialized
+[21:14:41] [INFO ]   UI overlay ready (Press INSERT for menu)
+[21:14:41] [INFO ] ==========================================
+[21:14:41] [INFO ] SEAMLESS CO-OP INITIALIZATION COMPLETE
+[21:14:41] [INFO ] ==========================================
+[21:14:41] [INFO ]   Addresses resolved: YES
+[21:14:41] [INFO ]   Protobuf hooks:     ACTIVE
+[21:14:41] [INFO ]   Disconnect blocking: ENABLED
+[21:14:41] [INFO ] 
+[21:14:41] [INFO ]   Press INSERT to open co-op menu
+[21:14:41] [INFO ]   Host a session or join via IP
+[21:14:41] [INFO ]   Sessions persist through boss kills and deaths
+[21:14:41] [INFO ] ==========================================
+[21:14:41] [INFO ] ========================================
+[21:14:41] [INFO ] MOD INITIALIZED SUCCESSFULLY!
+[21:14:41] [INFO ] Press INSERT in-game for co-op menu
+[21:14:41] [INFO ] ========================================
+[21:14:41] [INFO ] Update thread started
+[21:14:41] [INFO ] Title screen notifier thread started
+[21:14:41] [INFO ] ========================================
+[21:14:41] [INFO ] WINDOW TITLE UPDATED!
+[21:14:41] [INFO ] ========================================
+[21:14:41] [INFO ] Title bar now shows: DARK SOULS II * SEAMLESS CO-OP ACTIVE * Press INSERT for Menu
+[21:14:41] [INFO ] 
+[21:14:41] [INFO ] This confirms the mod is loaded and active!
+[21:14:41] [INFO ] Look at the top of your game window!
+[21:14:41] [INFO ] ========================================
+[21:15:06] [INFO ] Shutting down mod...
+[21:15:06] [INFO ] Shutting down mod...
+[21:15:06] [INFO ] [SEAMLESS] Disconnect blocking DISABLED
+[21:15:06] [INFO ] Blocked 0 disconnect messages during this session
+[21:15:06] [INFO ] Total protobuf messages processed: 0
+[21:15:06] [INFO ] Shutting down session manager...
+[21:15:06] [INFO ] Session manager shut down
+[21:15:06] [INFO ] Shutting down peer manager...
+[21:15:06] [INFO ] Uninstalling protobuf hooks...
+[21:15:06] [INFO ] Uninstalling Winsock hooks...
+[21:15:06] [INFO ] Uninstalling game state hooks...
+[21:15:06] [INFO ] Shutting down MinHook...
+[21:15:06] [INFO ] Mod shutdown complete
+===============================
+Ended: 2026-05-26 21:15:06

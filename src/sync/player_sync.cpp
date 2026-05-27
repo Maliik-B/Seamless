@@ -302,6 +302,190 @@ static void PatchPlayerCap() {
     }
 }
 
+// ============================================================================
+// Skip the "DARK SOULS II service is not available" popup at boot (H-33).
+//
+// Ghidra analysis (2026-05-26, task #12, see docs/repro/runs/h33-2026-05-26-*):
+//   DS2's title screen is driven by an FSM ("FeSubState..." per MSVC RTTI:
+//   .?AVFeSubStateTitleSteamNetworkCheck@@,
+//   .?AVFeSubStateTitleOnlineCheck@@,
+//   .?AVFeSubStateOfflineModeWindow@@,
+//   .?AVFeSubStateTitleSetOfflineMode@@,
+//   .?AVFeSubStateTitleGameServerLogin@@, ...).
+//   The boot chain on online-check failure is:
+//     SteamNetworkCheck -> OnlineCheck -> OfflineModeWindow -> SetOfflineMode.
+//   OfflineModeWindow::OnEnter (vtable+8 -> exe+0x104DB0) creates the popup.
+//
+//   FeSubStateTitleOnlineCheck's vtable lives at exe+0x10BD318. Its
+//   shared OnEnter (vtable+8 -> exe+0x104ED0) does:
+//     CALL [vtable+0x40]              ; slot 8 -- the per-class predicate
+//     MOV  [this+0x24], EAX
+//     TEST EAX, EAX
+//     JNS  ok                          ; >= 0 -> state = 3 (success)
+//     ...                              ; < 0  -> state = 1 (failure -> popup)
+//
+//   OnlineCheck's slot 8 (vtable+0x40 -> exe+0xF98C0) is the function that
+//   returns -1 in the offline case (it queries [global 0x1416148f0]+0x22f0
+//   then calls a slot-9 virtual; if both indicate "online but auth failed",
+//   it returns -1; if network is unavailable in the first place, it returns
+//   0). When it returns -1, the FSM transitions to OfflineModeWindow.
+//
+//   Replacing the function entry with XOR EAX, EAX / RET forces it to
+//   always return 0. OnlineCheck's OnEnter sees the >= 0 result, sets
+//   state = 3 (success), and the FSM proceeds to GameServerLogin without
+//   ever entering OfflineModeWindow -- no popup.
+//
+//   The patch is narrow: only this one function changes. OfflineModeWindow's
+//   own slot 8 (a stub returning 0) and other states' slot 8 implementations
+//   are untouched. GameServerLogin then runs normally; if its actual server
+//   handshake fails it surfaces a different (and game-handled) error path,
+//   not the boot popup loop.
+//
+// Patch:
+//   At exe+0xF98C0 the original 5-byte instruction is
+//     48 89 5C 24 08    MOV [RSP+8], RBX    ; function prologue
+//   We overwrite 5 bytes with
+//     33 C0 C3 90 90    XOR EAX, EAX ; RET ; NOP ; NOP
+//   The trailing NOPs preserve the original 5-byte window for clean byte
+//   verification on subsequent runs; only bytes 0..2 actually execute.
+// ============================================================================
+namespace {
+
+struct BootPatchSite {
+    const char* label;
+    uintptr_t   offset;
+    size_t      len;
+    const uint8_t* expected;
+    const uint8_t* patched;
+};
+
+// OnlineCheck patch: force FeSubStateTitleOnlineCheck's slot-8 predicate
+// at exe+0xF98C0 to return 0 (success), so the title-screen FSM never
+// transitions OnlineCheck -> OfflineModeWindow on a network/auth fail.
+static const uint8_t kOnlineCheckExpected[] = { 0x48, 0x89, 0x5C, 0x24, 0x08 };
+static const uint8_t kOnlineCheckPatched [] = { 0x33, 0xC0, 0xC3, 0x90, 0x90 };
+
+// SteamNetCheck patch: force FeSubStateTitleSteamNetworkCheck::OnEnter at
+// exe+0xF8FB0 to unconditionally set [this+0x10] = 3 (success) and return,
+// skipping both failure branches that would transition the FSM into
+// FeSubStateOfflineModeWindow.
+//
+// Original first 10 bytes: prologue (MOV [RSP+8],RBX ; PUSH RDI ; SUB RSP,0x20)
+// Patched:                 MOV dword ptr [RCX+0x10], 0x3 ; XOR EAX,EAX ; RET
+// RCX holds `this` (MS x64 ABI). RBX/RDI/RSP are left untouched.
+static const uint8_t kSteamNetExpected[] = {
+    0x48, 0x89, 0x5C, 0x24, 0x08, 0x57, 0x48, 0x83, 0xEC, 0x20
+};
+static const uint8_t kSteamNetPatched[] = {
+    0xC7, 0x41, 0x10, 0x03, 0x00, 0x00, 0x00,
+    0x33, 0xC0,
+    0xC3
+};
+
+// GameServerLogin patch: same shape as OnlineCheck. Forces slot[8] to
+// return 0 so the shared OnEnter at +0x104ED0 sets state=3 (done) and
+// the FSM advances past GameServerLogin instead of dispatching FailWarn.
+static const uint8_t kGameServerLoginExpected[] = { 0x48, 0x89, 0x5C, 0x24, 0x08 };
+static const uint8_t kGameServerLoginPatched [] = { 0x33, 0xC0, 0xC3, 0x90, 0x90 };
+
+// UserPolicy patch: same shape as SteamNetCheck. UserPolicy is the last
+// substate in the title boot chain and does NOT use the shared OnEnter
+// (its slot[1] is +0xF9040, its own). The original function has three
+// early-exit success arms gated on byte flags at
+// [GameManager+0xA8]->[0xD8]+0x136d/e] and on [global 0x14160DE10+0xA0]
+// being null. In the patched-boot world none of those flags are set,
+// so the function falls through to the heavy-work arm which calls
+// 0x1400F5720 and writes [this+0x10]=1.
+// We force [this+0x10]=3 (matches the legitimate success arms at
+// +0xF9079 and +0xF90A9->+0xF9079) and return.
+static const uint8_t kUserPolicyExpected[] = {
+    0x48, 0x89, 0x6C, 0x24, 0x20, 0x56, 0x48, 0x83, 0xEC, 0x40
+};
+static const uint8_t kUserPolicyPatched[] = {
+    0xC7, 0x41, 0x10, 0x03, 0x00, 0x00, 0x00,
+    0x33, 0xC0,
+    0xC3
+};
+
+// OfflineModePopupCall patch (try-11): NOP just the 5-byte
+//   CALL 0x1404FE2A0
+// at exe+0x104DEA, inside FUN_140104DB0's [this+0x12]<0 arm.
+//
+// The popup-fire logger from try-10 captured this exact CALL firing the
+// framerate popup post-Press-Start (FE2A0 chain). +0x104DB0 is the
+// shared OnEnter of FOUR vtables, so patching the whole function (try-5)
+// deadlocked the legitimate JGE arm used by the other three classes.
+// This surgical NOP kills only the popup-fire CALL inside the popup-arm;
+// the JGE legitimate arm at +0x104DF4 onwards is untouched, and the
+// inner.vtable[11] side-effect call before the popup-fire still runs.
+// After the NOPs, the JMP 0x140104E80 right after the CALL still executes
+// and jumps to the function epilogue.
+//
+// Original CALL bytes:  E8 B1 94 3F 00   (CALL rel32, displacement = 0x4FE2A0 - (0x104DEA+5) = 0x3F94B1)
+// Patched bytes:        90 90 90 90 90   (5 NOPs)
+static const uint8_t kOfflinePopupCallExpected[] = { 0xE8, 0xB1, 0x94, 0x3F, 0x00 };
+static const uint8_t kOfflinePopupCallPatched [] = { 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+static const BootPatchSite kSites[] = {
+    { "OnlineCheck",          0xF98C0,   sizeof(kOnlineCheckExpected),
+      kOnlineCheckExpected,          kOnlineCheckPatched },
+    { "SteamNetCheck",        0xF8FB0,   sizeof(kSteamNetExpected),
+      kSteamNetExpected,             kSteamNetPatched },
+    { "GameServerLogin",      0xF9820,   sizeof(kGameServerLoginExpected),
+      kGameServerLoginExpected,      kGameServerLoginPatched },
+    { "UserPolicy",           0xF9040,   sizeof(kUserPolicyExpected),
+      kUserPolicyExpected,           kUserPolicyPatched },
+    { "OfflinePopupCall",     0x104DEA,  sizeof(kOfflinePopupCallExpected),
+      kOfflinePopupCallExpected,     kOfflinePopupCallPatched },
+};
+
+} // namespace
+
+void DS2Coop::Sync::ApplyBootPopupPatch() {
+    uintptr_t exeBase = (uintptr_t)GetModuleHandle(nullptr);
+
+    for (const BootPatchSite& site : kSites) {
+        uintptr_t addr = exeBase + site.offset;
+        uint8_t actual[16] = {};
+        if (site.len > sizeof(actual)) {
+            LOG_ERROR("PatchBootPopup: site %s len %zu exceeds buffer",
+                      site.label, site.len);
+            continue;
+        }
+
+        __try {
+            memcpy(actual, (void*)addr, site.len);
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
+            LOG_ERROR("PatchBootPopup: cannot read exe at 0x%llX (%s)",
+                      (unsigned long long)addr, site.label);
+            continue;
+        }
+
+        if (memcmp(actual, site.patched, site.len) == 0) {
+            LOG_INFO("PatchBootPopup: %s at exe+0x%llX already patched",
+                     site.label, (unsigned long long)site.offset);
+            continue;
+        }
+        if (memcmp(actual, site.expected, site.len) != 0) {
+            LOG_WARNING("PatchBootPopup: %s at exe+0x%llX bytes mismatch - skipping",
+                        site.label, (unsigned long long)site.offset);
+            continue;
+        }
+
+        DWORD oldProtect = 0;
+        if (!VirtualProtect((void*)addr, site.len, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+            LOG_ERROR("PatchBootPopup: VirtualProtect failed at 0x%llX (%s, error %u)",
+                      (unsigned long long)addr, site.label, GetLastError());
+            continue;
+        }
+        memcpy((void*)addr, site.patched, site.len);
+        VirtualProtect((void*)addr, site.len, oldProtect, &oldProtect);
+
+        LOG_INFO("PatchBootPopup: PATCHED %s at exe+0x%llX (%zu bytes)",
+                 site.label, (unsigned long long)site.offset, site.len);
+    }
+}
+
 bool PlayerSync::Initialize() {
     if (m_initialized) return true;
 
@@ -327,6 +511,9 @@ bool PlayerSync::Initialize() {
 
     // Increase player cap from 3 to 6
     PatchPlayerCap();
+
+    // H-33 task #12 popup patch is NOT called here — it must run at DllMain
+    // time (before the title screen). See SeamlessCoopMod::Initialize.
 
     m_initialized = true;
     LOG_INFO("Player sync initialized");

@@ -1,0 +1,205 @@
+======================================================================
+Drill #4: SteamNetworkCheck OnEnter/Update + popup-suspect helpers
+======================================================================
+
+--- SteamNetworkCheck::slot[1] OnEnter @ +0xF8FB0 ---
+  body bytes: 131
+  callers:
+  --- disassembly ---
+    1400f8fb0 (+0xF8FB0) MOV qword ptr [RSP + 0x8],RBX
+    1400f8fb5 (+0xF8FB5) PUSH RDI
+    1400f8fb6 (+0xF8FB6) SUB RSP,0x20
+    1400f8fba (+0xF8FBA) MOV RAX,qword ptr [0x1416148f0]
+    1400f8fc1 (+0xF8FC1) MOV RBX,RCX
+    1400f8fc4 (+0xF8FC4) MOV RDI,qword ptr [RAX + 0x22f0]
+    1400f8fcb (+0xF8FCB) MOV RCX,RDI
+    1400f8fce (+0xF8FCE) CALL 0x1405132c0
+    1400f8fd3 (+0xF8FD3) MOV RCX,RAX
+    1400f8fd6 (+0xF8FD6) MOV RDX,qword ptr [RAX]
+    1400f8fd9 (+0xF8FD9) CALL qword ptr [RDX + 0x8]
+    1400f8fdc (+0xF8FDC) TEST AL,AL
+    1400f8fde (+0xF8FDE) JNZ 0x1400f8ff2
+    1400f8fe0 (+0xF8FE0) MOV dword ptr [RBX + 0x10],0x2
+    1400f8fe7 (+0xF8FE7) MOV RBX,qword ptr [RSP + 0x30]
+    1400f8fec (+0xF8FEC) ADD RSP,0x20
+    1400f8ff0 (+0xF8FF0) POP RDI
+    1400f8ff1 (+0xF8FF1) RET
+    1400f8ff2 (+0xF8FF2) MOV RCX,RDI
+    1400f8ff5 (+0xF8FF5) CALL 0x1405135a0
+    1400f8ffa (+0xF8FFA) TEST AL,AL
+    1400f8ffc (+0xF8FFC) JNZ 0x1400f9021
+    1400f8ffe (+0xF8FFE) MOV RAX,qword ptr [0x14160de10]
+    1400f9005 (+0xF9005) MOV dword ptr [RAX + 0x54c],0x1f
+    1400f900f (+0xF900F) MOV dword ptr [RBX + 0x10],0x1
+    1400f9016 (+0xF9016) MOV RBX,qword ptr [RSP + 0x30]
+    1400f901b (+0xF901B) ADD RSP,0x20
+    1400f901f (+0xF901F) POP RDI
+    1400f9020 (+0xF9020) RET
+    1400f9021 (+0xF9021) MOV dword ptr [RBX + 0x10],0x3
+    1400f9028 (+0xF9028) MOV RBX,qword ptr [RSP + 0x30]
+    1400f902d (+0xF902D) ADD RSP,0x20
+    1400f9031 (+0xF9031) POP RDI
+    1400f9032 (+0xF9032) RET
+
+--- SteamNetworkCheck::slot[3] Update @ +0xF8990 ---
+  body bytes: 3
+  callers:
+  --- disassembly ---
+    1400f8990 (+0xF8990) RET 0x0
+
+--- FUN_1404fe2a0 (called from OfflineModeWindow lt_zero) @ +0x4FE2A0 ---
+  body bytes: 181
+  callers:
+    CALL at 1400eca08 (+0xECA08) from FUN_1400ec800 @ +0xEC800
+    CALL at 1400fbca2 (+0xFBCA2) from FUN_1400fbba0 @ +0xFBBA0
+    CALL at 140104dea (+0x104DEA) from FUN_140104db0 @ +0x104DB0
+    CALL at 1401088d9 (+0x1088D9) from FUN_140108850 @ +0x108850
+    CALL at 1402d6632 (+0x2D6632) from FUN_1402d6540 @ +0x2D6540
+    CALL at 1404fe1ad (+0x4FE1AD) from FUN_1404fe150 @ +0x4FE150
+  --- disassembly ---
+    1404fe2a0 (+0x4FE2A0) PUSH RBX
+    1404fe2a2 (+0x4FE2A2) SUB RSP,0xb0
+    1404fe2a9 (+0x4FE2A9) MOVZX EAX,byte ptr [RSP + 0xe0]
+    1404fe2b1 (+0x4FE2B1) MOV RBX,RCX
+    1404fe2b4 (+0x4FE2B4) LEA RCX,[RSP + 0x70]
+    1404fe2b9 (+0x4FE2B9) MOV byte ptr [RSP + 0x20],AL
+    1404fe2bd (+0x4FE2BD) CALL 0x1405108e0
+    1404fe2c2 (+0x4FE2C2) MOV RDX,qword ptr [RAX]
+    1404fe2c5 (+0x4FE2C5) MOV R8,RAX
+    1404fe2c8 (+0x4FE2C8) MOV qword ptr [RSP + 0x30],RDX
+    1404fe2cd (+0x4FE2CD) MOV RDX,qword ptr [RAX + 0x8]
+    1404fe2d1 (+0x4FE2D1) MOV qword ptr [RSP + 0x38],RDX
+    1404fe2d6 (+0x4FE2D6) MOV RCX,qword ptr [RAX + 0x10]
+    1404fe2da (+0x4FE2DA) MOV qword ptr [RSP + 0x40],RCX
+    1404fe2df (+0x4FE2DF) MOV RCX,qword ptr [RAX + 0x18]
+    1404fe2e3 (+0x4FE2E3) MOV qword ptr [RSP + 0x48],RCX
+    1404fe2e8 (+0x4FE2E8) MOV RCX,qword ptr [RAX + 0x20]
+    1404fe2ec (+0x4FE2EC) MOV qword ptr [RSP + 0x50],RCX
+    1404fe2f1 (+0x4FE2F1) MOV RCX,qword ptr [RAX + 0x28]
+    1404fe2f5 (+0x4FE2F5) MOV qword ptr [RSP + 0x58],RCX
+    1404fe2fa (+0x4FE2FA) MOV RAX,qword ptr [RAX + 0x30]
+    1404fe2fe (+0x4FE2FE) MOV RCX,qword ptr [RBX + 0xf0]
+    1404fe305 (+0x4FE305) MOV qword ptr [RSP + 0x60],RAX
+    1404fe30a (+0x4FE30A) MOV RAX,qword ptr [R8 + 0x38]
+    1404fe30e (+0x4FE30E) MOV qword ptr [RSP + 0x68],RAX
+    1404fe313 (+0x4FE313) TEST RCX,RCX
+    1404fe316 (+0x4FE316) JNZ 0x1404fe323
+    1404fe318 (+0x4FE318) XOR EAX,EAX
+    1404fe31a (+0x4FE31A) ADD RSP,0xb0
+    1404fe321 (+0x4FE321) POP RBX
+    1404fe322 (+0x4FE322) RET
+    1404fe323 (+0x4FE323) LEA RDX,[RSP + 0x30]
+    1404fe328 (+0x4FE328) CALL 0x140051d90
+    1404fe32d (+0x4FE32D) INC dword ptr [RBX + 0x324]
+    1404fe333 (+0x4FE333) CMP dword ptr [RBX + 0x324],0x0
+    1404fe33a (+0x4FE33A) JG 0x1404fe346
+    1404fe33c (+0x4FE33C) MOV dword ptr [RBX + 0x324],0x1
+    1404fe346 (+0x4FE346) MOV EAX,dword ptr [RBX + 0x324]
+    1404fe34c (+0x4FE34C) ADD RSP,0xb0
+    1404fe353 (+0x4FE353) POP RBX
+    1404fe354 (+0x4FE354) RET
+
+--- FUN_1404fe760 (called from shared OnEnter failure) @ +0x4FE760 ---
+  body bytes: 174
+  callers:
+    CALL at 140046640 (+0x46640) from FUN_1400465e0 @ +0x465E0
+    CALL at 1400fafc6 (+0xFAFC6) from FUN_1400faf80 @ +0xFAF80
+    CALL at 1400fb036 (+0xFB036) from FUN_1400faff0 @ +0xFAFF0
+    CALL at 1400ffa0f (+0xFFA0F) from FUN_1400ff710 @ +0xFF710
+    CALL at 140104efe (+0x104EFE) from FUN_140104ed0 @ +0x104ED0
+    CALL at 1401088ba (+0x1088BA) from FUN_140108850 @ +0x108850
+    CALL at 1400fc227 (+0xFC227) from FUN_1400fbdb0 @ +0xFBDB0
+  --- disassembly ---
+    1404fe760 (+0x4FE760) PUSH RBX
+    1404fe762 (+0x4FE762) SUB RSP,0xb0
+    1404fe769 (+0x4FE769) MOV RBX,RCX
+    1404fe76c (+0x4FE76C) LEA RCX,[RSP + 0x70]
+    1404fe771 (+0x4FE771) MOV byte ptr [RSP + 0x20],0x1
+    1404fe776 (+0x4FE776) CALL 0x1405105f0
+    1404fe77b (+0x4FE77B) MOV R8,RAX
+    1404fe77e (+0x4FE77E) MOV RDX,qword ptr [RAX]
+    1404fe781 (+0x4FE781) MOV qword ptr [RSP + 0x30],RDX
+    1404fe786 (+0x4FE786) MOV RDX,qword ptr [RAX + 0x8]
+    1404fe78a (+0x4FE78A) MOV qword ptr [RSP + 0x38],RDX
+    1404fe78f (+0x4FE78F) MOV RCX,qword ptr [RAX + 0x10]
+    1404fe793 (+0x4FE793) MOV qword ptr [RSP + 0x40],RCX
+    1404fe798 (+0x4FE798) MOV RCX,qword ptr [RAX + 0x18]
+    1404fe79c (+0x4FE79C) MOV qword ptr [RSP + 0x48],RCX
+    1404fe7a1 (+0x4FE7A1) MOV RCX,qword ptr [RAX + 0x20]
+    1404fe7a5 (+0x4FE7A5) MOV qword ptr [RSP + 0x50],RCX
+    1404fe7aa (+0x4FE7AA) MOV RCX,qword ptr [RAX + 0x28]
+    1404fe7ae (+0x4FE7AE) MOV qword ptr [RSP + 0x58],RCX
+    1404fe7b3 (+0x4FE7B3) MOV RAX,qword ptr [RAX + 0x30]
+    1404fe7b7 (+0x4FE7B7) MOV RCX,qword ptr [RBX + 0xf0]
+    1404fe7be (+0x4FE7BE) MOV qword ptr [RSP + 0x60],RAX
+    1404fe7c3 (+0x4FE7C3) MOV RAX,qword ptr [R8 + 0x38]
+    1404fe7c7 (+0x4FE7C7) MOV qword ptr [RSP + 0x68],RAX
+    1404fe7cc (+0x4FE7CC) TEST RCX,RCX
+    1404fe7cf (+0x4FE7CF) JNZ 0x1404fe7dc
+    1404fe7d1 (+0x4FE7D1) XOR EAX,EAX
+    1404fe7d3 (+0x4FE7D3) ADD RSP,0xb0
+    1404fe7da (+0x4FE7DA) POP RBX
+    1404fe7db (+0x4FE7DB) RET
+    1404fe7dc (+0x4FE7DC) LEA RDX,[RSP + 0x30]
+    1404fe7e1 (+0x4FE7E1) CALL 0x140051d90
+    1404fe7e6 (+0x4FE7E6) INC dword ptr [RBX + 0x324]
+    1404fe7ec (+0x4FE7EC) CMP dword ptr [RBX + 0x324],0x0
+    1404fe7f3 (+0x4FE7F3) JG 0x1404fe7ff
+    1404fe7f5 (+0x4FE7F5) MOV dword ptr [RBX + 0x324],0x1
+    1404fe7ff (+0x4FE7FF) MOV EAX,dword ptr [RBX + 0x324]
+    1404fe805 (+0x4FE805) ADD RSP,0xb0
+    1404fe80c (+0x4FE80C) POP RBX
+    1404fe80d (+0x4FE80D) RET
+
+--- GameServerLogin::slot[8] @ +0xF9820 ---
+  body bytes: 148
+  callers:
+  --- disassembly ---
+    1400f9820 (+0xF9820) MOV qword ptr [RSP + 0x8],RBX
+    1400f9825 (+0xF9825) PUSH RDI
+    1400f9826 (+0xF9826) SUB RSP,0x20
+    1400f982a (+0xF982A) MOV RAX,qword ptr [0x1416148f0]
+    1400f9831 (+0xF9831) MOV RDI,RCX
+    1400f9834 (+0xF9834) MOV RCX,qword ptr [RAX + 0x22f0]
+    1400f983b (+0xF983B) CALL 0x1405132a0
+    1400f9840 (+0xF9840) MOV RCX,RAX
+    1400f9843 (+0xF9843) MOV RBX,RAX
+    1400f9846 (+0xF9846) MOV RDX,qword ptr [RAX]
+    1400f9849 (+0xF9849) CALL qword ptr [RDX + 0x60]
+    1400f984c (+0xF984C) MOV RDX,qword ptr [RBX]
+    1400f984f (+0xF984F) MOV RCX,RBX
+    1400f9852 (+0xF9852) CALL qword ptr [RDX + 0x8]
+    1400f9855 (+0xF9855) TEST AL,AL
+    1400f9857 (+0xF9857) JNZ 0x1400f98a6
+    1400f9859 (+0xF9859) MOV EDX,0x1fbd6
+    1400f985e (+0xF985E) MOV ECX,0x19
+    1400f9863 (+0xF9863) CALL 0x140503620
+    1400f9868 (+0xF9868) MOV RCX,RDI
+    1400f986b (+0xF986B) MOV RBX,RAX
+    1400f986e (+0xF986E) CALL 0x1400f9780
+    1400f9873 (+0xF9873) TEST RBX,RBX
+    1400f9876 (+0xF9876) JZ 0x1400f9896
+    1400f9878 (+0xF9878) TEST RAX,RAX
+    1400f987b (+0xF987B) JZ 0x1400f9896
+    1400f987d (+0xF987D) MOV RCX,qword ptr [0x14160de10]
+    1400f9884 (+0xF9884) MOV R8,RAX
+    1400f9887 (+0xF9887) MOV RDX,RBX
+    1400f988a (+0xF988A) ADD RCX,0x118
+    1400f9891 (+0xF9891) CALL 0x1400f8a30
+    1400f9896 (+0xF9896) MOV EAX,0x7
+    1400f989b (+0xF989B) MOV RBX,qword ptr [RSP + 0x30]
+    1400f98a0 (+0xF98A0) ADD RSP,0x20
+    1400f98a4 (+0xF98A4) POP RDI
+    1400f98a5 (+0xF98A5) RET
+    1400f98a6 (+0xF98A6) OR EAX,0xffffffff
+    1400f98a9 (+0xF98A9) MOV RBX,qword ptr [RSP + 0x30]
+    1400f98ae (+0xF98AE) ADD RSP,0x20
+    1400f98b2 (+0xF98B2) POP RDI
+    1400f98b3 (+0xF98B3) RET
+
+--- UserPolicy vtable @ +0x10BD2C8 ---
+  slot[8] = 0x0 (end / invalid)
+
+======================================================================
+Done.
+======================================================================
