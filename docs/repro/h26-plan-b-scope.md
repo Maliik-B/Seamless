@@ -199,15 +199,21 @@ than expected.
 |---|---|
 | `tools/ghidra_h26b_use_item.py` | RE for task #1 |
 | `tools/ghidra_h26b_sign_spawn.py` | RE for task #2 |
-| `src/sync/sign_sync.cpp` (new) | `ResolveSpawnSign`, `SpawnSign` wrappers |
-| `include/sync.h` | declare `SignSync` class |
+| `src/features/sign_sync.cpp` (new) | `ResolveSpawnSign`, `SpawnSign` wrappers |
+| `include/features/sign_sync.h` (new) | declare `SignSync` class |
 | `src/hooks/session_hooks.cpp` | use-item hook install (task #3) |
 | `include/packet_types.h` | SignPlace / SignRemove / SignSummon types |
 | `src/network/peer_manager.cpp` | receive dispatch for SignPlace |
+| `src/CMakeLists.txt` | add `features/sign_sync.cpp` to the target sources |
 
 The existing `GrantSoapstones` / `ItemGive` flow at
 `src/sync/player_sync.cpp:929-974` is the load-bearing reference
-implementation for the "scan-then-call-engine-fn" pattern.
+implementation for the "scan-then-call-engine-fn" pattern. Plan B
+copies the shape (pattern-scan to resolve the function, pointer-chain
+walk to resolve any required context object, typed C++ wrapper that
+calls the engine fn with a packed struct) but lives under
+`src/features/` because it implements a feature the engine no longer
+provides for us, rather than synchronising state that already exists.
 
 ## Known unknowns (RE checklist)
 
@@ -251,6 +257,10 @@ implementation for the "scan-then-call-engine-fn" pattern.
 
 ## Out of scope
 
+- **Task #7 -- sign summon (peer clicks on host's sign and gets
+  pulled in as a phantom).** Split into a separate PR/ticket after
+  the MVP (tasks 1-6) merges. Already documented in the task #7
+  section above but deferring it here makes the MVP scope explicit.
 - Small white soapstone, red soapstone, dragon soapstone, Mirror Knight
   sign (separate item types, similar machinery; deferred to follow-on
   tickets once the white-sign path is proven)
@@ -261,18 +271,19 @@ implementation for the "scan-then-call-engine-fn" pattern.
 - Cross-area sign visibility (signs visible only when player is in the
   same area)
 
-## Open questions for the next session
+## Locked decisions (2026-05-27)
 
-1. Sub-option 2A vs 2B preference: try the engine-fn route first or
-   start with direct-memory-write? My read is 2A first (cleaner if it
-   works), 2B as fallback. Worth confirming before starting.
-2. Should the `SignSync` infrastructure live in the existing
-   `src/sync/` directory next to `player_sync.cpp`, or in a new
-   `src/features/` tree if we're committing to "mod-side feature
-   reimplementation" as a pattern? Architectural call.
-3. Task #7 (summon) -- bundle into the same PR as MVP or split?
-   Bundle = bigger PR, single review pass; split = MVP lands faster,
-   summon gets its own diff. Vote split.
+1. **Task #2 path: sub-option 2A first** (use DS2's internal sign-spawn
+   function if it exists), 2B as fallback if 2A turns up nothing.
+2. **Code surface: `src/features/` tree**, not `src/sync/`. Plan B is
+   the first explicit "mod-side feature reimplementation" and the
+   directory naming should signal that pattern for follow-ons. Header
+   lives at `include/features/sign_sync.h`, implementation at
+   `src/features/sign_sync.cpp`.
+3. **Task #7 (sign summon): split into a separate PR/ticket.** MVP
+   (tasks 1-6, "I place a sign, peer sees it") lands first. Summon
+   gets its own diff after the MVP merges. See "Out of scope" below
+   for the explicit deferral.
 
 ## Related
 
