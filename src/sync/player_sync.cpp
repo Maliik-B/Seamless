@@ -426,17 +426,85 @@ static const uint8_t kUserPolicyPatched[] = {
 static const uint8_t kOfflinePopupCallExpected[] = { 0xE8, 0xB1, 0x94, 0x3F, 0x00 };
 static const uint8_t kOfflinePopupCallPatched [] = { 0x90, 0x90, 0x90, 0x90, 0x90 };
 
+// OnlineFlagAccessor patch (H-26): force the engine's runtime "am I online?"
+// accessor to always return 1.
+//
+// Ghidra analysis (2026-05-27, H-26 task #2, see docs/repro/runs/h26-2026-05-26-solo-confirm/):
+//   The H-33 patches above shortcut the title-FSM substates' OnEnter to
+//   "success" without ever populating the engine's runtime online-state.
+//   The title screen reaches the main menu, but the underlying boolean
+//   "is the service online" remains 0 (offline). Multiple gates downstream
+//   of the title screen — sign placement, sign-list query, summon — read
+//   this boolean and silently refuse local actions when it's 0. Task #1's
+//   solo repro confirmed: zero protobuf messages sent during a
+//   white-soapstone-place attempt; the engine never even tried.
+//
+//   The boolean lives at byte offset 0x3A of the service-manager object,
+//   which is reached via the GameManager singleton:
+//     RAX = [0x1416148F0]      ; GameManager
+//     RCX = [RAX + 0x22F0]     ; serviceMgr
+//     ; is_online = serviceMgr->[0x3A]
+//
+//   The canonical accessor is FUN_140513600 at exe+0x513600, exactly 5
+//   bytes long:
+//     0F B6 41 3A   MOVZX EAX, byte ptr [RCX + 0x3A]
+//     C3             RET
+//
+//   34 callers across the engine read through this accessor (per Ghidra
+//   refMgr — see tools/ghidra_h26_online_accessor_results.txt). The
+//   already-patched H-33 OnlineCheck predicate at +0xF98C0 also calls
+//   into it, though that path is dead now.
+//
+//   Replacing the 5-byte body with the 5-byte sequence
+//     33 C0          XOR EAX, EAX
+//     FF C0          INC EAX
+//     C3             RET
+//   makes every caller see "online = 1". The byte at [serviceMgr + 0x3A]
+//   is unchanged, but no in-game code reads it directly — they all go
+//   through FUN_140513600. Same surgical patch style as the H-33 sites.
+//
+//   Plan A (writing 1 to the underlying byte at runtime) was considered
+//   but rejected: would require waiting for GameManager initialization,
+//   plus periodic re-writes in case the engine clears the flag mid-session.
+//   Plan B (this patch) is applied once at DllMain alongside the H-33
+//   patches and is timing-independent.
+static const uint8_t kOnlineFlagAccessorExpected[] = { 0x0F, 0xB6, 0x41, 0x3A, 0xC3 };
+static const uint8_t kOnlineFlagAccessorPatched [] = { 0x33, 0xC0, 0xFF, 0xC0, 0xC3 };
+
 static const BootPatchSite kSites[] = {
     { "OnlineCheck",          0xF98C0,   sizeof(kOnlineCheckExpected),
       kOnlineCheckExpected,          kOnlineCheckPatched },
     { "SteamNetCheck",        0xF8FB0,   sizeof(kSteamNetExpected),
       kSteamNetExpected,             kSteamNetPatched },
+    // H-26 phase 3 experiment (2026-05-27): the hypothesis that
+    // FUN_1400F9820's body would wake the session/RPC subsystem was
+    // FALSIFIED. With this site removed, the body's event-allocation +
+    // queue-registration path ran but [H26 PROTO] count stayed 0 for the
+    // full session, AND a new regression appeared: GameManagerImp /
+    // NetSessionManager failed to populate within the resolver's 30s
+    // window (overlay green bar broke). The body presumably blocks on or
+    // slows down inner-service init when it runs without real FROM auth.
+    // Re-enabled. The session-wake trigger lives somewhere else --
+    // probably after the title FSM completes, or requires a real FROM
+    // server response we'll never get.
     { "GameServerLogin",      0xF9820,   sizeof(kGameServerLoginExpected),
       kGameServerLoginExpected,      kGameServerLoginPatched },
+    // H-26 phase 3 iter 2 experiment (2026-05-27): hypothesis that
+    // UserPolicy's body would wake the session/RPC subsystem was also
+    // FALSIFIED. Body ran without crash but [H26 PROTO] count stayed 0 AND
+    // NetSessionManager failed to populate (resolver regression, narrower
+    // than the GameServerLogin variant: GameManagerImp survived this time).
+    // Combined with the GameServerLogin negative result above, Plan A
+    // ("the session-wake is in an H-33-bypassed body") is essentially dead.
+    // The session-wake is more likely to require a real FROM-server reply
+    // or to live in a later phase entirely (character-select activation /
+    // world-load). Re-enabled.
     { "UserPolicy",           0xF9040,   sizeof(kUserPolicyExpected),
       kUserPolicyExpected,           kUserPolicyPatched },
     { "OfflinePopupCall",     0x104DEA,  sizeof(kOfflinePopupCallExpected),
       kOfflinePopupCallExpected,     kOfflinePopupCallPatched },
+    { "OnlineFlagAccessor",   0x513600,  sizeof(kOnlineFlagAccessorExpected),
+      kOnlineFlagAccessorExpected,   kOnlineFlagAccessorPatched },
 };
 
 } // namespace

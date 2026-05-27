@@ -1,0 +1,520 @@
+======================================================================
+H-26 sign-placement handler hunt (raw-scan)
+======================================================================
+
+### A. Discovered class-name strings (38 total) ###
+  14120ba04 (+0x120BA04)  [matched on 'RequestSummonSign']
+    "RequestSummonSign"
+  14120ba2c (+0x120BA2C)  [matched on 'RequestSummonSign']
+    "RequestSummonSignResponse"
+  14120ba60 (+0x120BA60)  [matched on 'RequestSummonSign']
+    "RequestSummonSign"
+  14158e568 (+0x158E568)  [matched on 'RequestSummonSign']
+    ".?AVRequestSummonSign@Frpg2RequestMessage@@"
+  14158e5b8 (+0x158E5B8)  [matched on 'RequestSummonSign']
+    "RequestSummonSign@Frpg2RequestMessage@@"
+  1415e43a0 (+0x15E43A0)  [matched on 'RequestSummonSign']
+    ".?AVRequestSummonSignResponse@Frpg2RequestMessage@@"
+  14120c614 (+0x120C614)  [matched on 'RequestSummonMirrorKnightSign']
+    "RequestSummonMirrorKnightSign"
+  14120c64c (+0x120C64C)  [matched on 'RequestSummonMirrorKnightSign']
+    "RequestSummonMirrorKnightSignResponse"
+  14120c690 (+0x120C690)  [matched on 'RequestSummonMirrorKnightSign']
+    "RequestSummonMirrorKnightSign"
+  14158ea70 (+0x158EA70)  [matched on 'RequestSummonMirrorKnightSign']
+    ".?AVRequestSummonMirrorKnightSign@Frpg2RequestMessage@@"
+  14158eac8 (+0x158EAC8)  [matched on 'RequestSummonMirrorKnightSign']
+    "RequestSummonMirrorKnightSign@Frpg2RequestMessage@@"
+  1415e4a30 (+0x15E4A30)  [matched on 'RequestSummonMirrorKnightSign']
+    ".?AVRequestSummonMirrorKnightSignResponse@Frpg2RequestMessage@@"
+  14120b87c (+0x120B87C)  [matched on 'RequestRemoveSign']
+    "RequestRemoveSign"
+  14120b8a4 (+0x120B8A4)  [matched on 'RequestRemoveSign']
+    "RequestRemoveSignResponse"
+  14120b8d8 (+0x120B8D8)  [matched on 'RequestRemoveSign']
+    "RequestRemoveSign"
+  14158e3e8 (+0x158E3E8)  [matched on 'RequestRemoveSign']
+    ".?AVRequestRemoveSign@Frpg2RequestMessage@@"
+  14158e438 (+0x158E438)  [matched on 'RequestRemoveSign']
+    "RequestRemoveSign@Frpg2RequestMessage@@"
+  1415e4320 (+0x15E4320)  [matched on 'RequestRemoveSign']
+    ".?AVRequestRemoveSignResponse@Frpg2RequestMessage@@"
+  14120b824 (+0x120B824)  [matched on 'RequestUpdateSign']
+    "RequestUpdateSign"
+  14120b84c (+0x120B84C)  [matched on 'RequestUpdateSign']
+    "RequestUpdateSignResponse"
+  14158e3a8 (+0x158E3A8)  [matched on 'RequestUpdateSign']
+    ".?AVRequestUpdateSign@Frpg2RequestMessage@@"
+  1415e42d0 (+0x15E42D0)  [matched on 'RequestUpdateSign']
+    ".?AVRequestUpdateSignResponse@Frpg2RequestMessage@@"
+  14120b7c4 (+0x120B7C4)  [matched on 'RequestCreateSign']
+    "RequestCreateSign"
+  14120b7f4 (+0x120B7F4)  [matched on 'RequestCreateSign']
+    "RequestCreateSignResponse"
+  14158e320 (+0x158E320)  [matched on 'RequestCreateSign']
+    ".?AVRequestCreateSign@Frpg2RequestMessage@@"
+  14158e360 (+0x158E360)  [matched on 'RequestCreateSign']
+    ".?AVRequestCreateSignResponse@Frpg2RequestMessage@@"
+  14120b96c (+0x120B96C)  [matched on 'RequestGetSignList']
+    "RequestGetSignList"
+  14120b9c4 (+0x120B9C4)  [matched on 'RequestGetSignList']
+    "RequestGetSignListResponse"
+  14158e4e0 (+0x158E4E0)  [matched on 'RequestGetSignList']
+    ".?AVRequestGetSignList@Frpg2RequestMessage@@"
+  14158e520 (+0x158E520)  [matched on 'RequestGetSignList']
+    ".?AVRequestGetSignListResponse@Frpg2RequestMessage@@"
+  14120b973 (+0x120B973)  [matched on 'GetSignList']
+    "GetSignList"
+  14120b9cb (+0x120B9CB)  [matched on 'GetSignList']
+    "GetSignListResponse"
+  14158e4eb (+0x158E4EB)  [matched on 'GetSignList']
+    "GetSignList@Frpg2RequestMessage@@"
+  14158e52b (+0x158E52B)  [matched on 'GetSignList']
+    "GetSignListResponse@Frpg2RequestMessage@@"
+  14120b9ce (+0x120B9CE)  [matched on 'SignListResponse']
+    "SignListResponse"
+  14120c5ea (+0x120C5EA)  [matched on 'SignListResponse']
+    "SignListResponse"
+  14158e52e (+0x158E52E)  [matched on 'SignListResponse']
+    "SignListResponse@Frpg2RequestMessage@@"
+  14158ea2a (+0x158EA2A)  [matched on 'SignListResponse']
+    "SignListResponse@Frpg2RequestMessage@@"
+
+### B. COL records pointing at each class ###
+
+  -- RequestSummonSign --
+     string @ +0x120BA04, TD @ +0x120B9F4 (RVA 0x120B9F4)
+
+  -- RequestSummonSignResponse --
+     string @ +0x120BA2C, TD @ +0x120BA1C (RVA 0x120BA1C)
+
+  -- RequestSummonSign --
+     string @ +0x120BA60, TD @ +0x120BA50 (RVA 0x120BA50)
+
+  -- .?AVRequestSummonSign@Frpg2RequestMessage@@ --
+     string @ +0x158E568, TD @ +0x158E558 (RVA 0x158E558)
+     COL @ 1412eb2e0 (+0x12EB2E0) signature=1 pSelf-OK
+     RVA hit at 1412eb338 (+0x12EB338) - not a COL (sig=0 pSelf=0)
+     vtable @ 141113768 (+0x1113768) [COL slot @ 141113760]
+
+  -- RequestSummonSign@Frpg2RequestMessage@@ --
+     string @ +0x158E5B8, TD @ +0x158E5A8 (RVA 0x158E5A8)
+
+  -- .?AVRequestSummonSignResponse@Frpg2RequestMessage@@ --
+     string @ +0x15E43A0, TD @ +0x15E4390 (RVA 0x15E4390)
+     COL @ 14132d3f0 (+0x132D3F0) signature=1 pSelf-OK
+     RVA hit at 14132d448 (+0x132D448) - not a COL (sig=0 pSelf=0)
+     vtable @ 1412091a8 (+0x12091A8) [COL slot @ 1412091a0]
+
+  -- RequestSummonMirrorKnightSign --
+     string @ +0x120C614, TD @ +0x120C604 (RVA 0x120C604)
+
+  -- RequestSummonMirrorKnightSignResponse --
+     string @ +0x120C64C, TD @ +0x120C63C (RVA 0x120C63C)
+
+  -- RequestSummonMirrorKnightSign --
+     string @ +0x120C690, TD @ +0x120C680 (RVA 0x120C680)
+
+  -- .?AVRequestSummonMirrorKnightSign@Frpg2RequestMessage@@ --
+     string @ +0x158EA70, TD @ +0x158EA60 (RVA 0x158EA60)
+     COL @ 1412eb9d0 (+0x12EB9D0) signature=1 pSelf-OK
+     RVA hit at 1412eba28 (+0x12EBA28) - not a COL (sig=0 pSelf=0)
+     vtable @ 141114388 (+0x1114388) [COL slot @ 141114380]
+
+  -- RequestSummonMirrorKnightSign@Frpg2RequestMessage@@ --
+     string @ +0x158EAC8, TD @ +0x158EAB8 (RVA 0x158EAB8)
+
+  -- .?AVRequestSummonMirrorKnightSignResponse@Frpg2RequestMessage@@ --
+     string @ +0x15E4A30, TD @ +0x15E4A20 (RVA 0x15E4A20)
+     COL @ 14132def0 (+0x132DEF0) signature=1 pSelf-OK
+     RVA hit at 14132df48 (+0x132DF48) - not a COL (sig=0 pSelf=0)
+     vtable @ 141209b48 (+0x1209B48) [COL slot @ 141209b40]
+
+  -- RequestRemoveSign --
+     string @ +0x120B87C, TD @ +0x120B86C (RVA 0x120B86C)
+
+  -- RequestRemoveSignResponse --
+     string @ +0x120B8A4, TD @ +0x120B894 (RVA 0x120B894)
+
+  -- RequestRemoveSign --
+     string @ +0x120B8D8, TD @ +0x120B8C8 (RVA 0x120B8C8)
+
+  -- .?AVRequestRemoveSign@Frpg2RequestMessage@@ --
+     string @ +0x158E3E8, TD @ +0x158E3D8 (RVA 0x158E3D8)
+     COL @ 1412eafe0 (+0x12EAFE0) signature=1 pSelf-OK
+     RVA hit at 1412eb038 (+0x12EB038) - not a COL (sig=0 pSelf=0)
+     vtable @ 1411134c8 (+0x11134C8) [COL slot @ 1411134c0]
+
+  -- RequestRemoveSign@Frpg2RequestMessage@@ --
+     string @ +0x158E438, TD @ +0x158E428 (RVA 0x158E428)
+
+  -- .?AVRequestRemoveSignResponse@Frpg2RequestMessage@@ --
+     string @ +0x15E4320, TD @ +0x15E4310 (RVA 0x15E4310)
+     COL @ 14132d2f0 (+0x132D2F0) signature=1 pSelf-OK
+     RVA hit at 14132d348 (+0x132D348) - not a COL (sig=0 pSelf=0)
+     vtable @ 1412090c8 (+0x12090C8) [COL slot @ 1412090c0]
+
+  -- RequestUpdateSign --
+     string @ +0x120B824, TD @ +0x120B814 (RVA 0x120B814)
+
+  -- RequestUpdateSignResponse --
+     string @ +0x120B84C, TD @ +0x120B83C (RVA 0x120B83C)
+
+  -- .?AVRequestUpdateSign@Frpg2RequestMessage@@ --
+     string @ +0x158E3A8, TD @ +0x158E398 (RVA 0x158E398)
+     COL @ 1412eaf60 (+0x12EAF60) signature=1 pSelf-OK
+     RVA hit at 1412eafb8 (+0x12EAFB8) - not a COL (sig=0 pSelf=0)
+     vtable @ 141113458 (+0x1113458) [COL slot @ 141113450]
+
+  -- .?AVRequestUpdateSignResponse@Frpg2RequestMessage@@ --
+     string @ +0x15E42D0, TD @ +0x15E42C0 (RVA 0x15E42C0)
+     COL @ 14132d270 (+0x132D270) signature=1 pSelf-OK
+     RVA hit at 14132d2c8 (+0x132D2C8) - not a COL (sig=0 pSelf=0)
+     vtable @ 141209058 (+0x1209058) [COL slot @ 141209050]
+
+  -- RequestCreateSign --
+     string @ +0x120B7C4, TD @ +0x120B7B4 (RVA 0x120B7B4)
+
+  -- RequestCreateSignResponse --
+     string @ +0x120B7F4, TD @ +0x120B7E4 (RVA 0x120B7E4)
+
+  -- .?AVRequestCreateSign@Frpg2RequestMessage@@ --
+     string @ +0x158E320, TD @ +0x158E310 (RVA 0x158E310)
+     COL @ 1412eae60 (+0x12EAE60) signature=1 pSelf-OK
+     RVA hit at 1412eaeb8 (+0x12EAEB8) - not a COL (sig=0 pSelf=0)
+     vtable @ 141113378 (+0x1113378) [COL slot @ 141113370]
+
+  -- .?AVRequestCreateSignResponse@Frpg2RequestMessage@@ --
+     string @ +0x158E360, TD @ +0x158E350 (RVA 0x158E350)
+     COL @ 1412eaee0 (+0x12EAEE0) signature=1 pSelf-OK
+     RVA hit at 1412eaf38 (+0x12EAF38) - not a COL (sig=0 pSelf=0)
+     vtable @ 1411133e8 (+0x11133E8) [COL slot @ 1411133e0]
+
+  -- RequestGetSignList --
+     string @ +0x120B96C, TD @ +0x120B95C (RVA 0x120B95C)
+
+  -- RequestGetSignListResponse --
+     string @ +0x120B9C4, TD @ +0x120B9B4 (RVA 0x120B9B4)
+
+  -- .?AVRequestGetSignList@Frpg2RequestMessage@@ --
+     string @ +0x158E4E0, TD @ +0x158E4D0 (RVA 0x158E4D0)
+     COL @ 1412eb1e0 (+0x12EB1E0) signature=1 pSelf-OK
+     RVA hit at 1412eb238 (+0x12EB238) - not a COL (sig=0 pSelf=0)
+     vtable @ 141113688 (+0x1113688) [COL slot @ 141113680]
+
+  -- .?AVRequestGetSignListResponse@Frpg2RequestMessage@@ --
+     string @ +0x158E520, TD @ +0x158E510 (RVA 0x158E510)
+     COL @ 1412eb260 (+0x12EB260) signature=1 pSelf-OK
+     RVA hit at 1412eb2b8 (+0x12EB2B8) - not a COL (sig=0 pSelf=0)
+     vtable @ 1411136f8 (+0x11136F8) [COL slot @ 1411136f0]
+
+  -- GetSignList --
+     string @ +0x120B973, TD @ +0x120B963 (RVA 0x120B963)
+
+  -- GetSignListResponse --
+     string @ +0x120B9CB, TD @ +0x120B9BB (RVA 0x120B9BB)
+
+  -- GetSignList@Frpg2RequestMessage@@ --
+     string @ +0x158E4EB, TD @ +0x158E4DB (RVA 0x158E4DB)
+
+  -- GetSignListResponse@Frpg2RequestMessage@@ --
+     string @ +0x158E52B, TD @ +0x158E51B (RVA 0x158E51B)
+
+  -- SignListResponse --
+     string @ +0x120B9CE, TD @ +0x120B9BE (RVA 0x120B9BE)
+
+  -- SignListResponse --
+     string @ +0x120C5EA, TD @ +0x120C5DA (RVA 0x120C5DA)
+
+  -- SignListResponse@Frpg2RequestMessage@@ --
+     string @ +0x158E52E, TD @ +0x158E51E (RVA 0x158E51E)
+
+  -- SignListResponse@Frpg2RequestMessage@@ --
+     string @ +0x158EA2A, TD @ +0x158EA1A (RVA 0x158EA1A)
+
+### C. Vtable slots + callers ###
+
+  ==> .?AVRequestSummonSign@Frpg2RequestMessage@@
+    vtable @ 141113768 (+0x1113768)
+      slot[ 0] = 0x1406A10B0 (FUN_1406a10b0 @ +0x6A10B0)
+      slot[ 1] = 0x140C83B10 (FUN_140c83b10 @ +0xC83B10)
+      slot[ 2] = 0x140CADC50 (FUN_140cadc50 @ +0xCADC50)
+      slot[ 3] = 0x140C80AA0 (FUN_140c80aa0 @ +0xC80AA0)
+      slot[ 4] = 0x140C85B90 (FUN_140c85b90 @ +0xC85B90)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D650 (thunk_FUN_140c912a0 @ +0xC7D650)
+      slot[ 7] = 0x140CA5C40 (FUN_140ca5c40 @ +0xCA5C40)
+      slot[ 8] = 0x140C7B9D0 (FUN_140c7b9d0 @ +0xC7B9D0)
+      slot[ 9] = 0x140CB3390 (FUN_140cb3390 @ +0xCB3390)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x1406A1330 (FUN_1406a1330 @ +0x6A1330)
+      slot[12] = 0
+      slot[13] = 0x1412EB360 ((no func) @ ?)
+      slot[14] = 0x1406A0F60 (FUN_1406a0f60 @ +0x6A0F60)
+      slot[15] = 0x140C82040 (FUN_140c82040 @ +0xC82040)
+    callers of vtable slot[0] (FUN_1406a10b0):
+
+  ==> .?AVRequestSummonSignResponse@Frpg2RequestMessage@@
+    vtable @ 1412091a8 (+0x12091A8)
+      slot[ 0] = 0x140C73740 (FUN_140c73740 @ +0xC73740)
+      slot[ 1] = 0x140C83B40 (FUN_140c83b40 @ +0xC83B40)
+      slot[ 2] = 0x140CADCA0 (FUN_140cadca0 @ +0xCADCA0)
+      slot[ 3] = 0x140C80B20 (FUN_140c80b20 @ +0xC80B20)
+      slot[ 4] = 0x140C85BE0 (FUN_140c85be0 @ +0xC85BE0)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D660 (thunk_FUN_140c913d0 @ +0xC7D660)
+      slot[ 7] = 0x140CA5E70 (FUN_140ca5e70 @ +0xCA5E70)
+      slot[ 8] = 0x140C7BAE0 (FUN_140c7bae0 @ +0xC7BAE0)
+      slot[ 9] = 0x140CB3420 (FUN_140cb3420 @ +0xCB3420)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x140C816A0 (FUN_140c816a0 @ +0xC816A0)
+      slot[12] = 0
+      slot[13] = 0x14132D470 ((no func) @ ?)
+      slot[14] = 0x140C73440 (FUN_140c73440 @ +0xC73440)
+      slot[15] = 0x140C83720 (FUN_140c83720 @ +0xC83720)
+    callers of vtable slot[0] (FUN_140c73740):
+
+  ==> .?AVRequestSummonMirrorKnightSign@Frpg2RequestMessage@@
+    vtable @ 141114388 (+0x1114388)
+      slot[ 0] = 0x1406A3D60 (FUN_1406a3d60 @ +0x6A3D60)
+      slot[ 1] = 0x140C83AB0 (FUN_140c83ab0 @ +0xC83AB0)
+      slot[ 2] = 0x140CADB40 (FUN_140cadb40 @ +0xCADB40)
+      slot[ 3] = 0x140C80A10 (FUN_140c80a10 @ +0xC80A10)
+      slot[ 4] = 0x140C85B40 (FUN_140c85b40 @ +0xC85B40)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D630 (thunk_FUN_140c91100 @ +0xC7D630)
+      slot[ 7] = 0x140CA5A60 (FUN_140ca5a60 @ +0xCA5A60)
+      slot[ 8] = 0x140C7B8F0 (FUN_140c7b8f0 @ +0xC7B8F0)
+      slot[ 9] = 0x140CB3320 (FUN_140cb3320 @ +0xCB3320)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x1406A3F80 (FUN_1406a3f80 @ +0x6A3F80)
+      slot[12] = 0
+      slot[13] = 0x1412EBA50 ((no func) @ ?)
+      slot[14] = 0x1406A3C10 (FUN_1406a3c10 @ +0x6A3C10)
+      slot[15] = 0x140C82010 (FUN_140c82010 @ +0xC82010)
+    callers of vtable slot[0] (FUN_1406a3d60):
+
+  ==> .?AVRequestSummonMirrorKnightSignResponse@Frpg2RequestMessage@@
+    vtable @ 141209b48 (+0x1209B48)
+      slot[ 0] = 0x140C73710 (FUN_140c73710 @ +0xC73710)
+      slot[ 1] = 0x140C83AE0 (FUN_140c83ae0 @ +0xC83AE0)
+      slot[ 2] = 0x140CADBE0 (FUN_140cadbe0 @ +0xCADBE0)
+      slot[ 3] = 0x140C80A90 (FUN_140c80a90 @ +0xC80A90)
+      slot[ 4] = 0x140C85B80 (FUN_140c85b80 @ +0xC85B80)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D640 (thunk_FUN_140c91200 @ +0xC7D640)
+      slot[ 7] = 0x140CA5BD0 (FUN_140ca5bd0 @ +0xCA5BD0)
+      slot[ 8] = 0x140C7B9C0 (FUN_140c7b9c0 @ +0xC7B9C0)
+      slot[ 9] = 0x140CB3380 (FUN_140cb3380 @ +0xCB3380)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x140C81690 (FUN_140c81690 @ +0xC81690)
+      slot[12] = 0
+      slot[13] = 0x14132DF70 ((no func) @ ?)
+      slot[14] = 0x140C733E0 (FUN_140c733e0 @ +0xC733E0)
+      slot[15] = 0x140C83660 (FUN_140c83660 @ +0xC83660)
+    callers of vtable slot[0] (FUN_140c73710):
+
+  ==> .?AVRequestRemoveSign@Frpg2RequestMessage@@
+    vtable @ 1411134c8 (+0x11134C8)
+      slot[ 0] = 0x1406A1080 (FUN_1406a1080 @ +0x6A1080)
+      slot[ 1] = 0x140C83870 (FUN_140c83870 @ +0xC83870)
+      slot[ 2] = 0x140CAD5A0 (FUN_140cad5a0 @ +0xCAD5A0)
+      slot[ 3] = 0x140C80770 (FUN_140c80770 @ +0xC80770)
+      slot[ 4] = 0x140C859E0 (FUN_140c859e0 @ +0xC859E0)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D570 (thunk_FUN_140c90690 @ +0xC7D570)
+      slot[ 7] = 0x140CA4C50 (FUN_140ca4c50 @ +0xCA4C50)
+      slot[ 8] = 0x140C7B2A0 (FUN_140c7b2a0 @ +0xC7B2A0)
+      slot[ 9] = 0x140CB2F40 (FUN_140cb2f40 @ +0xCB2F40)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x1406A1320 (FUN_1406a1320 @ +0x6A1320)
+      slot[12] = 0
+      slot[13] = 0x1412EB060 ((no func) @ ?)
+      slot[14] = 0x1406A0F30 (FUN_1406a0f30 @ +0x6A0F30)
+      slot[15] = 0x140C81FB0 (FUN_140c81fb0 @ +0xC81FB0)
+    callers of vtable slot[0] (FUN_1406a1080):
+
+  ==> .?AVRequestRemoveSignResponse@Frpg2RequestMessage@@
+    vtable @ 1412090c8 (+0x12090C8)
+      slot[ 0] = 0x140C73500 (FUN_140c73500 @ +0xC73500)
+      slot[ 1] = 0x140C838A0 (FUN_140c838a0 @ +0xC838A0)
+      slot[ 2] = 0x140CAD610 (FUN_140cad610 @ +0xCAD610)
+      slot[ 3] = 0x140C80790 (FUN_140c80790 @ +0xC80790)
+      slot[ 4] = 0x140C859F0 (FUN_140c859f0 @ +0xC859F0)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D580 (thunk_FUN_140c90790 @ +0xC7D580)
+      slot[ 7] = 0x140CA4DF0 (FUN_140ca4df0 @ +0xCA4DF0)
+      slot[ 8] = 0x140C7B360 (FUN_140c7b360 @ +0xC7B360)
+      slot[ 9] = 0x140CB2FB0 (FUN_140cb2fb0 @ +0xCB2FB0)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x140C81610 (FUN_140c81610 @ +0xC81610)
+      slot[12] = 0
+      slot[13] = 0x14132D370 ((no func) @ ?)
+      slot[14] = 0x140C738C0 (FUN_140c738c0 @ +0xC738C0)
+      slot[15] = 0x140C83F30 (FUN_140c83f30 @ +0xC83F30)
+    callers of vtable slot[0] (FUN_140c73500):
+
+  ==> .?AVRequestUpdateSign@Frpg2RequestMessage@@
+    vtable @ 141113458 (+0x1113458)
+      slot[ 0] = 0x1406A10E0 (FUN_1406a10e0 @ +0x6A10E0)
+      slot[ 1] = 0x140C83DB0 (FUN_140c83db0 @ +0xC83DB0)
+      slot[ 2] = 0x140CAE280 (FUN_140cae280 @ +0xCAE280)
+      slot[ 3] = 0x140C80CB0 (FUN_140c80cb0 @ +0xC80CB0)
+      slot[ 4] = 0x140C85CE0 (FUN_140c85ce0 @ +0xC85CE0)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D730 (thunk_FUN_140c91e20 @ +0xC7D730)
+      slot[ 7] = 0x140CA69B0 (FUN_140ca69b0 @ +0xCA69B0)
+      slot[ 8] = 0x140C7BF50 (FUN_140c7bf50 @ +0xC7BF50)
+      slot[ 9] = 0x140CB36C0 (FUN_140cb36c0 @ +0xCB36C0)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x1406A1340 (FUN_1406a1340 @ +0x6A1340)
+      slot[12] = 0
+      slot[13] = 0x1412EAFE0 ((no func) @ ?)
+      slot[14] = 0x1406A1080 (FUN_1406a1080 @ +0x6A1080)
+      slot[15] = 0x140C83870 (FUN_140c83870 @ +0xC83870)
+    callers of vtable slot[0] (FUN_1406a10e0):
+
+  ==> .?AVRequestUpdateSignResponse@Frpg2RequestMessage@@
+    vtable @ 141209058 (+0x1209058)
+      slot[ 0] = 0x140C73860 (FUN_140c73860 @ +0xC73860)
+      slot[ 1] = 0x140C83DE0 (FUN_140c83de0 @ +0xC83DE0)
+      slot[ 2] = 0x140CAE2F0 (FUN_140cae2f0 @ +0xCAE2F0)
+      slot[ 3] = 0x140C80CD0 (FUN_140c80cd0 @ +0xC80CD0)
+      slot[ 4] = 0x140C85CF0 (FUN_140c85cf0 @ +0xC85CF0)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D740 (thunk_FUN_140c91f20 @ +0xC7D740)
+      slot[ 7] = 0x140CA6B50 (FUN_140ca6b50 @ +0xCA6B50)
+      slot[ 8] = 0x140C7C010 (FUN_140c7c010 @ +0xC7C010)
+      slot[ 9] = 0x140CB3730 (FUN_140cb3730 @ +0xCB3730)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x140C81700 (FUN_140c81700 @ +0xC81700)
+      slot[12] = 0
+      slot[13] = 0x14132D2F0 ((no func) @ ?)
+      slot[14] = 0x140C73500 (FUN_140c73500 @ +0xC73500)
+      slot[15] = 0x140C838A0 (FUN_140c838a0 @ +0xC838A0)
+    callers of vtable slot[0] (FUN_140c73860):
+
+  ==> .?AVRequestCreateSign@Frpg2RequestMessage@@
+    vtable @ 141113378 (+0x1113378)
+      slot[ 0] = 0x1406A0F90 (FUN_1406a0f90 @ +0x6A0F90)
+      slot[ 1] = 0x140C82460 (FUN_140c82460 @ +0xC82460)
+      slot[ 2] = 0x140CAA440 (FUN_140caa440 @ +0xCAA440)
+      slot[ 3] = 0x140C7F180 (FUN_140c7f180 @ +0xC7F180)
+      slot[ 4] = 0x140C84960 (FUN_140c84960 @ +0xC84960)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7CEC0 (thunk_FUN_140c8a820 @ +0xC7CEC0)
+      slot[ 7] = 0x140C9BC20 (FUN_140c9bc20 @ +0xC9BC20)
+      slot[ 8] = 0x140C77930 (FUN_140c77930 @ +0xC77930)
+      slot[ 9] = 0x140CB0B80 (FUN_140cb0b80 @ +0xCB0B80)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x1406A12D0 (FUN_1406a12d0 @ +0x6A12D0)
+      slot[12] = 0
+      slot[13] = 0x1412EAEE0 ((no func) @ ?)
+      slot[14] = 0x1406A0FC0 (FUN_1406a0fc0 @ +0x6A0FC0)
+      slot[15] = 0x140C82490 (FUN_140c82490 @ +0xC82490)
+    callers of vtable slot[0] (FUN_1406a0f90):
+
+  ==> .?AVRequestCreateSignResponse@Frpg2RequestMessage@@
+    vtable @ 1411133e8 (+0x11133E8)
+      slot[ 0] = 0x1406A0FC0 (FUN_1406a0fc0 @ +0x6A0FC0)
+      slot[ 1] = 0x140C82490 (FUN_140c82490 @ +0xC82490)
+      slot[ 2] = 0x140CAA490 (FUN_140caa490 @ +0xCAA490)
+      slot[ 3] = 0x140C7F230 (FUN_140c7f230 @ +0xC7F230)
+      slot[ 4] = 0x140C849B0 (FUN_140c849b0 @ +0xC849B0)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7CED0 (thunk_FUN_140c8a960 @ +0xC7CED0)
+      slot[ 7] = 0x140C9BEB0 (FUN_140c9beb0 @ +0xC9BEB0)
+      slot[ 8] = 0x140C77A70 (FUN_140c77a70 @ +0xC77A70)
+      slot[ 9] = 0x140CB0C30 (FUN_140cb0c30 @ +0xCB0C30)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x1406A12E0 (FUN_1406a12e0 @ +0x6A12E0)
+      slot[12] = 0
+      slot[13] = 0x1412EAF60 ((no func) @ ?)
+      slot[14] = 0x1406A10E0 (FUN_1406a10e0 @ +0x6A10E0)
+      slot[15] = 0x140C83DB0 (FUN_140c83db0 @ +0xC83DB0)
+    callers of vtable slot[0] (FUN_1406a0fc0):
+
+  ==> .?AVRequestGetSignList@Frpg2RequestMessage@@
+    vtable @ 141113688 (+0x1113688)
+      slot[ 0] = 0x1406A0FF0 (FUN_1406a0ff0 @ +0x6A0FF0)
+      slot[ 1] = 0x140C82D00 (FUN_140c82d00 @ +0xC82D00)
+      slot[ 2] = 0x140CAB9A0 (FUN_140cab9a0 @ +0xCAB9A0)
+      slot[ 3] = 0x140C7FD00 (FUN_140c7fd00 @ +0xC7FD00)
+      slot[ 4] = 0x140C85300 (FUN_140c85300 @ +0xC85300)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D1A0 (thunk_FUN_140c8d1b0 @ +0xC7D1A0)
+      slot[ 7] = 0x140C9FCC0 (FUN_140c9fcc0 @ +0xC9FCC0)
+      slot[ 8] = 0x140C79590 (FUN_140c79590 @ +0xC79590)
+      slot[ 9] = 0x140CB1C60 (FUN_140cb1c60 @ +0xCB1C60)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x1406A12F0 (FUN_1406a12f0 @ +0x6A12F0)
+      slot[12] = 0
+      slot[13] = 0x1412EB260 ((no func) @ ?)
+      slot[14] = 0x1406A1020 (FUN_1406a1020 @ +0x6A1020)
+      slot[15] = 0x140C82D30 (FUN_140c82d30 @ +0xC82D30)
+    callers of vtable slot[0] (FUN_1406a0ff0):
+
+  ==> .?AVRequestGetSignListResponse@Frpg2RequestMessage@@
+    vtable @ 1411136f8 (+0x11136F8)
+      slot[ 0] = 0x1406A1020 (FUN_1406a1020 @ +0x6A1020)
+      slot[ 1] = 0x140C82D30 (FUN_140c82d30 @ +0xC82D30)
+      slot[ 2] = 0x140CABA30 (FUN_140caba30 @ +0xCABA30)
+      slot[ 3] = 0x140C7FDC0 (FUN_140c7fdc0 @ +0xC7FDC0)
+      slot[ 4] = 0x140C853B0 (FUN_140c853b0 @ +0xC853B0)
+      slot[ 5] = 0x1406B7C50 (FUN_1406b7c50 @ +0x6B7C50)
+      slot[ 6] = 0x140C7D1B0 (thunk_FUN_140c8d320 @ +0xC7D1B0)
+      slot[ 7] = 0x140CA00E0 (FUN_140ca00e0 @ +0xCA00E0)
+      slot[ 8] = 0x140C796E0 (FUN_140c796e0 @ +0xC796E0)
+      slot[ 9] = 0x140CB1DE0 (FUN_140cb1de0 @ +0xCB1DE0)
+      slot[10] = 0x1406B7FC0 (FUN_1406b7fc0 @ +0x6B7FC0)
+      slot[11] = 0x1406A1300 (FUN_1406a1300 @ +0x6A1300)
+      slot[12] = 0
+      slot[13] = 0x1412EB2E0 ((no func) @ ?)
+      slot[14] = 0x1406A10B0 (FUN_1406a10b0 @ +0x6A10B0)
+      slot[15] = 0x140C83B10 (FUN_140c83b10 @ +0xC83B10)
+    callers of vtable slot[0] (FUN_1406a1020):
+
+### D. Constructors: qword refs to the vtable address itself ###
+
+  ==> .?AVRequestSummonSign@Frpg2RequestMessage@@
+    vtable VA: 0x141113768
+
+  ==> .?AVRequestSummonSignResponse@Frpg2RequestMessage@@
+    vtable VA: 0x1412091A8
+
+  ==> .?AVRequestSummonMirrorKnightSign@Frpg2RequestMessage@@
+    vtable VA: 0x141114388
+
+  ==> .?AVRequestSummonMirrorKnightSignResponse@Frpg2RequestMessage@@
+    vtable VA: 0x141209B48
+
+  ==> .?AVRequestRemoveSign@Frpg2RequestMessage@@
+    vtable VA: 0x1411134C8
+
+  ==> .?AVRequestRemoveSignResponse@Frpg2RequestMessage@@
+    vtable VA: 0x1412090C8
+
+  ==> .?AVRequestUpdateSign@Frpg2RequestMessage@@
+    vtable VA: 0x141113458
+
+  ==> .?AVRequestUpdateSignResponse@Frpg2RequestMessage@@
+    vtable VA: 0x141209058
+
+  ==> .?AVRequestCreateSign@Frpg2RequestMessage@@
+    vtable VA: 0x141113378
+
+  ==> .?AVRequestCreateSignResponse@Frpg2RequestMessage@@
+    vtable VA: 0x1411133E8
+
+  ==> .?AVRequestGetSignList@Frpg2RequestMessage@@
+    vtable VA: 0x141113688
+
+  ==> .?AVRequestGetSignListResponse@Frpg2RequestMessage@@
+    vtable VA: 0x1411136F8
+
+======================================================================
+Done.
+Next step: pick a class above (RequestSummonSign / etc), look at the
+constructor caller list under section D, dump that caller, find the
+predicate above the constructor call.
+======================================================================

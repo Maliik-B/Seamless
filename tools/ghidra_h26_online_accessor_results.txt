@@ -1,0 +1,175 @@
+======================================================================
+H-26 online-accessor + SignProtocol dtor inspection
+======================================================================
+
+Known landmarks:
+  GameManager singleton ptr:  0x1416148F0
+  serviceMgr field offset:    +0x22F0 (in GameManager)
+  H-33 OnlineCheck predicate: +0xF98C0 (already patched)
+
+======================================================================
+=== is_online_accessor @ +0x513600 ===
+======================================================================
+
+--- FUN_140513600 @ +0x513600 (5 bytes) ---
+  140513600 (+0x513600)  MOVZX EAX,byte ptr [RCX + 0x3a]
+  140513604 (+0x513604)  RET
+
+  callers: 34 (refMgr code/flow refs)
+    14024f622 (+0x24F622) in FUN_14024f600 @ +0x24F600 [UNCONDITIONAL_CALL]
+    1400579bc (+0x579BC) in FUN_140057880 @ +0x57880 [UNCONDITIONAL_CALL]
+    14024f416 (+0x24F416) in FUN_14024f410 @ +0x24F410 [CONDITIONAL_JUMP]
+    140077211 (+0x77211) in FUN_1400771e0 @ +0x771E0 [UNCONDITIONAL_CALL]
+    1400a4f5a (+0xA4F5A) in FUN_1400a4e50 @ +0xA4E50 [UNCONDITIONAL_CALL]
+    1400c69e4 (+0xC69E4) in FUN_1400c69b0 @ +0xC69B0 [UNCONDITIONAL_CALL]
+    1400d6e9c (+0xD6E9C) in FUN_1400d6dc0 @ +0xD6DC0 [UNCONDITIONAL_CALL]
+    1400d97fc (+0xD97FC) in FUN_1400d97d0 @ +0xD97D0 [UNCONDITIONAL_CALL]
+    1400ef49f (+0xEF49F) in FUN_1400ef390 @ +0xEF390 [UNCONDITIONAL_CALL]
+    1400f433b (+0xF433B) in FUN_1400f4250 @ +0xF4250 [UNCONDITIONAL_CALL]
+    1400f3934 (+0xF3934) in FUN_1400f3820 @ +0xF3820 [UNCONDITIONAL_CALL]
+    1400f98ee (+0xF98EE) in FUN_1400f98c0 @ +0xF98C0 [UNCONDITIONAL_CALL]
+    1400fe738 (+0xFE738) in FUN_1400fe510 @ +0xFE510 [UNCONDITIONAL_CALL]
+    14028b694 (+0x28B694) in FUN_14028b670 @ +0x28B670 [UNCONDITIONAL_CALL]
+    14028b809 (+0x28B809) in FUN_14028b7f0 @ +0x28B7F0 [UNCONDITIONAL_CALL]
+    1401a4706 (+0x1A4706) in caseD_4 @ +0x1A46F0 [UNCONDITIONAL_CALL]
+    1401a48b6 (+0x1A48B6) in caseD_3 @ +0x1A48A0 [UNCONDITIONAL_CALL]
+    1405023ca (+0x5023CA) in FUN_140502370 @ +0x502370 [UNCONDITIONAL_CALL]
+    14028b8fd (+0x28B8FD) in FUN_14028b8d0 @ +0x28B8D0 [UNCONDITIONAL_CALL]
+    140291602 (+0x291602) in FUN_1402915d0 @ +0x2915D0 [UNCONDITIONAL_CALL]
+
+======================================================================
+=== inner_service_resolver @ +0x5132A0 ===
+======================================================================
+
+--- FUN_1405132a0 @ +0x5132A0 (19 bytes) ---
+  1405132a0 (+0x5132A0)  MOV RAX,qword ptr [0x141616cf8]
+  1405132a7 (+0x5132A7)  TEST RAX,RAX
+  1405132aa (+0x5132AA)  JZ 0x1405132b1
+  1405132ac (+0x5132AC)  MOV RAX,qword ptr [RAX + 0x30]
+  1405132b0 (+0x5132B0)  RET
+  1405132b1 (+0x5132B1)  RET
+
+  callers: 66 (refMgr code/flow refs)
+    1401b437f (+0x1B437F) in FUN_1401b4330 @ +0x1B4330 [UNCONDITIONAL_CALL]
+    140040497 (+0x40497) in FUN_140040480 @ +0x40480 [UNCONDITIONAL_CALL]
+    14005f2f9 (+0x5F2F9) in FUN_14005ede0 @ +0x5EDE0 [UNCONDITIONAL_CALL]
+    140060038 (+0x60038) in FUN_140060010 @ +0x60010 [UNCONDITIONAL_CALL]
+    14006006b (+0x6006B) in FUN_140060010 @ +0x60010 [UNCONDITIONAL_CALL]
+    14025f956 (+0x25F956) in FUN_14025f930 @ +0x25F930 [UNCONDITIONAL_CALL]
+    14006a4f5 (+0x6A4F5) in FUN_14006a4a0 @ +0x6A4A0 [UNCONDITIONAL_CALL]
+    14025dec8 (+0x25DEC8) in FUN_14025de80 @ +0x25DE80 [UNCONDITIONAL_CALL]
+    14006c68f (+0x6C68F) in FUN_14006c630 @ +0x6C630 [UNCONDITIONAL_CALL]
+    14024f369 (+0x24F369) in FUN_14024f350 @ +0x24F350 [UNCONDITIONAL_CALL]
+    140077090 (+0x77090) in FUN_140077070 @ +0x77070 [UNCONDITIONAL_CALL]
+    140077100 (+0x77100) in FUN_1400770e0 @ +0x770E0 [UNCONDITIONAL_CALL]
+    1400772d6 (+0x772D6) in FUN_140077270 @ +0x77270 [UNCONDITIONAL_CALL]
+    140078222 (+0x78222) in FUN_140078200 @ +0x78200 [UNCONDITIONAL_CALL]
+    14007bd67 (+0x7BD67) in FUN_14007bd30 @ +0x7BD30 [UNCONDITIONAL_CALL]
+    14007d475 (+0x7D475) in FUN_14007d3b0 @ +0x7D3B0 [UNCONDITIONAL_CALL]
+    14007d4ac (+0x7D4AC) in FUN_14007d3b0 @ +0x7D3B0 [UNCONDITIONAL_CALL]
+    14007c4a3 (+0x7C4A3) in FUN_14007c460 @ +0x7C460 [UNCONDITIONAL_CALL]
+    14007c4eb (+0x7C4EB) in FUN_14007c460 @ +0x7C460 [UNCONDITIONAL_CALL]
+    140093c91 (+0x93C91) in FUN_140093bc0 @ +0x93BC0 [UNCONDITIONAL_CALL]
+
+======================================================================
+=== SignProtocol_vtable_slot0 @ +0x6A0ED0 ===
+======================================================================
+
+--- FUN_1406a0ed0 @ +0x6A0ED0 (47 bytes) ---
+  1406a0ed0 (+0x6A0ED0)  MOV qword ptr [RSP + 0x8],RBX
+  1406a0ed5 (+0x6A0ED5)  PUSH RDI
+  1406a0ed6 (+0x6A0ED6)  SUB RSP,0x20
+  1406a0eda (+0x6A0EDA)  MOV EBX,EDX
+  1406a0edc (+0x6A0EDC)  MOV RDI,RCX
+  1406a0edf (+0x6A0EDF)  CALL 0x1406a0d60
+  1406a0ee4 (+0x6A0EE4)  TEST BL,0x1
+  1406a0ee7 (+0x6A0EE7)  JZ 0x1406a0ef1
+  1406a0ee9 (+0x6A0EE9)  MOV RCX,RDI
+  1406a0eec (+0x6A0EEC)  CALL 0x140c2c938
+  1406a0ef1 (+0x6A0EF1)  MOV RAX,RDI
+  1406a0ef4 (+0x6A0EF4)  MOV RBX,qword ptr [RSP + 0x30]
+  1406a0ef9 (+0x6A0EF9)  ADD RSP,0x20
+  1406a0efd (+0x6A0EFD)  POP RDI
+  1406a0efe (+0x6A0EFE)  RET
+
+  callers: 0 (refMgr code/flow refs)
+
+======================================================================
+=== OnlineCheck predicate (already H-33-patched) @ +0xF98C0 ===
+======================================================================
+
+--- FUN_1400f98c0 @ +0xF98C0 (117 bytes) ---
+  1400f98c0 (+0xF98C0)  MOV qword ptr [RSP + 0x8],RBX
+  1400f98c5 (+0xF98C5)  MOV qword ptr [RSP + 0x10],RSI
+  1400f98ca (+0xF98CA)  PUSH RDI
+  1400f98cb (+0xF98CB)  SUB RSP,0x20
+  1400f98cf (+0xF98CF)  MOV RAX,qword ptr [0x1416148f0]
+  1400f98d6 (+0xF98D6)  MOV RSI,RCX
+  1400f98d9 (+0xF98D9)  MOV RBX,qword ptr [RAX + 0x22f0]
+  1400f98e0 (+0xF98E0)  MOV RCX,RBX
+  1400f98e3 (+0xF98E3)  CALL 0x1405132a0
+  1400f98e8 (+0xF98E8)  MOV RCX,RBX
+  1400f98eb (+0xF98EB)  MOV RDI,RAX
+  1400f98ee (+0xF98EE)  CALL 0x140513600
+  1400f98f3 (+0xF98F3)  TEST AL,AL
+  1400f98f5 (+0xF98F5)  JNZ 0x1400f9909
+  1400f98f7 (+0xF98F7)  XOR EAX,EAX
+  1400f98f9 (+0xF98F9)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f98fe (+0xF98FE)  MOV RSI,qword ptr [RSP + 0x38]
+  1400f9903 (+0xF9903)  ADD RSP,0x20
+  1400f9907 (+0xF9907)  POP RDI
+  1400f9908 (+0xF9908)  RET
+  1400f9909 (+0xF9909)  MOV RAX,qword ptr [RDI]
+  1400f990c (+0xF990C)  MOVZX EDX,byte ptr [RSI + 0x30]
+  1400f9910 (+0xF9910)  MOV RCX,RDI
+  1400f9913 (+0xF9913)  CALL qword ptr [RAX + 0x48]
+  1400f9916 (+0xF9916)  MOV RBX,qword ptr [RSP + 0x30]
+  1400f991b (+0xF991B)  MOV RSI,qword ptr [RSP + 0x38]
+  1400f9920 (+0xF9920)  OR ECX,0xffffffff
+  1400f9923 (+0xF9923)  TEST AL,AL
+  1400f9925 (+0xF9925)  MOV EDX,0x1
+  1400f992a (+0xF992A)  CMOVZ ECX,EDX
+  1400f992d (+0xF992D)  MOV EAX,ECX
+  1400f992f (+0xF992F)  ADD RSP,0x20
+  1400f9933 (+0xF9933)  POP RDI
+  1400f9934 (+0xF9934)  RET
+
+======================================================================
+=== RequestCreateSign_send @ +0x6A1DE0 (first 30 inst) ===
+======================================================================
+
+--- FUN_1406a1de0 @ +0x6A1DE0 (602 bytes) ---
+  1406a1de0 (+0x6A1DE0)  MOV dword ptr [RSP + 0x20],R9D
+  1406a1de5 (+0x6A1DE5)  PUSH RBP
+  1406a1de6 (+0x6A1DE6)  PUSH RSI
+  1406a1de7 (+0x6A1DE7)  PUSH RDI
+  1406a1de8 (+0x6A1DE8)  PUSH R14
+  1406a1dea (+0x6A1DEA)  PUSH R15
+  1406a1dec (+0x6A1DEC)  LEA RBP,[RSP + -0x1f]
+  1406a1df1 (+0x6A1DF1)  SUB RSP,0xb0
+  1406a1df8 (+0x6A1DF8)  MOV qword ptr [RBP + -0x51],-0x2
+  1406a1e00 (+0x6A1E00)  MOV qword ptr [RSP + 0xf0],RBX
+  1406a1e08 (+0x6A1E08)  MOV RAX,qword ptr [0x1415e1c50]
+  1406a1e0f (+0x6A1E0F)  XOR RAX,RSP
+  1406a1e12 (+0x6A1E12)  MOV qword ptr [RBP + 0xf],RAX
+  1406a1e16 (+0x6A1E16)  MOV R15D,R8D
+  1406a1e19 (+0x6A1E19)  MOV RSI,RDX
+  1406a1e1c (+0x6A1E1C)  MOV RDI,RCX
+  1406a1e1f (+0x6A1E1F)  MOV RBX,qword ptr [RBP + 0x6f]
+  1406a1e23 (+0x6A1E23)  MOV R14,qword ptr [RBP + 0x7f]
+  1406a1e27 (+0x6A1E27)  CMP dword ptr [RBX + 0x18],0xa
+  1406a1e2b (+0x6A1E2B)  JC 0x1406a1e4a
+  1406a1e2d (+0x6A1E2D)  LEA RDX,[0x141113918]
+  1406a1e34 (+0x6A1E34)  LEA RCX,[0x14158e290]
+  1406a1e3b (+0x6A1E3B)  CALL 0x140881b40
+  1406a1e40 (+0x6A1E40)  MOV EAX,0x1
+  1406a1e45 (+0x6A1E45)  JMP 0x1406a2017
+  1406a1e4a (+0x6A1E4A)  CMP dword ptr [RBX + 0x1c],0x5
+  1406a1e4e (+0x6A1E4E)  JC 0x1406a1e59
+  1406a1e50 (+0x6A1E50)  LEA RDX,[0x141113940]
+  1406a1e57 (+0x6A1E57)  JMP 0x1406a1e34
+  1406a1e59 (+0x6A1E59)  CMP dword ptr [RBX + 0x20],0x4
+
+======================================================================
+Done.
+======================================================================

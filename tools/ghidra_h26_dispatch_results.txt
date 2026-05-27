@@ -1,0 +1,151 @@
+======================================================================
+H-26 dispatch-table characterization
+======================================================================
+
+--- Region 1 (near RequestCreateSign vtable) table dump @ +0x1113318 (window: -0..+18 qwords) ---
+  [ +0] +0x1113318  0x00000001406A0ED0  FUN_1406a0ed0 @ +0x6A0ED0 <- HEAD
+  [ +1] +0x1113320  0x00000001406A1DE0  FUN_1406a1de0 @ +0x6A1DE0
+  [ +2] +0x1113328  0x00000001406A1170  FUN_1406a1170 @ +0x6A1170
+  [ +3] +0x1113330  0x00000001406A2830  FUN_1406a2830 @ +0x6A2830
+  [ +4] +0x1113338  0x00000001406A24F0  FUN_1406a24f0 @ +0x6A24F0
+  [ +5] +0x1113340  0x00000001406A2040  FUN_1406a2040 @ +0x6A2040
+  [ +6] +0x1113348  0x00000001406A1370  FUN_1406a1370 @ +0x6A1370
+  [ +7] +0x1113350  0x00000001406A2610  FUN_1406a2610 @ +0x6A2610
+  [ +8] +0x1113358  0x00000001406A23B0  FUN_1406a23b0 @ +0x6A23B0
+  [ +9] +0x1113360  0x00000001406A1D40  FUN_1406a1d40 @ +0x6A1D40
+  [+10] +0x1113368  0x0000000000000000  0x0
+  [+11] +0x1113370  0x00000001412EAE60  (no func) (image+0x12EAE60)
+  [+12] +0x1113378  0x00000001406A0F90  FUN_1406a0f90 @ +0x6A0F90
+  [+13] +0x1113380  0x0000000140C82460  FUN_140c82460 @ +0xC82460
+  [+14] +0x1113388  0x0000000140CAA440  FUN_140caa440 @ +0xCAA440
+  [+15] +0x1113390  0x0000000140C7F180  FUN_140c7f180 @ +0xC7F180
+  [+16] +0x1113398  0x0000000140C84960  FUN_140c84960 @ +0xC84960
+  [+17] +0x11133A0  0x00000001406B7C50  FUN_1406b7c50 @ +0x6B7C50
+
+--- Region 2 around +0x140D16C table dump @ +0x140D168 (window: -4..+4 qwords) ---
+  [ -4] +0x140D148  0x01112F7000C30A38  0x1112F7000C30A38
+  [ -3] +0x140D150  0xFFFFFFFF000000A2  0xFFFFFFFF000000A2
+  [ -2] +0x140D158  0x0000000001023720  0x1023720
+  [ -1] +0x140D160  0xFFFFFFFF0102372C  0xFFFFFFFF0102372C
+  [ +0] +0x140D168  0x006A1DE00102373C  0x6A1DE00102373C <- HEAD
+  [ +1] +0x140D170  0x006A1EA8FFFFFFFF  0x6A1EA8FFFFFFFF
+  [ +2] +0x140D178  0x006A1ECB00000000  0x6A1ECB00000000
+  [ +3] +0x140D180  0x006A1ED900000001  0x6A1ED900000001
+
+--- Region 2 around +0x140D27C table dump @ +0x140D278 (window: -4..+4 qwords) ---
+  [ -4] +0x140D258  0x01112FE800C30A38  0x1112FE800C30A38
+  [ -3] +0x140D260  0xFFFFFFFF00000082  0xFFFFFFFF00000082
+  [ -2] +0x140D268  0x00000000010237C0  0x10237C0
+  [ -1] +0x140D270  0xFFFFFFFF010237CC  0xFFFFFFFF010237CC
+  [ +0] +0x140D278  0x006A24F0010237DC  0x6A24F0010237DC <- HEAD
+  [ +1] +0x140D280  0x006A252DFFFFFFFF  0x6A252DFFFFFFFF
+  [ +2] +0x140D288  0x006A255400000000  0x6A255400000000
+  [ +3] +0x140D290  0x006A256400000001  0x6A256400000001
+
+--- Region 2 around +0x140D2EC table dump @ +0x140D2E8 (window: -4..+4 qwords) ---
+  [ -4] +0x140D2C8  0xFFFFFFFF000000D2  0xFFFFFFFF000000D2
+  [ -3] +0x140D2D0  0x0000000001023750  0x1023750
+  [ -2] +0x140D2D8  0x000000010102375C  0x10102375C
+  [ -1] +0x140D2E0  0xFFFFFFFF0102376C  0xFFFFFFFF0102376C
+  [ +0] +0x140D2E8  0x006A20400102377C  0x6A20400102377C <- HEAD
+  [ +1] +0x140D2F0  0x006A213DFFFFFFFF  0x6A213DFFFFFFFF
+  [ +2] +0x140D2F8  0x006A216000000000  0x6A216000000000
+  [ +3] +0x140D300  0x006A217700000001  0x6A217700000001
+
+--- Region 2 around +0x140D424 table dump @ +0x140D420 (window: -4..+4 qwords) ---
+  [ -4] +0x140D400  0x000000020102380C  0x20102380C
+  [ -3] +0x140D408  0x0000000301023818  0x301023818
+  [ -2] +0x140D410  0x0000000401023839  0x401023839
+  [ -1] +0x140D418  0x0000000201023845  0x201023845
+  [ +0] +0x140D420  0x006A261001023855  0x6A261001023855 <- HEAD
+  [ +1] +0x140D428  0x006A2682FFFFFFFF  0x6A2682FFFFFFFF
+  [ +2] +0x140D430  0x006A26A500000000  0x6A26A500000000
+  [ +3] +0x140D438  0x006A26B300000001  0x6A26B300000001
+
+--- Region 3 around +0x190BFE8 table dump @ +0x190BFE8 (window: -2..+3 qwords) ---
+  [ -2] +0x190BFD8  0x006A1D400140D558  0x6A1D400140D558
+  [ -1] +0x190BFE0  0x0140D4F0006A1DDC  0x140D4F0006A1DDC
+  [ +0] +0x190BFE8  0x006A203A006A1DE0  0x6A203A006A1DE0 <- HEAD
+  [ +1] +0x190BFF0  0x006A20400140D130  0x6A20400140D130
+  [ +2] +0x190BFF8  0x0140D2A4006A23AC  0x140D2A4006A23AC
+
+--- Region 3 around +0x190BFF4 table dump @ +0x190BFF0 (window: -2..+3 qwords) ---
+  [ -2] +0x190BFE0  0x0140D4F0006A1DDC  0x140D4F0006A1DDC
+  [ -1] +0x190BFE8  0x006A203A006A1DE0  0x6A203A006A1DE0
+  [ +0] +0x190BFF0  0x006A20400140D130  0x6A20400140D130 <- HEAD
+  [ +1] +0x190BFF8  0x0140D2A4006A23AC  0x140D2A4006A23AC
+  [ +2] +0x190C000  0x006A24F0006A23B0  0x6A24F0006A23B0
+
+--- Region 3 around +0x190C00C table dump @ +0x190C008 (window: -2..+3 qwords) ---
+  [ -2] +0x190BFF8  0x0140D2A4006A23AC  0x140D2A4006A23AC
+  [ -1] +0x190C000  0x006A24F0006A23B0  0x6A24F0006A23B0
+  [ +0] +0x190C008  0x006A24F00140D494  0x6A24F00140D494 <- HEAD
+  [ +1] +0x190C010  0x0140D248006A2608  0x140D248006A2608
+  [ +2] +0x190C018  0x006A2822006A2610  0x6A2822006A2610
+
+--- Region 3 around +0x190C018 table dump @ +0x190C018 (window: -2..+3 qwords) ---
+  [ -2] +0x190C008  0x006A24F00140D494  0x6A24F00140D494
+  [ -1] +0x190C010  0x0140D248006A2608  0x140D248006A2608
+  [ +0] +0x190C018  0x006A2822006A2610  0x6A2822006A2610 <- HEAD
+  [ +1] +0x190C020  0x006A28300140D3C8  0x6A28300140D3C8
+  [ +2] +0x190C028  0x0140D1EC006A2948  0x140D1EC006A2948
+
+======================================================================
+Code refs to Region 1 table head and individual entries
+======================================================================
+
+  Code-side qword refs to 0x141113318:
+
+  Code-side qword refs to 0x141113320:
+
+  Code-side qword refs to 0x141113328:
+
+  Code-side qword refs to 0x141113330:
+
+  Code-side qword refs to 0x141113338:
+
+  Code-side qword refs to 0x141113340:
+
+  Code-side qword refs to 0x141113348:
+
+  Code-side qword refs to 0x141113350:
+
+  Code-side qword refs to 0x141113358:
+
+  Code-side qword refs to 0x141113360:
+
+Guess at table head offsets (from various candidates):
+  if head = +0x1113318:
+    RequestSummonSign         = head + 0x38
+    RequestRemoveSign         = head + 0x20
+    RequestGetSignList        = head + 0x28
+    RequestCreateSign         = head + 0x8
+  if head = +0x1113310:
+    RequestSummonSign         = head + 0x40
+    RequestRemoveSign         = head + 0x28
+    RequestGetSignList        = head + 0x30
+    RequestCreateSign         = head + 0x10
+  if head = +0x1113308:
+    RequestSummonSign         = head + 0x48
+    RequestRemoveSign         = head + 0x30
+    RequestGetSignList        = head + 0x38
+    RequestCreateSign         = head + 0x18
+  if head = +0x1113300:
+    RequestSummonSign         = head + 0x50
+    RequestRemoveSign         = head + 0x38
+    RequestGetSignList        = head + 0x40
+    RequestCreateSign         = head + 0x20
+  if head = +0x11132F8:
+    RequestSummonSign         = head + 0x58
+    RequestRemoveSign         = head + 0x40
+    RequestGetSignList        = head + 0x48
+    RequestCreateSign         = head + 0x28
+  if head = +0x11132F0:
+    RequestSummonSign         = head + 0x60
+    RequestRemoveSign         = head + 0x48
+    RequestGetSignList        = head + 0x50
+    RequestCreateSign         = head + 0x30
+
+======================================================================
+Done.
+======================================================================
