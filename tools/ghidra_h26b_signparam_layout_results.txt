@@ -1,0 +1,83 @@
+==============================================================================
+H-26 Plan B task #2 stage 3: param layout + ctrl singleton
+==============================================================================
+
+### A. Callers of FUN_140213AC0 = TSignSet push_back_default ###
+    target VA: 0x140213AC0
+    Found 0 CALL E8 sites
+
+
+### B. Code refs to SignManager ctor FUN_140210950 (LEA-RIP) ###
+    target VA: 0x140210950
+    Found 0 LEA-RIP refs
+
+
+### C. Code refs to SummonSignSetCtrl ctor FUN_140212B30 (CALL E8) ###
+    target VA: 0x140212B30
+    Found 1 CALL sites
+
+  call @ 14020fe34 (+0x20FE34) in FUN_14020fdb0 @ +0x20FDB0
+    pre-CALL (RCX setup for ctor)  start=14020fdf8
+
+
+### D. qword refs to SignManager vtable 0x1410CB668 ###
+    Found 0 qword refs in DATA sections
+
+
+### E. FUN_14020E6F0 (TSignSet::find by key) ###
+    FUN_14020E6F0  start=14020e6f0
+      14020e6f0 (+0x20E6F0)  MOV      qword ptr [RSP + 0x8], RBX
+      14020e6f5 (+0x20E6F5)  MOV      qword ptr [RSP + 0x10], RSI
+      14020e6fa (+0x20E6FA)  MOV      qword ptr [RSP + 0x18], RDI
+      14020e6ff (+0x20E6FF)  PUSH     R14
+      14020e701 (+0x20E701)  SUB      RSP, 0x20
+      14020e705 (+0x20E705)  MOV      RAX, qword ptr [RCX]
+      14020e708 (+0x20E708)  MOV      R14, RDX
+      14020e70b (+0x20E70B)  MOV      RSI, RCX
+      14020e70e (+0x20E70E)  CALL     qword ptr [RAX + 0x18]
+      14020e711 (+0x20E711)  XOR      EBX, EBX
+      14020e713 (+0x20E713)  MOV      EDI, EAX
+      14020e715 (+0x20E715)  TEST     EAX, EAX
+      14020e717 (+0x20E717)  JZ       0x14020e744
+      14020e719 (+0x20E719)  NOP      dword ptr [RAX]
+      14020e720 (+0x20E720)  MOV      R8, qword ptr [RSI]
+      14020e723 (+0x20E723)  MOV      EDX, EBX
+      14020e725 (+0x20E725)  MOV      RCX, RSI
+      14020e728 (+0x20E728)  CALL     qword ptr [R8 + 0x10]
+      14020e72c (+0x20E72C)  MOV      ECX, dword ptr [RAX + 0x14]
+      14020e72f (+0x20E72F)  SHR      ECX, 0x1f
+      14020e732 (+0x20E732)  TEST     CL, 0x1
+      14020e735 (+0x20E735)  JZ       0x14020e73e
+      14020e737 (+0x20E737)  MOV      ECX, dword ptr [R14]
+      14020e73a (+0x20E73A)  CMP      dword ptr [RAX], ECX
+      14020e73c (+0x20E73C)  JZ       0x14020e746
+      14020e73e (+0x20E73E)  INC      EBX
+      14020e740 (+0x20E740)  CMP      EBX, EDI
+      14020e742 (+0x20E742)  JC       0x14020e720
+      14020e744 (+0x20E744)  XOR      EAX, EAX
+      14020e746 (+0x20E746)  MOV      RBX, qword ptr [RSP + 0x30]
+      14020e74b (+0x20E74B)  MOV      RSI, qword ptr [RSP + 0x38]
+      14020e750 (+0x20E750)  MOV      RDI, qword ptr [RSP + 0x40]
+      14020e755 (+0x20E755)  ADD      RSP, 0x20
+      14020e759 (+0x20E759)  POP      R14
+      14020e75b (+0x20E75B)  RET      
+
+
+### F. FUN_14020CB20 (SummonSignParam default-init) ###
+    FUN_14020CB20  start=14020cb20
+      14020cb20 (+0x20CB20)  XOR      EDX, EDX
+      14020cb22 (+0x20CB22)  MOV      qword ptr [RCX], RDX
+      14020cb25 (+0x20CB25)  MOV      qword ptr [RCX + 0xc], RDX
+      14020cb29 (+0x20CB29)  MOV      EAX, dword ptr [RCX + 0x18]
+      14020cb2c (+0x20CB2C)  AND      EAX, 0xffe001ff
+      14020cb31 (+0x20CB31)  MOV      byte ptr [RCX + 0x14], DL
+      14020cb34 (+0x20CB34)  AND      dword ptr [RCX + 0x14], 0xff
+      14020cb3b (+0x20CB3B)  OR       EAX, 0x1ff
+      14020cb40 (+0x20CB40)  MOV      dword ptr [RCX + 0x18], EAX
+      14020cb43 (+0x20CB43)  MOV      dword ptr [RCX + 0x8], EDX
+      14020cb46 (+0x20CB46)  MOV      RAX, RCX
+      14020cb49 (+0x20CB49)  RET      
+
+==============================================================================
+Done.
+==============================================================================

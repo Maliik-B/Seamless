@@ -39,6 +39,7 @@
 #include "../../include/session.h"
 #include "../../include/utils.h"
 #include "../../include/mod.h"
+#include "../../include/features/sign_sync.h"
 
 using namespace DS2Coop::Utils;
 using namespace DS2Coop::Hooks;
@@ -310,6 +311,38 @@ static HRESULT STDMETHODCALLTYPE HookedPresent(IDXGISwapChain* swapChain, UINT s
                 else   LOG_ERROR("H-20: CreateThread failed — emergency disable did not run");
             }
             s_chordWasDown = chordDown;
+        }
+    }
+
+    // H-26 Plan B task #2 smoke-test hotkey: Ctrl+Shift+S.
+    // Retry-friendly: locks only after a SUCCESSFUL push_back, not after
+    // any press. Calls SignSync::AllocateRawSign() to validate the
+    // SignManager pointer-chain at runtime. The resolver is lazy + re-tries
+    // on each press; press repeatedly while loading into a save until a
+    // non-null entry comes back. After a successful push, the hotkey
+    // self-locks to avoid pushing past the TSignSet's small capacity
+    // (6 for the [+0x18] set, 20 for [+0x20]). Restart the game to retest.
+    {
+        static bool s_smokeSucceeded = false;
+        static bool s_smokeWasDown   = false;
+
+        if (!s_smokeSucceeded) {
+            bool ctrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+            bool shift = (GetAsyncKeyState(VK_SHIFT)   & 0x8000) != 0;
+            bool sKey  = (GetAsyncKeyState('S')         & 0x8000) != 0;
+            bool down  = ctrl && shift && sKey;
+
+            if (down && !s_smokeWasDown) {
+                LOG_INFO("H-26 Plan B smoke: Ctrl+Shift+S pressed -- invoking SignSync");
+                void* entry = DS2Coop::Features::SignSync::GetInstance().AllocateRawSign();
+                if (entry) {
+                    LOG_INFO("H-26 Plan B smoke: AllocateRawSign returned %p (locked; restart to retest)", entry);
+                    s_smokeSucceeded = true;
+                } else {
+                    LOG_WARNING("H-26 Plan B smoke: AllocateRawSign returned null -- can retry once you're loaded into a save");
+                }
+            }
+            s_smokeWasDown = down;
         }
     }
 

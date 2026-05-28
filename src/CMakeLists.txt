@@ -1,9 +1,11 @@
 add_library(ds2_seamless_coop SHARED
     core/dllmain.cpp
     core/mod.cpp
+    features/sign_sync.cpp
     hooks/session_hooks.cpp
     hooks/network_hooks.cpp
     hooks/game_state_hooks.cpp
+    hooks/sign_telemetry_hooks.cpp
     network/peer_manager.cpp
     network/packet_handler.cpp
     session/session_manager.cpp

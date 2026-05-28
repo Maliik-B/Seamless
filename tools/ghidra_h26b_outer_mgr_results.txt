@@ -1,0 +1,350 @@
+==============================================================================
+H-26 Plan B stage 3d: outer service-manager hunt
+==============================================================================
+
+### A. E8 callers of FUN_1401BD7F0 (the outer-mgr method that
+    allocates SignManager) ###
+    Found 0 callers
+
+
+### B. Known service-mgr globals (qword dumps) ###
+
+  GameManagerImp (used by PR #9) @ 0x1416148F0
+    qword [0x1416148F0] = 0x0
+
+  ServiceMgr alt (FUN_1401BD7F0 prologue) @ 0x1416751F8
+    qword [0x1416751F8] = 0x0
+
+  Inner-service container (PR #9 dispatch) @ 0x141616CF8
+    qword [0x141616CF8] = 0x0
+
+
+### C. `MOV reg, [reg + 0x90]` sites near a global-load ###
+    (limit: 50 sites; might be noisy)
+
+  +0x15BF4  in FUN_140015bb0 @ +0x15BB0
+
+  --- preceding  (+0x15BD6) ---
+  (enclosing FUN_140015bb0 @ 140015bb0..140015c65)
+
+  +0x15E0E  in FUN_140015d90 @ +0x15D90
+
+  --- preceding  (+0x15DF0) ---
+  (enclosing FUN_140015d90 @ 140015d90..140015e5f)
+    140015df0 (+0x15DF0)  MOV      RAX, qword ptr [RDI + 0x98]
+    140015df7 (+0x15DF7)  MOVSS    XMM0, dword ptr [RDI + 0xa8]
+    140015dff (+0x15DFF)  MOV      RCX, qword ptr [RBX + 0x8]
+    140015e03 (+0x15E03)  MOVSS    dword ptr [RSP + 0x40], XMM0
+    140015e09 (+0x15E09)  MOV      qword ptr [RSP + 0x38], RAX
+    140015e0e (+0x15E0E)  MOV      RAX, qword ptr [RDI + 0x90]
+    140015e15 (+0x15E15)  MOV      qword ptr [RSP + 0x30], RAX
+    140015e1a (+0x15E1A)  MOV      R9D, R14D
+
+  +0x15EC4  in FUN_140015e60 @ +0x15E60
+
+  --- preceding  (+0x15EA6) ---
+  (enclosing FUN_140015e60 @ 140015e60..14001602e)
+
+  +0x15ED7  in FUN_140015e60 @ +0x15E60
+
+  --- preceding  (+0x15EB9) ---
+  (enclosing FUN_140015e60 @ 140015e60..14001602e)
+
+  +0x1D927  in FUN_14001d5a0 @ +0x1D5A0
+
+  --- preceding  (+0x1D909) ---
+  (enclosing FUN_14001d5a0 @ 14001d5a0..14001d984)
+
+  +0x283A2  in FUN_1400281b0 @ +0x281B0
+
+  --- preceding  (+0x28384) ---
+  (enclosing FUN_1400281b0 @ 1400281b0..14002854e)
+
+  +0x283CF  in FUN_1400281b0 @ +0x281B0
+
+  --- preceding  (+0x283B1) ---
+  (enclosing FUN_1400281b0 @ 1400281b0..14002854e)
+
+  +0x2AD7C  in FUN_14002ad60 @ +0x2AD60
+
+  --- preceding  (+0x2AD5E) ---
+
+  +0x42B74  in FUN_1400423b0 @ +0x423B0
+
+  --- preceding  (+0x42B56) ---
+  (enclosing FUN_1400423b0 @ 1400423b0..140042cf3)
+
+  +0x51AEC  in FUN_140051ad0 @ +0x51AD0
+
+  --- preceding  (+0x51ACE) ---
+
+  +0x5208E  in FUN_140051f90 @ +0x51F90
+
+  --- preceding  (+0x52070) ---
+  (enclosing FUN_140051f90 @ 140051f90..1400520cc)
+
+  +0x643F3  in FUN_140063190 @ +0x63190
+
+  --- preceding  (+0x643D5) ---
+  (enclosing FUN_140063190 @ 140063190..14006455e)
+
+  +0x97EF1  in FUN_140097b50 @ +0x97B50
+
+  --- preceding  (+0x97ED3) ---
+  (enclosing FUN_140097b50 @ 140097b50..140098209)
+
+  +0xA15B3  in FUN_1400a0eb0 @ +0xA0EB0
+
+  --- preceding  (+0xA1595) ---
+  (enclosing FUN_1400a0eb0 @ 1400a0eb0..1400a23d8)
+
+  +0xA220F  in FUN_1400a0eb0 @ +0xA0EB0
+
+  --- preceding  (+0xA21F1) ---
+  (enclosing FUN_1400a0eb0 @ 1400a0eb0..1400a23d8)
+
+  +0xB1489  in (no func) @ ?
+
+  --- preceding  (+0xB146B) ---
+  (enclosing FUN_1400b07f0 @ 1400b07f0..1400b1483)
+
+  +0xBC911  in FUN_1400bc850 @ +0xBC850
+
+  --- preceding  (+0xBC8F3) ---
+  (enclosing FUN_1400bc850 @ 1400bc850..1400bcb98)
+    1400bc8f3 (+0xBC8F3)  CALL     0x140038350
+    1400bc8f8 (+0xBC8F8)  LEA      RCX, [R14 + 0x390]
+    1400bc8ff (+0xBC8FF)  MOV      RDX, RAX
+    1400bc902 (+0xBC902)  CALL     0x1400297d0
+    1400bc907 (+0xBC907)  CMP      qword ptr [RBP + 0x88], 0x8
+    1400bc90f (+0xBC90F)  JC       0x1400bc922
+    1400bc911 (+0xBC911)  MOV      RCX, qword ptr [RBP + 0x90]
+    1400bc918 (+0xBC918)  MOV      RDX, qword ptr [RBP + 0x70]
+
+  +0xCE941  in FUN_1400ce8c0 @ +0xCE8C0
+
+  --- preceding  (+0xCE923) ---
+  (enclosing FUN_1400ce8c0 @ 1400ce8c0..1400cedb2)
+
+  +0xCE951  in FUN_1400ce8c0 @ +0xCE8C0
+
+  --- preceding  (+0xCE933) ---
+  (enclosing FUN_1400ce8c0 @ 1400ce8c0..1400cedb2)
+
+  +0xCEC6A  in FUN_1400ce8c0 @ +0xCE8C0
+
+  --- preceding  (+0xCEC4C) ---
+  (enclosing FUN_1400ce8c0 @ 1400ce8c0..1400cedb2)
+
+  +0xDD23A  in FUN_1400dd100 @ +0xDD100
+
+  --- preceding  (+0xDD21C) ---
+  (enclosing FUN_1400dd100 @ 1400dd100..1400dd2c7)
+
+  +0xDEE15  in FUN_1400decd0 @ +0xDECD0
+
+  --- preceding  (+0xDEDF7) ---
+  (enclosing FUN_1400decd0 @ 1400decd0..1400dee98)
+    1400dedf7 (+0xDEDF7)  ADD      R8, RDX
+    1400dedfa (+0xDEDFA)  XOR      EDX, EDX
+    1400dedfc (+0xDEDFC)  MOV      qword ptr [RSP + R8*0x1 + 0x40], RAX
+    1400dee01 (+0xDEE01)  LEA      R8D, [RDX + 0x1]
+    1400dee05 (+0xDEE05)  CALL     0x1400dd820
+    1400dee0a (+0xDEE0A)  MOV      RDX, RSI
+    1400dee0d (+0xDEE0D)  MOV      RCX, RAX
+    1400dee10 (+0xDEE10)  CALL     0x1400ddff0
+
+  +0xDFA5E  in FUN_1400df8d0 @ +0xDF8D0
+
+  --- preceding  (+0xDFA40) ---
+  (enclosing FUN_1400df8d0 @ 1400df8d0..1400dfaf2)
+    1400dfa40 (+0xDFA40)  CALL     0x1400dd820
+    1400dfa45 (+0xDFA45)  XOR      EDX, EDX
+    1400dfa47 (+0xDFA47)  LEA      R8D, [RDX + 0xa]
+    1400dfa4b (+0xDFA4B)  MOV      RCX, RAX
+    1400dfa4e (+0xDFA4E)  CALL     0x1400dd820
+    1400dfa53 (+0xDFA53)  MOV      RDX, RSI
+    1400dfa56 (+0xDFA56)  MOV      RCX, RAX
+    1400dfa59 (+0xDFA59)  CALL     0x1400ddff0
+
+  +0xE9CCE  in FUN_1400e9a70 @ +0xE9A70
+
+  --- preceding  (+0xE9CB0) ---
+  (enclosing FUN_1400e9a70 @ 1400e9a70..1400e9cf4)
+
+  +0x10D511  in FUN_14010d500 @ +0x10D500
+
+  --- preceding  (+0x10D4F3) ---
+  (enclosing FUN_14010d450 @ 14010d450..14010d4fe)
+
+  +0x10D57A  in FUN_14010d570 @ +0x10D570
+
+  --- preceding  (+0x10D55C) ---
+  (enclosing FUN_14010d500 @ 14010d500..14010d56c)
+
+  +0x10D877  in FUN_14010d860 @ +0x10D860
+
+  --- preceding  (+0x10D859) ---
+
+  +0x11102E  in (no func) @ ?
+
+  --- preceding  (+0x111010) ---
+
+  +0x111649  in (no func) @ ?
+
+  --- preceding  (+0x11162B) ---
+
+  +0x1126E1  in (no func) @ ?
+
+  --- preceding  (+0x1126C3) ---
+
+  +0x114E9B  in (no func) @ ?
+
+  --- preceding  (+0x114E7D) ---
+
+  +0x11CD3D  in FUN_14011ccf0 @ +0x11CCF0
+
+  --- preceding  (+0x11CD1F) ---
+  (enclosing FUN_14011ccf0 @ 14011ccf0..14011d39e)
+
+  +0x11DE44  in FUN_14011de10 @ +0x11DE10
+
+  --- preceding  (+0x11DE26) ---
+  (enclosing FUN_14011de10 @ 14011de10..14011e31e)
+
+  +0x124850  in FUN_140124830 @ +0x124830
+
+  --- preceding  (+0x124832) ---
+  (enclosing FUN_140124830 @ 140124830..1401248c1)
+
+  +0x134F63  in FUN_140134eb0 @ +0x134EB0
+
+  --- preceding  (+0x134F45) ---
+  (enclosing FUN_140134eb0 @ 140134eb0..1401353d6)
+    140134f45 (+0x134F45)  MOV      RDX, qword ptr [RBX + 0x8]
+    140134f49 (+0x134F49)  LEA      RCX, [RSP + 0x30]
+    140134f4e (+0x134F4E)  CALL     0x14014eca0
+    140134f53 (+0x134F53)  MOVSX    RCX, byte ptr [RAX]
+    140134f57 (+0x134F57)  LEA      RAX, [RCX + RCX*0x4]
+    140134f5b (+0x134F5B)  CMP      byte ptr [RAX + R13*0x1 + 0x1], 0x3
+    140134f61 (+0x134F61)  JNZ      0x140134f98
+    140134f63 (+0x134F63)  MOV      RDX, qword ptr [RDI + 0x90]
+
+  +0x134F84  in FUN_140134eb0 @ +0x134EB0
+
+  --- preceding  (+0x134F66) ---
+  (enclosing FUN_140134eb0 @ 140134eb0..1401353d6)
+
+  +0x139089  in FUN_140138d50 @ +0x138D50
+
+  --- preceding  (+0x13906B) ---
+  (enclosing FUN_140138d50 @ 140138d50..140139153)
+    14013906b (+0x13906B)  MOV      RCX, qword ptr [RSP + 0x48]
+    140139070 (+0x139070)  MOV      RDX, qword ptr [RDI + 0x70]
+    140139074 (+0x139074)  MOV      RAX, qword ptr [RCX]
+    140139077 (+0x139077)  CALL     qword ptr [RAX + 0x1b8]
+    14013907d (+0x13907D)  MULSS    XMM6, XMM0
+    140139081 (+0x139081)  MULSS    XMM6, dword ptr [RBX + 0x79c]
+    140139089 (+0x139089)  MOV      RAX, qword ptr [RSI + 0x90]
+    140139090 (+0x139090)  MOVSS    XMM2, dword ptr [0x1410acb08]
+
+  +0x1391AE  in FUN_140139160 @ +0x139160
+
+  --- preceding  (+0x139190) ---
+  (enclosing FUN_140139160 @ 140139160..140139200)
+    140139190 (+0x139190)  MOV      RAX, qword ptr [RSP + 0x50]
+    140139195 (+0x139195)  MOV      RDX, qword ptr [RCX]
+    140139198 (+0x139198)  MOVD     XMM1, dword ptr [RAX + 0x34]
+    14013919d (+0x13919D)  CVTDQ2PS XMM1, XMM1
+    1401391a0 (+0x1391A0)  CALL     qword ptr [RDX + 0x188]
+    1401391a6 (+0x1391A6)  MOVSX    EAX, byte ptr [RBX + 0x70]
+    1401391aa (+0x1391AA)  MOVD     XMM1, EAX
+    1401391ae (+0x1391AE)  MOV      RAX, qword ptr [RBX + 0x90]
+
+  +0x1392A9  in FUN_140139210 @ +0x139210
+
+  --- preceding  (+0x13928B) ---
+  (enclosing FUN_140139210 @ 140139210..14013933d)
+    14013928b (+0x13928B)  JMP      0x140139299
+    14013928d (+0x13928D)  CMP      dword ptr [R8 + 0xc], 0x2
+    140139292 (+0x139292)  JNZ      0x1401392a9
+    140139294 (+0x139294)  MOV      EDX, 0xfffffffe
+    140139299 (+0x139299)  MOV      RAX, qword ptr [RCX]
+    14013929c (+0x13929C)  CALL     qword ptr [RAX + 0x1f0]
+    1401392a2 (+0x1392A2)  MOVAPS   XMM7, XMM6
+    1401392a5 (+0x1392A5)  SUBSS    XMM7, XMM0
+
+  +0x14FADF  in FUN_14014f6a0 @ +0x14F6A0
+
+  --- preceding  (+0x14FAC1) ---
+  (enclosing FUN_14014f6a0 @ 14014f6a0..14014fb67)
+
+  +0x1530EF  in FUN_1401530e0 @ +0x1530E0
+
+  --- preceding  (+0x1530D1) ---
+  (enclosing FUN_140152f50 @ 140152f50..1401530df)
+
+  +0x169413  in FUN_1401688e0 @ +0x1688E0
+
+  --- preceding  (+0x1693F5) ---
+  (enclosing FUN_1401688e0 @ 1401688e0..1401694c9)
+
+  +0x17BE45  in FUN_14017be30 @ +0x17BE30
+
+  --- preceding  (+0x17BE27) ---
+  (enclosing FUN_14017bd90 @ 14017bd90..14017be29)
+
+  +0x1BDF57  in FUN_1401bdda0 @ +0x1BDDA0
+
+  --- preceding  (+0x1BDF39) ---
+  (enclosing FUN_1401bdda0 @ 1401bdda0..1401be126)
+
+  +0x1BF767  in (no func) @ ?
+
+  --- preceding  (+0x1BF749) ---
+
+  +0x1BFBBF  in (no func) @ ?
+
+  --- preceding  (+0x1BFBA1) ---
+    1401bfba1 (+0x1BFBA1)  MOV      RDX, RBP
+    1401bfba4 (+0x1BFBA4)  CALL     0x14040d2e0
+    1401bfba9 (+0x1BFBA9)  MOV      RCX, qword ptr [RSI + 0x78]
+    1401bfbad (+0x1BFBAD)  MOV      R9D, 0x1
+    1401bfbb3 (+0x1BFBB3)  LEA      R8D, [R9 + 0x5]
+    1401bfbb7 (+0x1BFBB7)  MOV      RDX, RBP
+    1401bfbba (+0x1BFBBA)  CALL     0x14040d2e0
+    1401bfbbf (+0x1BFBBF)  MOV      RCX, qword ptr [RSI + 0x90]
+
+  +0x1D0D1E  in FUN_1401d0cf0 @ +0x1D0CF0
+
+  --- preceding  (+0x1D0D00) ---
+  (enclosing FUN_1401d0cf0 @ 1401d0cf0..1401d0d5a)
+    1401d0d00 (+0x1D0D00)  ADD      RCX, 0xb0
+    1401d0d07 (+0x1D0D07)  MOV      qword ptr [RCX + -0xb0], RAX
+    1401d0d0e (+0x1D0D0E)  LEA      RAX, [0x1410c64b0]
+    1401d0d15 (+0x1D0D15)  MOV      qword ptr [RCX + -0x80], RAX
+    1401d0d19 (+0x1D0D19)  CALL     0x14014b3b0
+    1401d0d1e (+0x1D0D1E)  MOV      RDX, qword ptr [RBX + 0x90]
+    1401d0d25 (+0x1D0D25)  TEST     RDX, RDX
+    1401d0d28 (+0x1D0D28)  JZ       0x1401d0d4e
+
+  +0x1EA6DE  in FUN_1401ea6b0 @ +0x1EA6B0
+
+  --- preceding  (+0x1EA6C0) ---
+  (enclosing FUN_1401ea6b0 @ 1401ea6b0..1401ea6fa)
+
+  +0x1EA75A  in FUN_1401ea730 @ +0x1EA730
+
+  --- preceding  (+0x1EA73C) ---
+  (enclosing FUN_1401ea730 @ 1401ea730..1401ea795)
+
+  +0x1EDD47  in FUN_1401edd20 @ +0x1EDD20
+
+  --- preceding  (+0x1EDD29) ---
+  (enclosing FUN_1401edd20 @ 1401edd20..1401edd8b)
+
+  Total +0x90 hits across all exec blocks: 50 (showed first 50)
+
+==============================================================================
+Done.
+==============================================================================

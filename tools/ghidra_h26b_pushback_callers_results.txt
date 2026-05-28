@@ -1,0 +1,43 @@
+==============================================================================
+H-26 Plan B stage 4: SummonSignParam field-offset xref hunt
+==============================================================================
+
+==============================================================================
+TSignSet::push_back_default (FUN_140213AC0) @ +0x213AC0
+==============================================================================
+target function: FUN_140213ac0
+found 0 call/jump refs
+(no callers found -- either analysis didn't populate xrefs, or
+ this function is only reached via vtable dispatch with type info
+ the analyzer couldn't resolve)
+
+==============================================================================
+TSignSet vtable slot[5] copy-spawn (FUN_140213DD0) @ +0x213DD0
+==============================================================================
+target function: FUN_140213dd0
+found 0 call/jump refs
+(no callers found -- either analysis didn't populate xrefs, or
+ this function is only reached via vtable dispatch with type info
+ the analyzer couldn't resolve)
+
+==============================================================================
+SummonSignSetCtrl::FindOrAdd (FUN_140212D30) @ +0x212D30
+==============================================================================
+target function: FUN_140212d30
+found 0 call/jump refs
+(no callers found -- either analysis didn't populate xrefs, or
+ this function is only reached via vtable dispatch with type info
+ the analyzer couldn't resolve)
+
+==============================================================================
+LEA-RIP refs to TSignSet<SummonSignParam> vtable @ exe+0x10CB7E8
+==============================================================================
+found 4 refs
+  ref @ 140212ae5 (+0x212AE5) in FUN_140212ac0 @ +0x212AC0
+  ref @ 140212af4 (+0x212AF4) in FUN_140212ac0 @ +0x212AC0
+  ref @ 140212c80 (+0x212C80) in FUN_140212c70 @ +0x212C70
+  ref @ 140212c8a (+0x212C8A) in FUN_140212c70 @ +0x212C70
+
+==============================================================================
+Done.
+==============================================================================

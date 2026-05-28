@@ -100,6 +100,15 @@ bool SeamlessCoopMod::Initialize() {
     }
 
     // ================================================================
+    // STEP 3b (H-26 Plan B task #2): sign-telemetry hooks. Install BEFORE
+    // the game starts spawning signs so we don't miss the first organic
+    // calls. Logs caller PC + struct contents for the first 5 fires per
+    // function, then suppresses. Used to nail down SummonSignParam field
+    // offsets empirically.
+    // ================================================================
+    Hooks::SignTelemetryHooks::Install();
+
+    // ================================================================
     // STEP 4: Install Winsock hooks + server redirect
     // ================================================================
     LOG_INFO("[4/7] Installing Winsock hooks...");

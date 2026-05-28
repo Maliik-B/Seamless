@@ -1,0 +1,230 @@
+==============================================================================
+H-26 Plan B stage 5: FindOrAdd full body + receive-handler bodies
+==============================================================================
+
+==============================================================================
+SummonSignSetCtrl::FindOrAdd (FUN_140212D30) @ +0x212D30
+==============================================================================
+entry=140212d30 body-min=140212d30 body-max=140212f47 size=0x218
+  140212d30 (+0x212D30)  PUSH     RBP
+  140212d32 (+0x212D32)  PUSH     RBX
+  140212d33 (+0x212D33)  PUSH     RSI
+  140212d34 (+0x212D34)  PUSH     RDI
+  140212d35 (+0x212D35)  PUSH     R14
+  140212d37 (+0x212D37)  LEA      RBP, [RSP + -0x37]
+  140212d3c (+0x212D3C)  SUB      RSP, 0xa0
+  140212d43 (+0x212D43)  MOV      RAX, qword ptr [0x1415e1c50]
+  140212d4a (+0x212D4A)  XOR      RAX, RSP
+  140212d4d (+0x212D4D)  MOV      qword ptr [RBP + 0x27], RAX
+  140212d51 (+0x212D51)  MOV      EBX, dword ptr [RDX]
+  140212d53 (+0x212D53)  MOV      RSI, RCX
+  140212d56 (+0x212D56)  MOV      RCX, qword ptr [RCX + 0x18]
+  140212d5a (+0x212D5A)  MOV      R14, RDX
+  140212d5d (+0x212D5D)  LEA      RDX, [RBP + -0x49]
+  140212d61 (+0x212D61)  MOV      dword ptr [RBP + -0x49], EBX
+  140212d64 (+0x212D64)  CALL     0x14020e6f0
+  140212d69 (+0x212D69)  MOV      RDI, RAX
+  140212d6c (+0x212D6C)  TEST     RAX, RAX
+  140212d6f (+0x212D6F)  JNZ      0x140212d8d
+  140212d71 (+0x212D71)  MOV      RCX, qword ptr [RSI + 0x20]
+  140212d75 (+0x212D75)  LEA      RDX, [RBP + -0x45]
+  140212d79 (+0x212D79)  MOV      dword ptr [RBP + -0x45], EBX
+  140212d7c (+0x212D7C)  CALL     0x14020e6f0
+  140212d81 (+0x212D81)  MOV      RDI, RAX
+  140212d84 (+0x212D84)  TEST     RAX, RAX
+  140212d87 (+0x212D87)  JZ       0x140212f2e
+  140212d8d (+0x212D8D)  MOV      RAX, qword ptr [0x1416148f0]
+  140212d94 (+0x212D94)  MOV      qword ptr [RSP + 0xe8], R15
+  140212d9c (+0x212D9C)  MOV      R15, qword ptr [RAX + 0x22e0]
+  140212da3 (+0x212DA3)  TEST     R15, R15
+  140212da6 (+0x212DA6)  JZ       0x140212ed3
+  140212dac (+0x212DAC)  MOV      EAX, dword ptr [RDI]
+  140212dae (+0x212DAE)  SHR      EAX, 0x1e
+  140212db1 (+0x212DB1)  CMP      EAX, 0x1
+  140212db4 (+0x212DB4)  JNZ      0x140212dfa
+  140212db6 (+0x212DB6)  LEA      RDX, [RBP + -0x39]
+  140212dba (+0x212DBA)  MOV      RCX, RDI
+  140212dbd (+0x212DBD)  CALL     0x140212990
+  140212dc2 (+0x212DC2)  CMP      qword ptr [RAX + 0x18], 0x8
+  140212dc7 (+0x212DC7)  JC       0x140212dcc
+  140212dc9 (+0x212DC9)  MOV      RAX, qword ptr [RAX]
+  140212dcc (+0x212DCC)  MOVZX    R8D, byte ptr [RDI + 0x28]
+  140212dd1 (+0x212DD1)  MOV      RDX, RAX
+  140212dd4 (+0x212DD4)  MOV      RCX, R15
+  140212dd7 (+0x212DD7)  CALL     0x1405011b0
+  140212ddc (+0x212DDC)  CMP      qword ptr [RBP + -0x21], 0x8
+  140212de1 (+0x212DE1)  JC       0x140212f1e
+  140212de7 (+0x212DE7)  MOV      RCX, qword ptr [RBP + -0x19]
+  140212deb (+0x212DEB)  MOV      RDX, qword ptr [RBP + -0x39]
+  140212def (+0x212DEF)  MOV      RAX, qword ptr [RCX]
+  140212df2 (+0x212DF2)  CALL     qword ptr [RAX + 0x68]
+  140212df5 (+0x212DF5)  JMP      0x140212f1e
+  140212dfa (+0x212DFA)  CMP      EAX, 0x2
+  140212dfd (+0x212DFD)  JNZ      0x140212ec3
+  140212e03 (+0x212E03)  LEA      RDX, [RBP + -0x39]
+  140212e07 (+0x212E07)  MOV      RCX, RDI
+  140212e0a (+0x212E0A)  MOV      qword ptr [RSP + 0xe0], R13
+  140212e12 (+0x212E12)  CALL     0x140212990
+  140212e17 (+0x212E17)  CMP      qword ptr [RBP + -0x21], 0x8
+  140212e1c (+0x212E1C)  LEA      RDX, [RBP + -0x39]
+  140212e20 (+0x212E20)  CMOVNC   RDX, qword ptr [RBP + -0x39]
+  140212e25 (+0x212E25)  LEA      RCX, [RBP + -0x9]
+  140212e29 (+0x212E29)  CALL     0x1402d9190
+  140212e2e (+0x212E2E)  MOV      R13, RAX
+  140212e31 (+0x212E31)  MOVZX    ECX, byte ptr [RAX + 0x28]
+  140212e35 (+0x212E35)  LEA      RAX, [RBP + -0x39]
+  140212e39 (+0x212E39)  MOV      byte ptr [RBP + -0x11], CL
+  140212e3c (+0x212E3C)  CMP      RAX, R13
+  140212e3f (+0x212E3F)  JZ       0x140212e6b
+  140212e41 (+0x212E41)  MOV      RCX, qword ptr [R13 + 0x20]
+  140212e45 (+0x212E45)  MOV      RBX, qword ptr [RBP + -0x19]
+  140212e49 (+0x212E49)  MOV      RDX, qword ptr [RCX]
+  140212e4c (+0x212E4C)  CALL     qword ptr [RDX + 0x8]
+  140212e4f (+0x212E4F)  MOV      RDX, qword ptr [RBX]
+  140212e52 (+0x212E52)  MOV      RCX, RBX
+  140212e55 (+0x212E55)  CALL     qword ptr [RDX + 0x8]
+  140212e58 (+0x212E58)  LEA      RCX, [RBP + -0x39]
+  140212e5c (+0x212E5C)  OR       R9, -0x1
+  140212e60 (+0x212E60)  XOR      R8D, R8D
+  140212e63 (+0x212E63)  MOV      RDX, R13
+  140212e66 (+0x212E66)  CALL     0x140025f60
+  140212e6b (+0x212E6B)  CMP      qword ptr [RBP + 0xf], 0x8
+  140212e70 (+0x212E70)  MOV      R13, qword ptr [RSP + 0xe0]
+  140212e78 (+0x212E78)  JC       0x140212e88
+  140212e7a (+0x212E7A)  MOV      RCX, qword ptr [RBP + 0x17]
+  140212e7e (+0x212E7E)  MOV      RDX, qword ptr [RBP + -0x9]
+  140212e82 (+0x212E82)  MOV      RAX, qword ptr [RCX]
+  140212e85 (+0x212E85)  CALL     qword ptr [RAX + 0x68]
+  140212e88 (+0x212E88)  CMP      qword ptr [RBP + -0x21], 0x8
+  140212e8d (+0x212E8D)  MOVZX    R9D, byte ptr [RDI + 0x28]
+  140212e92 (+0x212E92)  LEA      R8, [RBP + -0x39]
+  140212e96 (+0x212E96)  CMOVNC   R8, qword ptr [RBP + -0x39]
+  140212e9b (+0x212E9B)  MOV      RDX, R14
+  140212e9e (+0x212E9E)  MOV      RCX, R15
+  140212ea1 (+0x212EA1)  CALL     0x140501180
+  140212ea6 (+0x212EA6)  CMP      qword ptr [RBP + -0x21], 0x8
+  140212eab (+0x212EAB)  MOV      EAX, dword ptr [R14]
+  140212eae (+0x212EAE)  MOV      dword ptr [RSI + 0x34], EAX
+  140212eb1 (+0x212EB1)  JC       0x140212f24
+  140212eb3 (+0x212EB3)  MOV      RCX, qword ptr [RBP + -0x19]
+  140212eb7 (+0x212EB7)  MOV      RDX, qword ptr [RBP + -0x39]
+  140212ebb (+0x212EBB)  MOV      RAX, qword ptr [RCX]
+  140212ebe (+0x212EBE)  CALL     qword ptr [RAX + 0x68]
+  140212ec1 (+0x212EC1)  JMP      0x140212f24
+  140212ec3 (+0x212EC3)  MOV      RDX, RDI
+  140212ec6 (+0x212EC6)  MOV      RCX, RSI
+  140212ec9 (+0x212EC9)  CALL     0x140213d30
+  140212ece (+0x212ECE)  TEST     RAX, RAX
+  140212ed1 (+0x212ED1)  JNZ      0x140212ed7
+  140212ed3 (+0x212ED3)  XOR      AL, AL
+  140212ed5 (+0x212ED5)  JMP      0x140212f26
+  140212ed7 (+0x212ED7)  MOV      R8D, dword ptr [RAX + 0x15c]
+  140212ede (+0x212EDE)  LEA      RCX, [RBP + -0x41]
+  140212ee2 (+0x212EE2)  MOV      EDX, 0xc
+  140212ee7 (+0x212EE7)  CALL     0x14003d870
+  140212eec (+0x212EEC)  LEA      RCX, [RBP + -0x41]
+  140212ef0 (+0x212EF0)  CALL     0x14003da40
+  140212ef5 (+0x212EF5)  TEST     AL, AL
+  140212ef7 (+0x212EF7)  JZ       0x140212f02
+  140212ef9 (+0x212EF9)  LEA      RAX, [0x1410cb7c8]
+  140212f00 (+0x212F00)  JMP      0x140212f0b
+  140212f02 (+0x212F02)  LEA      RCX, [RBP + -0x41]
+  140212f06 (+0x212F06)  CALL     0x14003dd50
+  140212f0b (+0x212F0B)  MOVZX    R9D, byte ptr [RDI + 0x20]
+  140212f10 (+0x212F10)  MOV      R8, RAX
+  140212f13 (+0x212F13)  MOV      RDX, R14
+  140212f16 (+0x212F16)  MOV      RCX, R15
+  140212f19 (+0x212F19)  CALL     0x140501180
+  140212f1e (+0x212F1E)  MOV      EAX, dword ptr [R14]
+  140212f21 (+0x212F21)  MOV      dword ptr [RSI + 0x34], EAX
+  140212f24 (+0x212F24)  MOV      AL, 0x1
+  140212f26 (+0x212F26)  MOV      R15, qword ptr [RSP + 0xe8]
+  140212f2e (+0x212F2E)  MOV      RCX, qword ptr [RBP + 0x27]
+  140212f32 (+0x212F32)  XOR      RCX, RSP
+  140212f35 (+0x212F35)  CALL     0x140c2c9e0
+  140212f3a (+0x212F3A)  ADD      RSP, 0xa0
+  140212f41 (+0x212F41)  POP      R14
+  140212f43 (+0x212F43)  POP      RDI
+  140212f44 (+0x212F44)  POP      RSI
+  140212f45 (+0x212F45)  POP      RBX
+  140212f46 (+0x212F46)  POP      RBP
+  140212f47 (+0x212F47)  RET      
+
+==============================================================================
+TSignSet::find-by-key (FUN_14020E6F0) @ +0x20E6F0
+==============================================================================
+entry=14020e6f0 body-min=14020e6f0 body-max=14020e75b size=0x6C
+  14020e6f0 (+0x20E6F0)  MOV      qword ptr [RSP + 0x8], RBX
+  14020e6f5 (+0x20E6F5)  MOV      qword ptr [RSP + 0x10], RSI
+  14020e6fa (+0x20E6FA)  MOV      qword ptr [RSP + 0x18], RDI
+  14020e6ff (+0x20E6FF)  PUSH     R14
+  14020e701 (+0x20E701)  SUB      RSP, 0x20
+  14020e705 (+0x20E705)  MOV      RAX, qword ptr [RCX]
+  14020e708 (+0x20E708)  MOV      R14, RDX
+  14020e70b (+0x20E70B)  MOV      RSI, RCX
+  14020e70e (+0x20E70E)  CALL     qword ptr [RAX + 0x18]
+  14020e711 (+0x20E711)  XOR      EBX, EBX
+  14020e713 (+0x20E713)  MOV      EDI, EAX
+  14020e715 (+0x20E715)  TEST     EAX, EAX
+  14020e717 (+0x20E717)  JZ       0x14020e744
+  14020e719 (+0x20E719)  NOP      dword ptr [RAX]
+  14020e720 (+0x20E720)  MOV      R8, qword ptr [RSI]
+  14020e723 (+0x20E723)  MOV      EDX, EBX
+  14020e725 (+0x20E725)  MOV      RCX, RSI
+  14020e728 (+0x20E728)  CALL     qword ptr [R8 + 0x10]
+  14020e72c (+0x20E72C)  MOV      ECX, dword ptr [RAX + 0x14]
+  14020e72f (+0x20E72F)  SHR      ECX, 0x1f
+  14020e732 (+0x20E732)  TEST     CL, 0x1
+  14020e735 (+0x20E735)  JZ       0x14020e73e
+  14020e737 (+0x20E737)  MOV      ECX, dword ptr [R14]
+  14020e73a (+0x20E73A)  CMP      dword ptr [RAX], ECX
+  14020e73c (+0x20E73C)  JZ       0x14020e746
+  14020e73e (+0x20E73E)  INC      EBX
+  14020e740 (+0x20E740)  CMP      EBX, EDI
+  14020e742 (+0x20E742)  JC       0x14020e720
+  14020e744 (+0x20E744)  XOR      EAX, EAX
+  14020e746 (+0x20E746)  MOV      RBX, qword ptr [RSP + 0x30]
+  14020e74b (+0x20E74B)  MOV      RSI, qword ptr [RSP + 0x38]
+  14020e750 (+0x20E750)  MOV      RDI, qword ptr [RSP + 0x40]
+  14020e755 (+0x20E755)  ADD      RSP, 0x20
+  14020e759 (+0x20E759)  POP      R14
+  14020e75b (+0x20E75B)  RET      
+
+==============================================================================
+AbstractNetSvrMySignManager slot[8] (FUN_14026E9E0) @ +0x26E9E0
+==============================================================================
+entry=14026e9e0 body-min=14026e9e0 body-max=14026e9e8 size=0x9
+  14026e9e0 (+0x26E9E0)  MOV      EAX, dword ptr [RCX + 0xc]
+  14026e9e3 (+0x26E9E3)  MOV      dword ptr [RDX], EAX
+  14026e9e5 (+0x26E9E5)  MOV      RAX, RDX
+  14026e9e8 (+0x26E9E8)  RET      
+
+==============================================================================
+AbstractNetSvrMySignManager slot[9] (FUN_14026EA30) @ +0x26EA30
+==============================================================================
+entry=14026ea30 body-min=14026ea30 body-max=14026ea33 size=0x4
+  14026ea30 (+0x26EA30)  MOV      EAX, dword ptr [RCX + 0x8]
+  14026ea33 (+0x26EA33)  RET      
+
+==============================================================================
+AbstractNetSvrMySignManager slot[7] (FUN_140284150) @ +0x284150
+==============================================================================
+entry=140284150 body-min=140284150 body-max=14028415c size=0xD
+  140284150 (+0x284150)  MOV      EDX, dword ptr [RCX + 0x8]
+  140284153 (+0x284153)  SUB      EDX, 0x3
+  140284156 (+0x284156)  CMP      EDX, 0x1
+  140284159 (+0x284159)  SETBE    AL
+  14028415c (+0x28415C)  RET      
+
+==============================================================================
+Xrefs to FindOrAdd (FUN_140212D30) post-analysis
+==============================================================================
+found 4 refs (any type)
+  DATA ref @ 1418c0e20 (+0x18C0E20) in (no func) @ ?
+  DATA ref @ 14138bb2c (+0x138BB2C) in (no func) @ ?
+  DATA ref @ 14138bb60 (+0x138BB60) in (no func) @ ?
+  DATA ref @ 1410cb6b8 (+0x10CB6B8) in (no func) @ ?
+
+==============================================================================
+Done.
+==============================================================================
