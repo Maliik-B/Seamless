@@ -1,5 +1,14 @@
 # H-26 Plan B — mod-side sign placement scope
 
+> **Status (2026-05-28): PARKED.** Task #2 proved out the spawn primitive
+> (`FUN_140213AC0`) and a runtime-validated pointer chain, but empirical
+> telemetry on `push_back_default` / `push_back_take` showed the engine's
+> sign render thread is **also** gated on RPC-active session-manager state,
+> not just on data being present in `TSignSet`. Filling fields correctly
+> wouldn't be enough -- the render scan that consumes the set never runs
+> without FROM contact. Plan B as designed is architecturally incomplete;
+> see "Parking decision" below for the lessons and remaining options.
+
 Forward-looking scope for the H-26 follow-on ticket. Plan A
 (`OnlineFlagAccessor`, the H-26 task #2 attempt) is in PR #9 / merged
 on `harden`; this doc covers the next attempt.
@@ -322,6 +331,88 @@ provides for us, rather than synchronising state that already exists.
    (tasks 1-6, "I place a sign, peer sees it") lands first. Summon
    gets its own diff after the MVP merges. See "Out of scope" below
    for the explicit deferral.
+
+## Parking decision (2026-05-28)
+
+Plan B's premise was: push a fully-populated `SummonSignParam` into the
+engine's `TSignSet<SummonSignParam>` and let the engine's render thread
+draw it. Task #2 RE + runtime smoke-testing got us through every step of
+the data path:
+
+- Spawn primitive: `FUN_140213AC0` @ exe+0x213AC0 -- runtime-callable
+- Pointer chain: `GameManagerImp +0x90 -> SignManager +0x68 ->
+  SignSetCtrlManager +0x20 -> SummonSignSetCtrl +0x18 -> TSignSet`
+  -- all 4 vtable magic-number checks pass at runtime
+- Wrapper: `src/features/sign_sync.cpp` with `SignSync::AllocateRawSign()`
+  proven to add an entry to the engine's live set without crashing
+- Telemetry hooks (commit cae8d36 + sign_telemetry_hooks.cpp) confirmed
+  the synthetic call lands cleanly
+
+What broke the premise: the empirical hooks on `push_back_default` /
+`push_back_take` recorded **zero organic fires** across a full game
+session including soapstone-use attempts. The soapstone-use path
+dispatches into the dormant session-manager vtable slots 0x78/0x98
+(H-26 task #1 finding) and never touches `TSignSet`. ds3os's
+reverse-engineered protobuf definitions
+(`DS2_Frpg2RequestMessage.proto`, `DS2_Frpg2PlayerData.proto`)
+confirm the engine receives sign data exclusively via
+`RequestGetSignListResponse` -- which means the parser that translates
+protobuf SignData into `SummonSignParam` is part of the same dormant
+RPC layer.
+
+The architectural conclusion: `TSignSet` is a passive data store; the
+render scan that consumes it is itself driven by session-manager state.
+Filling `SummonSignParam` correctly would let an entry sit in the set,
+but the renderer would skip it for the same reason no protobuf message
+ever leaves the client today.
+
+Other observations from this round (kept in case any of them help
+future work):
+
+- `SummonSignParam` size is 0x88 bytes, confirmed three ways
+- ds3os's `player_struct: bytes` field in the protobuf is an `AllStatus`
+  message containing `PlayerLocation { online_area_id, cell_id,
+  Vector position { x, y, z } }` plus `PlayerStatus { name, ... }`.
+  Position lives nested inside the network blob, not as flat floats
+- DS2's sign protocol carries **no rotation** field; the engine derives
+  or fixes sign orientation
+- `SignSetCtrlManager` (vtable rva 0x10CB4A0) holds three sibling
+  set-controllers at +0x18/+0x20/+0x28 -- almost certainly
+  BloodMessageSetCtrl, SummonSignSetCtrl, BloodstainSetCtrl
+- `FUN_140212D30` is `UpdateExisting`, not FindOrAdd as initially
+  thought -- bails on both find_by_key failures
+
+### Plan B revival options
+
+Three forward paths if Plan B is ever picked back up:
+
+1. **Plan C -- mod-side rendering.** Bypass the engine's sign system
+   entirely; draw our own sign overlay via ImGui or a custom 3D draw
+   layer, sync positions over the existing P2P channel. Larger
+   implementation surface but architecturally honest about what we
+   control vs. what the engine controls.
+2. **Plan D -- fake-session activation.** Reverse the session-manager
+   wake conditions and inject synthetic "RPC session active" state so
+   the render thread starts scanning `TSignSet`. Very hard; risks
+   waking other dormant RPC paths the firewall/ConnectHook layers
+   would have to keep blocking.
+3. **Plan E -- pair with a custom seamless server.** Run a minimal
+   `ds3os`-style server that satisfies just enough of the FROM RPC
+   handshake to keep `TSignSet` populated and the render path active.
+   Trades "no server" for "small private server", which is also the
+   model scheissgeist/Seamless uses.
+
+The artifacts left behind for any of these:
+
+- `include/features/sign_sync.h`, `src/features/sign_sync.cpp` --
+  resolver + `AllocateRawSign` + stubbed `SpawnSign`
+- `include/hooks.h` + `src/hooks/sign_telemetry_hooks.cpp` --
+  push_back_default / push_back_take hooks (limit 5 fires each)
+- Ctrl+Shift+S renderer hotkey -- synthetic push_back_default
+- 12 Ghidra scripts under `tools/ghidra_h26b_*.py` + matching result
+  files documenting the RE trail
+- This scope doc + the `Task #1 outcome` and `Task #2 outcome (parked)`
+  sections below
 
 ## Task #1 outcome (2026-05-27)
 

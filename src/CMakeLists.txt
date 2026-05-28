@@ -5,6 +5,7 @@ add_library(ds2_seamless_coop SHARED
     hooks/session_hooks.cpp
     hooks/network_hooks.cpp
     hooks/game_state_hooks.cpp
+    hooks/sign_telemetry_hooks.cpp
     network/peer_manager.cpp
     network/packet_handler.cpp
     session/session_manager.cpp

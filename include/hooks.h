@@ -78,6 +78,21 @@ namespace ProtobufHooks {
 }
 
 // ============================================================================
+// H-26 Plan B sign-telemetry hooks
+//
+// MinHooks on TSignSet<SummonSignParam>::push_back_default (slot[4],
+// exe+0x213AC0) and push_back_take/move (slot[5], exe+0x213DD0). Logs
+// caller PC + the 0x88-byte source struct contents for the first 5 calls
+// per function, then suppresses. Used to nail down SummonSignParam field
+// offsets empirically since vtable-dispatch xrefs failed to resolve in
+// Ghidra's auto-analysis. Idempotent install; uninstall NOT plumbed (one-
+// shot diagnostic build).
+// ============================================================================
+namespace SignTelemetryHooks {
+    bool Install();
+}
+
+// ============================================================================
 // Winsock Hooks (connection monitoring + server redirect)
 // Hooks Winsock connect() to detect and redirect game server connections.
 // ============================================================================
