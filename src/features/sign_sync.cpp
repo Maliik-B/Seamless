@@ -7,6 +7,8 @@
 
 #include "../../include/features/sign_sync.h"
 #include "../../include/address_resolver.h"
+#include "../../include/addresses.h"
+#include "../../include/pattern_scanner.h"
 #include "../../include/utils.h"
 
 namespace DS2Coop::Features {
@@ -38,9 +40,48 @@ bool SignSync::Initialize() {
     return ResolveChain();
 }
 
+uintptr_t SignSync::ResolveGameManagerImp() {
+    // First try the global AddressResolver -- if it caught the engine
+    // populating GameManagerImp during its 30s startup window, this hits.
+    uintptr_t gm = DS2Coop::AddressResolver::GetInstance().GetGameManagerImp();
+    if (gm) return gm;
+
+    // Fallback: own the lookup. The resolver gave up because the engine
+    // hadn't allocated GameManagerImp yet; re-read the static .data slot
+    // fresh now. The AOB pattern scan only runs once per process; the
+    // pointer read at the captured address happens every call.
+    if (!m_gmScanAttempted) {
+        m_gmScanAttempted = true;
+        uintptr_t match = Utils::PatternScanner::FindPattern(
+            Addresses::GAME_MANAGER_IMP.pattern,
+            Addresses::GAME_MANAGER_IMP.mask,
+            nullptr);
+        if (!match) {
+            LOG_WARNING("SignSync: GAME_MANAGER_IMP AOB scan failed");
+            return 0;
+        }
+        m_gmStaticPtrAddr = Utils::PatternScanner::ResolveRIP(
+            match,
+            Addresses::GAME_MANAGER_IMP.offset_from_match,
+            Addresses::GAME_MANAGER_IMP.pointer_offset);
+        if (!m_gmStaticPtrAddr) {
+            LOG_WARNING("SignSync: GAME_MANAGER_IMP RIP resolution failed");
+            return 0;
+        }
+        LOG_INFO("SignSync: lazy GameManagerImp storage @ 0x%p",
+                 reinterpret_cast<void*>(m_gmStaticPtrAddr));
+    }
+    if (!m_gmStaticPtrAddr) return 0;
+
+    uintptr_t val = 0;
+    if (!Utils::Memory::Read<uintptr_t>(m_gmStaticPtrAddr, &val) || !val) {
+        return 0;
+    }
+    return val;
+}
+
 bool SignSync::ResolveChain() {
-    if (m_resolverScanned) return m_resolverValid;
-    m_resolverScanned = true;
+    if (m_resolverValid) return true;
 
     HMODULE hExe = GetModuleHandleW(nullptr);
     if (!hExe) {
@@ -50,9 +91,9 @@ bool SignSync::ResolveChain() {
     uintptr_t modBase = reinterpret_cast<uintptr_t>(hExe);
     m_pushBackDefault = reinterpret_cast<void*>(modBase + PUSH_BACK_DEFAULT_RVA);
 
-    uintptr_t outerMgr = DS2Coop::AddressResolver::GetInstance().GetGameManagerImp();
+    uintptr_t outerMgr = ResolveGameManagerImp();
     if (!outerMgr) {
-        LOG_WARNING("SignSync: GameManagerImp not yet resolved");
+        LOG_WARNING("SignSync: GameManagerImp still null -- engine hasn't populated it yet, try again after loading into a save");
         return false;
     }
 
@@ -73,19 +114,69 @@ bool SignSync::ResolveChain() {
     }
     m_signManager = reinterpret_cast<void*>(signMgr);
 
-    uintptr_t summonCtrl = 0;
-    if (!Utils::Memory::Read<uintptr_t>(signMgr + SIGNMANAGER_TO_SUMMONCTRL, &summonCtrl) || !summonCtrl) {
-        LOG_WARNING("SignSync: SummonSignSetCtrl pointer null at SignMgr+0x%X",
-                    SIGNMANAGER_TO_SUMMONCTRL);
+    // Smoke-test #3 (2026-05-27) revealed: SignManager doesn't directly own
+    // a SummonSignSetCtrl. It owns a SignSetCtrlManager (vtable @ +0x10CB4A0)
+    // at SignManager+0x68, plus assorted sibling SignSetCommonCtrl-derived
+    // classes (ActiveSignManager, SignPreviewCtrl, SignEventAreaManager,
+    // SignBlockAllocStrategy). The SummonSignSetCtrl pointer lives one level
+    // deeper -- inside SignSetCtrlManager.
+    //
+    // SignSetCtrlManager's layout is unknown; walk a generous offset range
+    // and find the slot whose vtable matches SummonSignSetCtrl.
+    constexpr uintptr_t SIGNSETCTRLMANAGER_VTABLE_RVA = 0x10CB4A0;
+    constexpr uint32_t  SIGNMANAGER_TO_CTRLMANAGER    = 0x68;
+
+    uintptr_t ctrlMgr = 0;
+    if (!Utils::Memory::Read<uintptr_t>(signMgr + SIGNMANAGER_TO_CTRLMANAGER, &ctrlMgr) || !ctrlMgr) {
+        LOG_WARNING("SignSync: SignSetCtrlManager pointer null at SignMgr+0x%X",
+                    SIGNMANAGER_TO_CTRLMANAGER);
         return false;
     }
-    uintptr_t summonCtrlVt = 0;
-    if (!Utils::Memory::Read<uintptr_t>(summonCtrl, &summonCtrlVt)
-            || summonCtrlVt != modBase + SUMMONSIGNSETCTRL_VTABLE_RVA) {
-        LOG_WARNING("SignSync: SummonSignSetCtrl vtable mismatch at %p (got 0x%llX, want 0x%llX)",
-                    reinterpret_cast<void*>(summonCtrl),
-                    static_cast<unsigned long long>(summonCtrlVt),
-                    static_cast<unsigned long long>(modBase + SUMMONSIGNSETCTRL_VTABLE_RVA));
+    uintptr_t ctrlMgrVt = 0;
+    if (!Utils::Memory::Read<uintptr_t>(ctrlMgr, &ctrlMgrVt)
+            || ctrlMgrVt != modBase + SIGNSETCTRLMANAGER_VTABLE_RVA) {
+        LOG_WARNING("SignSync: SignSetCtrlManager vtable mismatch at %p (got 0x%llX, want 0x%llX)",
+                    reinterpret_cast<void*>(ctrlMgr),
+                    static_cast<unsigned long long>(ctrlMgrVt),
+                    static_cast<unsigned long long>(modBase + SIGNSETCTRLMANAGER_VTABLE_RVA));
+        return false;
+    }
+    LOG_INFO("SignSync: SignSetCtrlManager @ %p (vtable validated)",
+             reinterpret_cast<void*>(ctrlMgr));
+
+    // Diagnostic dump: walk SignSetCtrlManager's first 0x100 bytes as qwords.
+    // For each non-null pointer, log its vtable + RVA + a tag if it matches
+    // SummonSignSetCtrl. Picks the first matching offset for the live chain.
+    LOG_INFO("SignSync: dumping SignSetCtrlManager @ %p sub-pointer slots", reinterpret_cast<void*>(ctrlMgr));
+    uintptr_t summonCtrl = 0;
+    for (uint32_t off = 0x08; off <= 0x100; off += 0x08) {
+        uintptr_t subPtr = 0;
+        if (!Utils::Memory::Read<uintptr_t>(ctrlMgr + off, &subPtr) || !subPtr) {
+            continue;
+        }
+        // Skip values too small to be heap pointers (state ints).
+        if (subPtr < 0x10000) {
+            LOG_INFO("  CtrlMgr+0x%-3X = 0x%llX  (looks like an int, skipping vtable check)",
+                     off, static_cast<unsigned long long>(subPtr));
+            continue;
+        }
+        uintptr_t subVt = 0;
+        bool gotVt = Utils::Memory::Read<uintptr_t>(subPtr, &subVt);
+        uintptr_t vtRva = gotVt ? (subVt - modBase) : 0;
+        const char* tag = "";
+        if (gotVt && subVt == modBase + SUMMONSIGNSETCTRL_VTABLE_RVA) {
+            tag = " <-- SummonSignSetCtrl MATCH";
+            if (summonCtrl == 0) summonCtrl = subPtr;
+        }
+        LOG_INFO("  CtrlMgr+0x%-3X = %p  vt=0x%llX (rva 0x%llX)%s",
+                 off,
+                 reinterpret_cast<void*>(subPtr),
+                 static_cast<unsigned long long>(subVt),
+                 static_cast<unsigned long long>(vtRva),
+                 tag);
+    }
+    if (!summonCtrl) {
+        LOG_WARNING("SignSync: SummonSignSetCtrl not found at any SignSetCtrlManager offset 0x08..0x100");
         return false;
     }
     m_summonSignSetCtrl = reinterpret_cast<void*>(summonCtrl);

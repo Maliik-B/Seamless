@@ -80,13 +80,23 @@ private:
 
     bool ResolveChain();
 
-    bool  m_resolverScanned = false;
+    // Returns GameManagerImp, falling back to a lazy SignSync-owned AOB
+    // scan + re-read if AddressResolver's 30s startup timeout missed it.
+    uintptr_t ResolveGameManagerImp();
+
     bool  m_resolverValid   = false;
 
     void* m_pushBackDefault   = nullptr;
     void* m_signManager       = nullptr;
     void* m_summonSignSetCtrl = nullptr;
     void* m_tSignSet          = nullptr;
+
+    // SignSync-owned lazy fallback for GameManagerImp:
+    // - m_gmStaticPtrAddr: the .data location where the engine stores the
+    //   live pointer (resolved once via AOB)
+    // - m_gmScanAttempted: AOB scan only runs once per process
+    uintptr_t m_gmStaticPtrAddr  = 0;
+    bool      m_gmScanAttempted  = false;
 };
 
 } // namespace DS2Coop::Features

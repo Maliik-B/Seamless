@@ -315,31 +315,31 @@ static HRESULT STDMETHODCALLTYPE HookedPresent(IDXGISwapChain* swapChain, UINT s
     }
 
     // H-26 Plan B task #2 smoke-test hotkey: Ctrl+Shift+S.
-    // Single-shot per game launch. Calls SignSync::AllocateRawSign() to
-    // validate that the SignManager pointer-chain resolves at runtime. On
-    // first press the resolver runs lazily, walks GameManagerImp +0x90 ->
-    // +0x20 -> +0x18, validates each vtable magic, calls push_back_default
-    // on the TSignSet<SummonSignParam>. Logs success or noisy failure.
-    // No field-writes -- the returned entry stays in its default-init state.
-    // Restart the game to retest.
+    // Retry-friendly: locks only after a SUCCESSFUL push_back, not after
+    // any press. Calls SignSync::AllocateRawSign() to validate the
+    // SignManager pointer-chain at runtime. The resolver is lazy + re-tries
+    // on each press; press repeatedly while loading into a save until a
+    // non-null entry comes back. After a successful push, the hotkey
+    // self-locks to avoid pushing past the TSignSet's small capacity
+    // (6 for the [+0x18] set, 20 for [+0x20]). Restart the game to retest.
     {
-        static bool s_smokeFired   = false;
-        static bool s_smokeWasDown = false;
+        static bool s_smokeSucceeded = false;
+        static bool s_smokeWasDown   = false;
 
-        if (!s_smokeFired) {
+        if (!s_smokeSucceeded) {
             bool ctrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
             bool shift = (GetAsyncKeyState(VK_SHIFT)   & 0x8000) != 0;
             bool sKey  = (GetAsyncKeyState('S')         & 0x8000) != 0;
             bool down  = ctrl && shift && sKey;
 
             if (down && !s_smokeWasDown) {
-                s_smokeFired = true;
                 LOG_INFO("H-26 Plan B smoke: Ctrl+Shift+S pressed -- invoking SignSync");
                 void* entry = DS2Coop::Features::SignSync::GetInstance().AllocateRawSign();
                 if (entry) {
-                    LOG_INFO("H-26 Plan B smoke: AllocateRawSign returned %p", entry);
+                    LOG_INFO("H-26 Plan B smoke: AllocateRawSign returned %p (locked; restart to retest)", entry);
+                    s_smokeSucceeded = true;
                 } else {
-                    LOG_WARNING("H-26 Plan B smoke: AllocateRawSign returned null -- check earlier logs for chain-resolver failure");
+                    LOG_WARNING("H-26 Plan B smoke: AllocateRawSign returned null -- can retry once you're loaded into a save");
                 }
             }
             s_smokeWasDown = down;
