@@ -64,6 +64,46 @@ $ini = Get-Content $IniPath -Raw
 $serverIpMatch = [regex]::Match($ini, '(?m)^\s*server_ip\s*=\s*([^\s#;]+)')
 $serverIp = if ($serverIpMatch.Success) { $serverIpMatch.Groups[1].Value.Trim() } else { '<host-IP>' }
 
+# Detect VPN type from IP range so the README's prereqs section says
+# the right thing.
+#   100.x.x.x in 100.64.0.0/10 -> Tailscale (CGNAT)
+#   25.x.x.x                   -> Hamachi
+#   192.168.x.x / 10.x.x.x     -> LAN-direct
+#   anything else              -> generic
+$vpnPrereqs = switch -Regex ($serverIp) {
+    '^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.' {
+@"
+2. You install Tailscale (https://tailscale.com/download) and accept
+   the share-link your friend sends you. Verify in the Tailscale admin
+   console that you can see their machine.
+"@
+        break
+    }
+    '^25\.' {
+@"
+2. You install Hamachi (https://vpn.net), create a free LogMeIn account,
+   then Network -> Join an existing network with the network ID and
+   password your friend gives you. Verify in the Hamachi window that
+   their machine shows up with a green dot (online).
+"@
+        break
+    }
+    '^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)' {
+@"
+2. You are on the same LAN as your friend's machine. Confirm you can
+   reach their LAN IP (ask them to verify it pings from your machine).
+"@
+        break
+    }
+    default {
+@"
+2. You have network reachability to your friend's machine at the IP
+   above. Confirm whatever VPN / network setup they told you about is
+   working.
+"@
+    }
+}
+
 $readme = @"
 DS2 Seamless Co-op -- friend setup
 ===================================
@@ -89,7 +129,7 @@ Four files including this README:
                              channel.
 
   ds2_seamless_coop.ini    - Mod config, already pointed at your friend's
-                             Tailscale IP ($serverIp).
+                             server IP ($serverIp).
 
 KNOWN UNKNOWNS / RISKS
 ----------------------
@@ -109,9 +149,7 @@ PREREQS
 -------
 
 1. You own DS2: Scholar of the First Sin on Steam.
-2. You install Tailscale (https://tailscale.com/download) and accept
-   the share-link your friend sends you. Verify in the Tailscale admin
-   console that you can see their machine.
+$vpnPrereqs
 
 INSTALL
 -------
@@ -126,7 +164,7 @@ INSTALL
 3. Confirm:
    - You see dinput8.dll next to DarkSoulsII.exe.
    - Your friend has told you their ds3os server is running.
-   - You are connected to Tailscale (system tray icon solid).
+   - Your VPN / network path to their machine is up.
 
 LAUNCH
 ------
