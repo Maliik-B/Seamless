@@ -1,0 +1,126 @@
+==============================================================================
+H-27 Plan E stage 2 -- SummonSignParam field-writer hunt
+==============================================================================
+
+==============================================================================
+FUN_14020CF00 (field-write target, called from translator wrapper) @ +0x20CF00
+==============================================================================
+entry=14020cf00 body-min=14020cf00 body-max=14020d070 size=0x171
+  14020cf00 (+0x20CF00)  MOV      qword ptr [RSP + 0x10], RBX
+  14020cf05 (+0x20CF05)  PUSH     RSI
+  14020cf06 (+0x20CF06)  PUSH     RDI
+  14020cf07 (+0x20CF07)  PUSH     R14
+  14020cf09 (+0x20CF09)  SUB      RSP, 0x50
+  14020cf0d (+0x20CF0D)  MOV      RAX, qword ptr [0x1415e1c50]
+  14020cf14 (+0x20CF14)  XOR      RAX, RSP
+  14020cf17 (+0x20CF17)  MOV      qword ptr [RSP + 0x40], RAX
+  14020cf1c (+0x20CF1C)  MOV      EAX, dword ptr [RCX + 0x14]
+  14020cf1f (+0x20CF1F)  MOV      EDI, R9D
+  14020cf22 (+0x20CF22)  MOV      RSI, R8
+  14020cf25 (+0x20CF25)  MOV      R14, RDX
+  14020cf28 (+0x20CF28)  MOV      RBX, RCX
+  14020cf2b (+0x20CF2B)  TEST     EAX, EAX
+  14020cf2d (+0x20CF2D)  JNS      0x14020cf69
+  14020cf2f (+0x20CF2F)  MOV      R8D, dword ptr [RCX + 0x18]
+  14020cf33 (+0x20CF33)  BTR      EAX, 0x1f
+  14020cf37 (+0x20CF37)  MOVZX    R8D, R8B
+  14020cf3b (+0x20CF3B)  MOV      dword ptr [RCX + 0x14], EAX
+  14020cf3e (+0x20CF3E)  CMP      R8D, 0xff
+  14020cf45 (+0x20CF45)  JZ       0x14020cf69
+  14020cf47 (+0x20CF47)  MOV      EAX, dword ptr [RCX]
+  14020cf49 (+0x20CF49)  LEA      RDX, [RSP + 0x20]
+  14020cf4e (+0x20CF4E)  MOV      dword ptr [RSP + 0x20], EAX
+  14020cf52 (+0x20CF52)  MOV      RAX, qword ptr [0x1416148f0]
+  14020cf59 (+0x20CF59)  MOV      RCX, qword ptr [RAX + 0x90]
+  14020cf60 (+0x20CF60)  MOV      RCX, qword ptr [RCX + 0x70]
+  14020cf64 (+0x20CF64)  CALL     0x14020a290
+  14020cf69 (+0x20CF69)  LEA      RDX, [RSP + 0x30]
+  14020cf6e (+0x20CF6E)  MOV      RCX, RSI
+  14020cf71 (+0x20CF71)  CALL     0x140210820
+  14020cf76 (+0x20CF76)  MOVSS    XMM0, dword ptr [RSP + 0x30]
+  14020cf7c (+0x20CF7C)  MOVSS    XMM1, dword ptr [RSP + 0x34]
+  14020cf82 (+0x20CF82)  MOVSS    dword ptr [RBX + 0x4], XMM0
+  14020cf87 (+0x20CF87)  MOVSS    XMM0, dword ptr [RSP + 0x38]
+  14020cf8d (+0x20CF8D)  MOVSS    dword ptr [RBX + 0x8], XMM1
+  14020cf92 (+0x20CF92)  MOVSS    dword ptr [RBX + 0xc], XMM0
+  14020cf97 (+0x20CF97)  MOVSS    XMM0, dword ptr [RSI + 0x10]
+  14020cf9c (+0x20CF9C)  CALL     0x140523070
+  14020cfa1 (+0x20CFA1)  CALL     0x140522d60
+  14020cfa6 (+0x20CFA6)  OR       EDI, 0xfffffffc
+  14020cfa9 (+0x20CFA9)  MOV      RCX, RSI
+  14020cfac (+0x20CFAC)  MOV      byte ptr [RBX + 0x14], AL
+  14020cfaf (+0x20CFAF)  MOV      EAX, dword ptr [R14]
+  14020cfb2 (+0x20CFB2)  SHL      EDI, 0x1d
+  14020cfb5 (+0x20CFB5)  MOV      dword ptr [RBX], EAX
+  14020cfb7 (+0x20CFB7)  MOV      EAX, dword ptr [RBX + 0x14]
+  14020cfba (+0x20CFBA)  OR       dword ptr [RBX + 0x18], 0xeff
+  14020cfc1 (+0x20CFC1)  AND      EAX, 0x1fffffff
+  14020cfc6 (+0x20CFC6)  OR       EDI, EAX
+  14020cfc8 (+0x20CFC8)  MOV      dword ptr [RBX + 0x14], EDI
+  14020cfcb (+0x20CFCB)  CALL     0x1402128f0
+  14020cfd0 (+0x20CFD0)  AND      dword ptr [RBX + 0x14], 0xe003c0ff
+  14020cfd7 (+0x20CFD7)  MOV      ECX, dword ptr [RSP + 0x90]
+  14020cfde (+0x20CFDE)  MOV      EDX, dword ptr [RSP + 0x98]
+  14020cfe5 (+0x20CFE5)  AND      EAX, 0x3f
+  14020cfe8 (+0x20CFE8)  AND      ECX, 0x7ff
+  14020cfee (+0x20CFEE)  SHL      EDX, 0xe
+  14020cff1 (+0x20CFF1)  SHL      ECX, 0xa
+  14020cff4 (+0x20CFF4)  OR       ECX, EAX
+  14020cff6 (+0x20CFF6)  SHL      ECX, 0x8
+  14020cff9 (+0x20CFF9)  OR       dword ptr [RBX + 0x14], ECX
+  14020cffc (+0x20CFFC)  MOV      EAX, dword ptr [RSI + 0x14]
+  14020cfff (+0x20CFFF)  XOR      EDX, dword ptr [RBX + 0x14]
+  14020d002 (+0x20D002)  AND      dword ptr [RBX + 0x18], 0xfff00fff
+  14020d009 (+0x20D009)  MOV      dword ptr [RBX + 0x10], EAX
+  14020d00c (+0x20D00C)  MOVZX    EAX, byte ptr [RSP + 0xa0]
+  14020d014 (+0x20D014)  SHL      EAX, 0xc
+  14020d017 (+0x20D017)  AND      EDX, 0x3c000
+  14020d01d (+0x20D01D)  OR       dword ptr [RBX + 0x18], EAX
+  14020d020 (+0x20D020)  XOR      EDX, dword ptr [RBX + 0x14]
+  14020d023 (+0x20D023)  MOV      dword ptr [RBX + 0x14], EDX
+  14020d026 (+0x20D026)  MOV      RAX, qword ptr [0x1416148f0]
+  14020d02d (+0x20D02D)  MOV      RCX, qword ptr [RAX + 0x38]
+  14020d031 (+0x20D031)  TEST     RCX, RCX
+  14020d034 (+0x20D034)  JZ       0x14020d054
+  14020d036 (+0x20D036)  SHR      EDX, 0x8
+  14020d039 (+0x20D039)  AND      EDX, 0x3f
+  14020d03c (+0x20D03C)  CALL     0x1403bcf60
+  14020d041 (+0x20D041)  AND      dword ptr [RBX + 0x18], 0xffefffff
+  14020d048 (+0x20D048)  MOVZX    EAX, AL
+  14020d04b (+0x20D04B)  AND      EAX, 0x1
+  14020d04e (+0x20D04E)  SHL      EAX, 0x14
+  14020d051 (+0x20D051)  OR       dword ptr [RBX + 0x18], EAX
+  14020d054 (+0x20D054)  MOV      AL, 0x1
+  14020d056 (+0x20D056)  MOV      RCX, qword ptr [RSP + 0x40]
+  14020d05b (+0x20D05B)  XOR      RCX, RSP
+  14020d05e (+0x20D05E)  CALL     0x140c2c9e0
+  14020d063 (+0x20D063)  MOV      RBX, qword ptr [RSP + 0x78]
+  14020d068 (+0x20D068)  ADD      RSP, 0x50
+  14020d06c (+0x20D06C)  POP      R14
+  14020d06e (+0x20D06E)  POP      RDI
+  14020d06f (+0x20D06F)  POP      RSI
+  14020d070 (+0x20D070)  RET      
+
+==============================================================================
+E8 CALL refs to FUN_14020CF00 (every translation site)
+==============================================================================
+found 1 callers
+  call @ 14020e5b3 (+0x20E5B3) in FUN_14020e4e0 @ +0x20E4E0
+
+==============================================================================
+E8 CALL refs to FUN_14020E4E0 (wrapper -- shows protobuf caller chain)
+==============================================================================
+found 9 callers
+  call @ 140204956 (+0x204956) in FUN_140204900 @ +0x204900
+  call @ 140204a0f (+0x204A0F) in FUN_1402049b0 @ +0x2049B0
+  call @ 140204ad8 (+0x204AD8) in FUN_140204a70 @ +0x204A70
+  call @ 140207981 (+0x207981) in FUN_140207930 @ +0x207930
+  call @ 140207a1f (+0x207A1F) in FUN_1402079c0 @ +0x2079C0
+  call @ 140207abf (+0x207ABF) in FUN_140207a60 @ +0x207A60
+  call @ 1402130ef (+0x2130EF) in FUN_140213080 @ +0x213080
+  call @ 1402131de (+0x2131DE) in FUN_140213160 @ +0x213160
+  call @ 140213337 (+0x213337) in FUN_140213260 @ +0x213260
+
+==============================================================================
+Done.
+==============================================================================
