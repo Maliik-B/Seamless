@@ -1,0 +1,107 @@
+==============================================================================
+H-27 Plan E -- SummonSignParam translator function dump
+Telemetry caller PC: exe+0x20E563 (all 5 push_back_default fires)
+==============================================================================
+
+==============================================================================
+Translator function (containing caller PC exe+0x20E563) @ +0x20E563
+==============================================================================
+entry=14020e4e0 body-min=14020e4e0 body-max=14020e5f3 size=0x114
+  14020e4e0 (+0x20E4E0)  MOV      qword ptr [RSP + 0x20], RBP
+  14020e4e5 (+0x20E4E5)  PUSH     RDI
+  14020e4e6 (+0x20E4E6)  PUSH     R14
+  14020e4e8 (+0x20E4E8)  PUSH     R15
+  14020e4ea (+0x20E4EA)  SUB      RSP, 0x40
+  14020e4ee (+0x20E4EE)  MOV      RAX, qword ptr [RCX]
+  14020e4f1 (+0x20E4F1)  MOV      EBP, R9D
+  14020e4f4 (+0x20E4F4)  MOV      R15, R8
+  14020e4f7 (+0x20E4F7)  MOV      R14D, EDX
+  14020e4fa (+0x20E4FA)  MOV      RDI, RCX
+  14020e4fd (+0x20E4FD)  CALL     qword ptr [RAX + 0x18]
+  14020e500 (+0x20E500)  INC      EAX
+  14020e502 (+0x20E502)  CMP      EAX, dword ptr [RDI + 0x14]
+  14020e505 (+0x20E505)  JBE      0x14020e54d
+  14020e507 (+0x20E507)  MOV      RAX, qword ptr [RDI]
+  14020e50a (+0x20E50A)  MOV      RCX, RDI
+  14020e50d (+0x20E50D)  CALL     qword ptr [RAX + 0x30]
+  14020e510 (+0x20E510)  MOV      RAX, qword ptr [RDI]
+  14020e513 (+0x20E513)  MOV      RCX, RDI
+  14020e516 (+0x20E516)  CALL     qword ptr [RAX + 0x18]
+  14020e519 (+0x20E519)  INC      EAX
+  14020e51b (+0x20E51B)  CMP      EAX, dword ptr [RDI + 0x14]
+  14020e51e (+0x20E51E)  JBE      0x14020e54d
+  14020e520 (+0x20E520)  MOV      RAX, qword ptr [RDI]
+  14020e523 (+0x20E523)  MOV      RCX, RDI
+  14020e526 (+0x20E526)  CALL     qword ptr [RAX + 0x18]
+  14020e529 (+0x20E529)  MOV      EDX, 0x1
+  14020e52e (+0x20E52E)  MOV      ECX, EDX
+  14020e530 (+0x20E530)  SUB      ECX, dword ptr [RDI + 0x14]
+  14020e533 (+0x20E533)  ADD      EAX, ECX
+  14020e535 (+0x20E535)  SUB      EDX, EAX
+  14020e537 (+0x20E537)  CMP      EDX, 0x1
+  14020e53a (+0x20E53A)  JZ       0x14020e54d
+  14020e53c (+0x20E53C)  XOR      EAX, EAX
+  14020e53e (+0x20E53E)  MOV      RBP, qword ptr [RSP + 0x78]
+  14020e543 (+0x20E543)  ADD      RSP, 0x40
+  14020e547 (+0x20E547)  POP      R15
+  14020e549 (+0x20E549)  POP      R14
+  14020e54b (+0x20E54B)  POP      RDI
+  14020e54c (+0x20E54C)  RET      
+  14020e54d (+0x20E54D)  MOV      RAX, qword ptr [RDI]
+  14020e550 (+0x20E550)  MOV      qword ptr [RSP + 0x68], RBX
+  14020e555 (+0x20E555)  MOV      EBX, dword ptr [RDI + 0x18]
+  14020e558 (+0x20E558)  MOV      RCX, RDI
+  14020e55b (+0x20E55B)  MOV      qword ptr [RSP + 0x70], RSI
+  14020e560 (+0x20E560)  CALL     qword ptr [RAX + 0x20]
+  14020e563 (+0x20E563)  MOV      ECX, dword ptr [RSP + 0x98]  <-- push_back_default caller PC
+  14020e56a (+0x20E56A)  MOV      R9D, dword ptr [RSP + 0x80]
+  14020e572 (+0x20E572)  MOV      RSI, RAX
+  14020e575 (+0x20E575)  MOV      EAX, dword ptr [RSP + 0x90]
+  14020e57c (+0x20E57C)  MOV      dword ptr [RSP + 0x30], ECX
+  14020e580 (+0x20E580)  AND      EBX, 0x3ffffff
+  14020e586 (+0x20E586)  MOV      dword ptr [RSP + 0x28], EAX
+  14020e58a (+0x20E58A)  MOV      EAX, dword ptr [RSP + 0x88]
+  14020e591 (+0x20E591)  SHL      EBP, 0x1a
+  14020e594 (+0x20E594)  AND      R14D, 0xf
+  14020e598 (+0x20E598)  LEA      RDX, [RSP + 0x60]
+  14020e59d (+0x20E59D)  OR       EBX, EBP
+  14020e59f (+0x20E59F)  MOV      R8, R15
+  14020e5a2 (+0x20E5A2)  MOV      RCX, RSI
+  14020e5a5 (+0x20E5A5)  SHL      EBX, 0x4
+  14020e5a8 (+0x20E5A8)  MOV      dword ptr [RSP + 0x20], EAX
+  14020e5ac (+0x20E5AC)  OR       EBX, R14D
+  14020e5af (+0x20E5AF)  MOV      dword ptr [RSP + 0x60], EBX
+  14020e5b3 (+0x20E5B3)  CALL     0x14020cf00
+  14020e5b8 (+0x20E5B8)  MOV      RBX, qword ptr [RSP + 0x68]
+  14020e5bd (+0x20E5BD)  TEST     AL, AL
+  14020e5bf (+0x20E5BF)  JNZ      0x14020e5c5
+  14020e5c1 (+0x20E5C1)  XOR      EAX, EAX
+  14020e5c3 (+0x20E5C3)  JMP      0x14020e5e0
+  14020e5c5 (+0x20E5C5)  MOV      ECX, dword ptr [RDI + 0x18]
+  14020e5c8 (+0x20E5C8)  LEA      EAX, [RCX + 0x1]
+  14020e5cb (+0x20E5CB)  MOV      dword ptr [RDI + 0x18], EAX
+  14020e5ce (+0x20E5CE)  CMP      ECX, dword ptr [RDI + 0x20]
+  14020e5d1 (+0x20E5D1)  JNZ      0x14020e5da
+  14020e5d3 (+0x20E5D3)  MOV      dword ptr [RDI + 0x18], 0x0
+  14020e5da (+0x20E5DA)  INC      dword ptr [RDI + 0x24]
+  14020e5dd (+0x20E5DD)  MOV      RAX, RSI
+  14020e5e0 (+0x20E5E0)  MOV      RSI, qword ptr [RSP + 0x70]
+  14020e5e5 (+0x20E5E5)  MOV      RBP, qword ptr [RSP + 0x78]
+  14020e5ea (+0x20E5EA)  ADD      RSP, 0x40
+  14020e5ee (+0x20E5EE)  POP      R15
+  14020e5f0 (+0x20E5F0)  POP      R14
+  14020e5f2 (+0x20E5F2)  POP      RDI
+  14020e5f3 (+0x20E5F3)  RET      
+
+==============================================================================
+Surrounding helpers in the +0x20E0xx..+0x20EFxx region
+==============================================================================
+  FUN_~+0x20E000 region: FUN_14020dff0 @ +0x20DFF0 size=0x26
+  FUN_~+0x20E200 region: FUN_14020e180 @ +0x20E180 size=0x194
+  FUN_~+0x20E400 region: FUN_14020e320 @ +0x20E320 size=0x1B4
+  FUN_~+0x20E500 region: FUN_14020e4e0 @ +0x20E4E0 size=0x114
+  FUN_~+0x20E700 region: FUN_14020e6f0 @ +0x20E6F0 size=0x6C
+
+==============================================================================
+Done.
+==============================================================================

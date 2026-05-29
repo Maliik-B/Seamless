@@ -12,6 +12,7 @@
 #include "../../include/addresses.h"
 #include "../../include/address_resolver.h"
 #include "../../include/hooks.h"
+#include "../../include/mod.h"
 #include "../../include/pattern_scanner.h"
 #include "../../include/utils.h"
 #include <chrono>
@@ -357,6 +358,12 @@ struct BootPatchSite {
     size_t      len;
     const uint8_t* expected;
     const uint8_t* patched;
+    // H-27 Plan E: when use_custom_server is true the mod is in custom-server
+    // mode (ds3os-style). For DS2 to actually attempt a login connection to
+    // that server, the title-FSM substates that gate login must run for real
+    // -- they can't be short-circuited the way the offline-defense patches
+    // do. Patches with this flag set are SKIPPED when use_custom_server=true.
+    bool skip_in_online_mode = false;
 };
 
 // OnlineCheck patch: force FeSubStateTitleOnlineCheck's slot-8 predicate
@@ -473,9 +480,11 @@ static const uint8_t kOnlineFlagAccessorPatched [] = { 0x33, 0xC0, 0xFF, 0xC0, 0
 
 static const BootPatchSite kSites[] = {
     { "OnlineCheck",          0xF98C0,   sizeof(kOnlineCheckExpected),
-      kOnlineCheckExpected,          kOnlineCheckPatched },
+      kOnlineCheckExpected,          kOnlineCheckPatched,
+      /*skip_in_online_mode*/ true },
     { "SteamNetCheck",        0xF8FB0,   sizeof(kSteamNetExpected),
-      kSteamNetExpected,             kSteamNetPatched },
+      kSteamNetExpected,             kSteamNetPatched,
+      /*skip_in_online_mode*/ true },
     // H-26 phase 3 experiment (2026-05-27): the hypothesis that
     // FUN_1400F9820's body would wake the session/RPC subsystem was
     // FALSIFIED. With this site removed, the body's event-allocation +
@@ -488,7 +497,8 @@ static const BootPatchSite kSites[] = {
     // probably after the title FSM completes, or requires a real FROM
     // server response we'll never get.
     { "GameServerLogin",      0xF9820,   sizeof(kGameServerLoginExpected),
-      kGameServerLoginExpected,      kGameServerLoginPatched },
+      kGameServerLoginExpected,      kGameServerLoginPatched,
+      /*skip_in_online_mode*/ true },
     // H-26 phase 3 iter 2 experiment (2026-05-27): hypothesis that
     // UserPolicy's body would wake the session/RPC subsystem was also
     // FALSIFIED. Body ran without crash but [H26 PROTO] count stayed 0 AND
@@ -500,7 +510,8 @@ static const BootPatchSite kSites[] = {
     // or to live in a later phase entirely (character-select activation /
     // world-load). Re-enabled.
     { "UserPolicy",           0xF9040,   sizeof(kUserPolicyExpected),
-      kUserPolicyExpected,           kUserPolicyPatched },
+      kUserPolicyExpected,           kUserPolicyPatched,
+      /*skip_in_online_mode*/ true },
     { "OfflinePopupCall",     0x104DEA,  sizeof(kOfflinePopupCallExpected),
       kOfflinePopupCallExpected,     kOfflinePopupCallPatched },
     { "OnlineFlagAccessor",   0x513600,  sizeof(kOnlineFlagAccessorExpected),
@@ -512,7 +523,27 @@ static const BootPatchSite kSites[] = {
 void DS2Coop::Sync::ApplyBootPopupPatch() {
     uintptr_t exeBase = (uintptr_t)GetModuleHandle(nullptr);
 
+    // H-27 Plan E gating: when use_custom_server is on, skip the four FSM-
+    // bypass patches (OnlineCheck, SteamNetCheck, GameServerLogin,
+    // UserPolicy) so DS2 actually runs the substates and the GameServerLogin
+    // code path fires its real connect() to whatever ds2_seamless_coop.ini's
+    // server_ip points at. OfflinePopupCall + OnlineFlagAccessor still
+    // apply -- they don't gate login, and we still want their behaviour
+    // (graceful popup suppression + soapstone-path online flag).
+    const bool useCustomServer =
+        DS2Coop::SeamlessCoopMod::GetInstance().GetConfig().use_custom_server;
+    if (useCustomServer) {
+        LOG_INFO("PatchBootPopup: use_custom_server=true -- skipping "
+                 "OnlineCheck/SteamNetCheck/GameServerLogin/UserPolicy patches "
+                 "so the title FSM actually attempts login");
+    }
+
     for (const BootPatchSite& site : kSites) {
+        if (site.skip_in_online_mode && useCustomServer) {
+            LOG_INFO("PatchBootPopup: %s at exe+0x%llX skipped (online mode)",
+                     site.label, (unsigned long long)site.offset);
+            continue;
+        }
         uintptr_t addr = exeBase + site.offset;
         uint8_t actual[16] = {};
         if (site.len > sizeof(actual)) {
